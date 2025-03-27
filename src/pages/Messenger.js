@@ -6,6 +6,7 @@ import '../styles/Messenger.css';
 const Messenger = () => {
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
+  const [newSelectedUser, setNewSelectedUser] = useState('');
   const [allUsers, setAllUsers] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
@@ -17,7 +18,7 @@ const Messenger = () => {
 
   useEffect(() => {
     if (!token) return;
-    
+
     fetchMessages();
     fetchUsers();
     fetchAllUsers();
@@ -25,6 +26,13 @@ const Messenger = () => {
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
   }, [selectedUser, token]);
+
+  const setSelectAccount = async (pickedUser) => {
+//    alert("test " + pickedUser._id + " " + pickedUser.full_name);
+    users.push({"_id": pickedUser._id, "full_name": pickedUser.full_name || pickedUser.email });
+    setNewSelectedUser(pickedUser);
+    setSelectedUser(pickedUser._id);
+  };
 
   const fetchMessages = async () => {
     if (!token) return;
@@ -36,6 +44,10 @@ const Messenger = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch messages');
       const data = await response.json();
+      console.log("newSelectedUser " + newSelectedUser);
+      if (newSelectedUser) {
+        data.push({"_id": newSelectedUser._id, "full_name": newSelectedUser.full_name || newSelectedUser.email });
+      }
       setMessages(data);
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -50,6 +62,7 @@ const Messenger = () => {
           'Authorization': `Bearer ${token}`
         }
       });
+      console.log("fetchUsers reloaded");
       if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
       setUsers(data);
@@ -92,7 +105,7 @@ const Messenger = () => {
       });
 
       if (!response.ok) throw new Error('Failed to send message');
-      
+
       setNewMessage('');
       fetchMessages(); // Refresh messages after sending
     } catch (error) {
@@ -100,20 +113,20 @@ const Messenger = () => {
     }
   };
 
-  const filteredUsers = allUsers.filter(user => 
+  const filteredUsers = allUsers.filter(user =>
     (user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase())) &&
     user._id !== currentUserId
   );
 
   // Find the selected user's name from the most recent message
   const selectedUserName = messages
-    .find(msg => 
-      (msg.senderId === selectedUser && msg.receiverId === currentUserId) || 
+    .find(msg =>
+      (msg.senderId === selectedUser && msg.receiverId === currentUserId) ||
       (msg.receiverId === selectedUser && msg.senderId === currentUserId)
-    )?.senderId === selectedUser ? 
-      messages.find(msg => msg.senderId === selectedUser)?.senderName :
-      messages.find(msg => msg.receiverId === selectedUser)?.receiverName || '';
+    )?.senderId === selectedUser ?
+    messages.find(msg => msg.senderId === selectedUser)?.senderName :
+    messages.find(msg => msg.receiverId === selectedUser)?.receiverName || '';
 
   if (!token) {
     return (
@@ -130,14 +143,14 @@ const Messenger = () => {
       <div className="messenger-sidebar">
         <div className="sidebar-header">
           <h2>Contacts</h2>
-          <button 
+          <button
             className="new-message-btn"
             onClick={() => setShowNewMessagePanel(true)}
           >
             New Message
           </button>
         </div>
-        
+
         <div className="users-list">
           {users.map(user => (
             <div
@@ -150,13 +163,13 @@ const Messenger = () => {
           ))}
         </div>
       </div>
-      
+
       {showNewMessagePanel && (
         <div className="new-message-panel">
           <div className="new-message-content">
             <div className="new-message-header">
               <h3>New Message</h3>
-              <button 
+              <button
                 className="close-btn"
                 onClick={() => setShowNewMessagePanel(false)}
               >
@@ -178,7 +191,7 @@ const Messenger = () => {
                   key={user._id}
                   className="user-item"
                   onClick={() => {
-                    setSelectedUser(user._id);
+                    setSelectAccount(user);
                     setShowNewMessagePanel(false);
                   }}
                 >
@@ -189,7 +202,7 @@ const Messenger = () => {
           </div>
         </div>
       )}
-      
+
       <div className="messenger-main">
         {selectedUser ? (
           <>
@@ -197,8 +210,8 @@ const Messenger = () => {
             </div>
             <div className="messages-container">
               {messages
-                .filter(msg => 
-                  (msg.senderId === selectedUser && msg.receiverId === currentUserId) || 
+                .filter(msg =>
+                  (msg.senderId === selectedUser && msg.receiverId === currentUserId) ||
                   (msg.receiverId === selectedUser && msg.senderId === currentUserId)
                 )
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
@@ -222,8 +235,8 @@ const Messenger = () => {
                 placeholder="Type a message..."
                 className="message-input"
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="send-button"
                 disabled={!newMessage.trim()}
               >
