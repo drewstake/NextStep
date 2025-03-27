@@ -1,138 +1,183 @@
-import React, { useState, useContext } from 'react';
-import '../styles/JobCard.css';
-import { TokenContext } from './TokenContext';
+import React, { useState, useRef, useEffect } from "react";
+import "../styles/JobCard.css";
 
 const JobCard = ({
-  job_id,
+  _id,
   title,
   companyName,
-  companyWebsite,
-  salaryRange,
-  benefits,
   locations,
+  salaryRange,
+  jobType,
   schedule,
   jobDescription,
-  skills,
-  onApplyClick
+  skills = [],
+  benefits = [],
+  onApply,
+  onSwipe,
+  isLast,
 }) => {
-  const { employerFlag } = useContext(TokenContext);
-  const [slide, setSlide] = useState(false);
-  const [showDetailsWindow, setShowDetailsWindow] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [offsetX, setOffsetX] = useState(0);
+  const cardRef = useRef(null);
 
-  // Basic description is used as a summary fallback
-  const description =
-    jobDescription ||
-    "We are seeking an experienced professional to join our team. In this role, you will work on cutting-edge projects, collaborate with a talented group, and contribute to innovative solutions. Responsibilities include project management, client engagement, and strategic planning. Enjoy a competitive salary, excellent benefits, and a dynamic work environment.";
-
-  const handleApply = () => {
-    console.log("Clicked job id " + job_id);
-    onApplyClick(job_id);
+  const handleStart = (clientX) => {
+    setIsDragging(true);
+    setStartX(clientX - offsetX);
   };
 
-  // Toggle details window and job card slide
-  const handleDetails = () => {
-    if (showDetailsWindow) {
-      setSlide(false);
-      setShowDetailsWindow(false);
-    } else {
-      setSlide(true);
-      setShowDetailsWindow(true);
+  const handleMove = (clientX) => {
+    if (isDragging) {
+      const currentX = clientX - startX;
+      setOffsetX(currentX);
     }
   };
 
+  const handleEnd = () => {
+    setIsDragging(false);
+
+    if (Math.abs(offsetX) > 100) {
+      // Swipe threshold met
+      const direction = offsetX > 0 ? "right" : "left";
+      onSwipe(direction);
+    }
+
+    setOffsetX(0);
+  };
+
+  // Mouse events
+  const handleMouseDown = (e) => handleStart(e.clientX);
+  const handleMouseMove = (e) => handleMove(e.clientX);
+  const handleMouseUp = () => handleEnd();
+
+  // Touch events
+  const handleTouchStart = (e) => handleStart(e.touches[0].clientX);
+  const handleTouchMove = (e) => handleMove(e.touches[0].clientX);
+  const handleTouchEnd = () => handleEnd();
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    card.addEventListener("touchstart", handleTouchStart);
+    card.addEventListener("touchmove", handleTouchMove);
+    card.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      card.removeEventListener("touchstart", handleTouchStart);
+      card.removeEventListener("touchmove", handleTouchMove);
+      card.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [isDragging, startX]);
+
+  const getSwipeClass = () => {
+    if (!isDragging) return "";
+    if (offsetX > 50) return "swiping-right";
+    if (offsetX < -50) return "swiping-left";
+    return "swiping";
+  };
+
+  const cardStyle = {
+    transform: isDragging
+      ? `translateX(${offsetX}px) rotate(${offsetX * 0.1}deg)`
+      : "none",
+    transition: isDragging ? "none" : "transform 0.3s ease",
+  };
+
   return (
-    <div className="job-card-container">
-      <div className={`job-card ${slide ? 'slide-left' : ''}`}>
-        <div className="job-card-header">
-          <div className="header-left">
-            <h2 className="job-title">{title}</h2>
-            <div className="company-info">
-              <a href={companyWebsite} target="_blank" rel="noopener noreferrer">
-                {companyName}
-              </a>
-              <span className="job-location">{locations.join(', ')}</span>
-            </div>
-          </div>
-          {!employerFlag && (
-            <div className="header-right">
-              <button onClick={handleApply} className="apply-button">
-                Apply
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="job-card-body">
-          <div className="job-details">
-            <div className="job-info-row">
-              <p className="salary-range">
-                <strong>Salary:</strong> {salaryRange}
-              </p>
-              <p className="job-schedule">
-                <strong>Schedule:</strong> {schedule}
-              </p>
-            </div>
-            {benefits && benefits.length > 0 && (
-              <p className="job-benefits">
-                <strong>Benefits:</strong> {benefits.join(', ')}
-              </p>
-            )}
-          </div>
-          <div className="job-description">
-            <p>{description}</p>
-          </div>
-          {skills && skills.length > 0 && (
-            <div className="job-skills">
-              <strong>Skills/Requirements:</strong>
-              <ul>
-                {skills.map((skill, index) => (
-                  <li key={index}>{skill}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-        <div className="job-card-footer">
-          <button onClick={handleDetails} className="details-button">
-            Details
-          </button>
-        </div>
-      </div>
-      {showDetailsWindow && (
-        <div className="details-window">
-          <button className="close-button" onClick={handleDetails}>
-            ×
-          </button>
-          {/* Removed the "Job Details" header */}
-          <div className="detailed-section">
-            <h4>Job Summary</h4>
-            <p>{description}</p>
-          </div>
-          <div className="detailed-section">
-            <h4>Responsibilities</h4>
-            <ul>
-              <li>Design and develop high-quality software solutions.</li>
-              <li>Collaborate with cross-functional teams to define product goals.</li>
-              <li>Maintain code integrity and ensure best practices are followed.</li>
-              <li>Identify and resolve performance bottlenecks and bugs.</li>
-            </ul>
-          </div>
-          <div className="detailed-section">
-            <h4>Qualifications</h4>
-            <ul>
-              <li>Bachelor's degree in Computer Science or a related field.</li>
-              <li>Proven experience with JavaScript, React, and modern front-end frameworks.</li>
-              <li>Strong analytical and problem-solving skills.</li>
-              <li>Excellent communication and teamwork abilities.</li>
-            </ul>
-          </div>
-          <div className="detailed-section">
-            <h4>Benefits</h4>
+    <div
+      ref={cardRef}
+      className={`job-card-container ${
+        isFlipped ? "flipped" : ""
+      } ${getSwipeClass()}`}
+      onClick={() => setIsFlipped(!isFlipped)}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      <div className="job-card-inner">
+        {/* Front of card */}
+        <div className="job-card-front">
+          <h2>{title}</h2>
+          <h3>{companyName}</h3>
+          <div className="job-meta-front">
             <p>
-              Competitive salary, comprehensive health insurance, 401(k) with company match, paid time off, and opportunities for professional growth.
+              <span>📍</span>{" "}
+              {Array.isArray(locations) ? locations[0] : locations}
+            </p>
+            <p>
+              <span>💰</span> {salaryRange}
+            </p>
+            <p>
+              <span>💼</span> {jobType}
+            </p>
+            <p>
+              <span>🕒</span> {schedule}
             </p>
           </div>
+          <div className="flip-hint">Click to see full description →</div>
         </div>
-      )}
+
+        {/* Back of card */}
+        <div className="job-card-back">
+          <button
+            className="flip-back"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsFlipped(false);
+            }}
+          >
+            ←
+          </button>
+          <div className="job-content">
+            <h2>{title}</h2>
+            <h3>{companyName}</h3>
+
+            <div className="description-section">
+              <h4>Job Description</h4>
+              <p>{jobDescription}</p>
+            </div>
+
+            {skills.length > 0 && (
+              <div className="skills-section">
+                <h4>Required Skills</h4>
+                <div className="skills-list">
+                  {skills.map((skill, index) => (
+                    <span key={index} className="skill-tag">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {benefits.length > 0 && (
+              <div className="benefits-section">
+                <h4>Benefits</h4>
+                <div className="benefits-list">
+                  {benefits.map((benefit, index) => (
+                    <span key={index} className="benefit-tag">
+                      {benefit}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              className="apply-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onApply(_id);
+              }}
+            >
+              Apply Now
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -10,6 +10,7 @@ import YourJobs from "./pages/YourJobs";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import EmployerApplicationTracker from "./pages/EmployerApplicationTracker";
 import Messenger from "./pages/Messenger";
+import Details from "./pages/Details";
 import "./styles/App.css";
 import { TokenContext } from "./components/TokenContext";
 import axios from "axios";
@@ -192,6 +193,7 @@ function App() {
               element={<EmployerApplicationTracker />}
             />
             <Route path="/messenger" element={<Messenger />} />
+            <Route path="/jobs/:jobId" element={<Details />} />
           </Routes>
         </main>
       </div>
