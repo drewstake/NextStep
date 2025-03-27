@@ -4,12 +4,19 @@ import axios from "axios";
 import JobCard from "../components/JobCard";
 import "../styles/BrowseJobs.css";
 import { TokenContext } from "../components/TokenContext";
+import NotificationBanner from "../components/NotificationBanner";
+
+// Define swipe mode constants
+const APPLY = 1;
+const IGNORE = 2;
 
 const BrowseJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const { token } = useContext(TokenContext);
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
 
   // Fetch jobs from the database when the component mounts
   useEffect(() => {
@@ -19,6 +26,7 @@ const BrowseJobs = () => {
         setJobs(response.data);
       } catch (error) {
         console.error("Error fetching jobs:", error);
+        setError("Failed to fetch jobs. Please try again later.");
       }
     };
 
@@ -35,12 +43,13 @@ const BrowseJobs = () => {
       setCurrentIndex(0); // Reset to first job when searching
     } catch (error) {
       console.error("Error searching jobs:", error);
+      setError("Failed to search jobs. Please try again later.");
     }
   };
 
   const handleApply = async (jobId) => {
     if (!token) {
-      alert(
+      setError(
         "Please sign in to apply for jobs. If you don't have an account, you can create one."
       );
       return;
@@ -53,14 +62,14 @@ const BrowseJobs = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      alert("Applied successfully!");
+      setMessage("Applied successfully!");
       // Move to next job after applying
       setCurrentIndex((prev) => Math.min(prev + 1, jobs.length - 1));
     } catch (error) {
       if (error.response?.status === 409) {
-        alert(error.response.data.error);
+        setError(error.response.data.error);
       } else {
-        alert("An unexpected error occurred. Please try again later.");
+        setError("An unexpected error occurred. Please try again later.");
       }
     }
   };
@@ -77,6 +86,20 @@ const BrowseJobs = () => {
 
   return (
     <div className="browse-jobs-container">
+      {error && (
+        <NotificationBanner
+          message={error}
+          type="error"
+          onDismiss={() => setError(null)}
+        />
+      )}
+      {message && (
+        <NotificationBanner
+          message={message}
+          type="success"
+          onDismiss={() => setMessage(null)}
+        />
+      )}
       <h1>Browse Jobs</h1>
 
       {/* Search Bar */}

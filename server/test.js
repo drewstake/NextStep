@@ -246,6 +246,69 @@ async function testLogout() {
     }
 }
 
+async function testGetMessages() {
+    try {
+        // Make the GET request to retrieve messages
+        const response = await axios.get(`${BASE_URL}/messages`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // Log the response status and data
+        console.log(`${response.status} ${response.statusText}\n`);
+        console.log('Get Messages Response:', response.data);
+
+    } catch (error) {
+        // Log any error that occurs
+        console.error('Get messages error:', error.response ? error.response.data : error.message);
+    }
+}
+
+async function testSendMessage() {
+    try {
+        // Create a sample message payload
+        const messageData = {
+            receiverId: '67ad5570864e201691652f4a', // Replace with actual receiver ID
+            content: 'Hello! This is a test message.'
+        };
+
+        // Make the POST request to send a message
+        const response = await axios.post(`${BASE_URL}/messages`, messageData, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // Log the response status and data
+        console.log(`${response.status} ${response.statusText}\n`);
+        console.log('Send Message Response:', response.data);
+
+    } catch (error) {
+        // Log any error that occurs
+        console.error('Send message error:', error.response ? error.response.data : error.message);
+    }
+}
+
+async function testGetRecentContacts() {
+    try {
+        // Make the GET request to retrieve recent contacts
+        const response = await axios.get(`${BASE_URL}/myRecentContacts`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // Log the response status and data
+        console.log(`${response.status} ${response.statusText}\n`);
+        console.log('Get Recent Contacts Response:', response.data);
+
+    } catch (error) {
+        // Log any error that occurs
+        console.error('Get recent contacts error:', error.response ? error.response.data : error.message);
+    }
+}
+
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -253,12 +316,15 @@ function delay(ms) {
 // Run tests
 (async function () {
     const asEmployer = true; // set this to false to register as an applicant/job seeker
-    await testSignup(asEmployer);
+    //await testSignup(asEmployer);
     await testSignin();
     //await testProfile();
     //await testUpdateProfile();
     // await testApplyForJob();
     //await testGetApplications();
+    await testGetMessages();
+    await testSendMessage();
+    await testGetRecentContacts();
     //await testLogout();
 
 })();

@@ -1,7 +1,13 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
+import { TokenContext } from '../components/TokenContext';
+import axios from 'axios';
 import '../styles/EmployerApplicationTracker.css';
+import NotificationBanner from '../components/NotificationBanner';
 
 const EmployerApplicationTracker = () => {
+  const { token } = useContext(TokenContext);
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
   const initialApplications = [
     {
       id: 1,
@@ -89,18 +95,24 @@ const EmployerApplicationTracker = () => {
       delete newValues[id];
       return newValues;
     });
+    setMessage("Application updated successfully");
   };
 
   const handleChange = (id, field, value) => {
     setEditedValues(prev => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
   };
 
-  const handleViewResume = (id) => {
-    const application = applications.find(app => app.id === id);
-    if (application && application.resume) {
-      window.open(application.resume, "_blank");
-    } else {
-      alert("Resume not available");
+  const handleViewResume = async (resumeUrl) => {
+    try {
+      const response = await axios.get(resumeUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error viewing resume:', error);
+      setError("Resume not available");
     }
   };
 
@@ -125,6 +137,8 @@ const EmployerApplicationTracker = () => {
 
   return (
     <div className="employer-application-tracker-container">
+      {error && <NotificationBanner message={error} type="error" onDismiss={() => setError(null)} />}
+      {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
       <h1>Employer Application Tracker</h1>
       <p>Track all job applications for your postings below:</p>
       <table className="employer-tracker-table">
@@ -165,7 +179,7 @@ const EmployerApplicationTracker = () => {
                   </td>
                   <td>
                     <button onClick={() => handleSave(application.id)}>Save</button>
-                    <button onClick={() => handleViewResume(application.id)}>View Resume</button>
+                    <button onClick={() => handleViewResume(application.resume)}>View Resume</button>
                   </td>
                 </tr>
               );
@@ -179,7 +193,7 @@ const EmployerApplicationTracker = () => {
                   <td>{application.notes}</td>
                   <td>
                     <button onClick={() => handleEdit(application.id)}>Edit</button>
-                    <button onClick={() => handleViewResume(application.id)}>View Resume</button>
+                    <button onClick={() => handleViewResume(application.resume)}>View Resume</button>
                   </td>
                 </tr>
               );

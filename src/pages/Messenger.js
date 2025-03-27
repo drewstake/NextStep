@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { TokenContext } from '../components/TokenContext';
 import jwt_decode from 'jwt-decode';
 import '../styles/Messenger.css';
@@ -6,14 +6,35 @@ import '../styles/Messenger.css';
 const Messenger = () => {
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
+  const [newSelectedUser, setNewSelectedUser] = useState('');
+  const [allUsers, setAllUsers] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
+  const [showNewMessagePanel, setShowNewMessagePanel] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { token } = useContext(TokenContext);
   const decoded = token ? jwt_decode(token) : null;
   const currentUserId = decoded?.id;
 
+  useEffect(() => {
+    if (!token) return;
 
-  const fetchMessages = useCallback(async () => {
+    fetchMessages();
+    fetchUsers();
+    fetchAllUsers();
+
+    const interval = setInterval(fetchMessages, 5000);
+    return () => clearInterval(interval);
+  }, [selectedUser, token]);
+
+  const setSelectAccount = async (pickedUser) => {
+//    alert("test " + pickedUser._id + " " + pickedUser.full_name);
+    users.push({"_id": pickedUser._id, "full_name": pickedUser.full_name || pickedUser.email });
+    setNewSelectedUser(pickedUser);
+    setSelectedUser(pickedUser._id);
+  };
+
+  const fetchMessages = async () => {
     if (!token) return;
     try {
       const response = await fetch('http://localhost:4000/messages', {
@@ -23,13 +44,34 @@ const Messenger = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch messages');
       const data = await response.json();
+      console.log("newSelectedUser " + newSelectedUser);
+      if (newSelectedUser) {
+        data.push({"_id": newSelectedUser._id, "full_name": newSelectedUser.full_name || newSelectedUser.email });
+      }
       setMessages(data);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  }, [token]);
+  };
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = async () => {
+    if (!token) return;
+    try {
+      const response = await fetch('http://localhost:4000/myRecentContacts', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log("fetchUsers reloaded");
+      if (!response.ok) throw new Error('Failed to fetch users');
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchAllUsers = async () => {
     if (!token) return;
     try {
       const response = await fetch('http://localhost:4000/users', {
@@ -39,11 +81,11 @@ const Messenger = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
-      setUsers(data);
+      setAllUsers(data);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching all users:', error);
     }
-  }, [token]);
+  };
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -63,7 +105,7 @@ const Messenger = () => {
       });
 
       if (!response.ok) throw new Error('Failed to send message');
-      
+
       setNewMessage('');
       fetchMessages(); // Refresh messages after sending
     } catch (error) {
@@ -71,28 +113,44 @@ const Messenger = () => {
     }
   };
 
-  // Find the selected user's name
-  const selectedUserName = users.find(user => user._id === selectedUser)?.full_name || '';
+  const filteredUsers = allUsers.filter(user =>
+    (user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+    user._id !== currentUserId
+  );
 
+  // Find the selected user's name from the most recent message
+  const selectedUserName = messages
+    .find(msg =>
+      (msg.senderId === selectedUser && msg.receiverId === currentUserId) ||
+      (msg.receiverId === selectedUser && msg.senderId === currentUserId)
+    )?.senderId === selectedUser ?
+    messages.find(msg => msg.senderId === selectedUser)?.senderName :
+    messages.find(msg => msg.receiverId === selectedUser)?.receiverName || '';
 
-  useEffect(() => {
-    if (!token) return; // Don't fetch if not authenticated
-    
-    // Fetch messages and available users when component mounts
-    fetchMessages();
-    fetchUsers();
-
-    // Set up polling for new messages every 5 seconds
-    const interval = setInterval(fetchMessages, 5000);
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, [selectedUser, token, fetchMessages, fetchUsers]); // Re-fetch when selected user or token changes
+  if (!token) {
+    return (
+      <div className="messenger-container">
+        <div className="no-chat-selected">
+          <p>Please log in to use the messenger</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="messenger-container">
       <div className="messenger-sidebar">
-        <h2>Conversations</h2>
+        <div className="sidebar-header">
+          <h2>Contacts</h2>
+          <button
+            className="new-message-btn"
+            onClick={() => setShowNewMessagePanel(true)}
+          >
+            New Message
+          </button>
+        </div>
+
         <div className="users-list">
           {users.map(user => (
             <div
@@ -105,17 +163,55 @@ const Messenger = () => {
           ))}
         </div>
       </div>
-      
+
+      {showNewMessagePanel && (
+        <div className="new-message-panel">
+          <div className="new-message-content">
+            <div className="new-message-header">
+              <h3>New Message</h3>
+              <button
+                className="close-btn"
+                onClick={() => setShowNewMessagePanel(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
+            </div>
+            <div className="all-users-list">
+              {filteredUsers.map(user => (
+                <div
+                  key={user._id}
+                  className="user-item"
+                  onClick={() => {
+                    setSelectAccount(user);
+                    setShowNewMessagePanel(false);
+                  }}
+                >
+                  <div className="user-item-name">{user.full_name || user.email}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="messenger-main">
         {selectedUser ? (
           <>
             <div className="messenger-header">
-              <h3>{selectedUserName}</h3>
             </div>
             <div className="messages-container">
               {messages
-                .filter(msg => 
-                  (msg.senderId === selectedUser && msg.receiverId === currentUserId) || 
+                .filter(msg =>
+                  (msg.senderId === selectedUser && msg.receiverId === currentUserId) ||
                   (msg.receiverId === selectedUser && msg.senderId === currentUserId)
                 )
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
@@ -139,8 +235,8 @@ const Messenger = () => {
                 placeholder="Type a message..."
                 className="message-input"
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="send-button"
                 disabled={!newMessage.trim()}
               >

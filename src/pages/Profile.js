@@ -4,10 +4,12 @@ import '../styles/Profile.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'
 import { TokenContext } from '../components/TokenContext';
+import NotificationBanner from '../components/NotificationBanner';
 
 const Profile = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [profileImage, setProfileImage] = useState(null); // for local photo viewer
@@ -19,8 +21,10 @@ const Profile = () => {
 
   const navigate = useNavigate(1);
   //const location = useLocation();
-  const { token, setToken } = useContext(TokenContext);
-  const [updateFlag, setUpdateFlag] = useState(null);
+  const { token, setToken, triggerProfileUpdate } = useContext(TokenContext);
+  const [updateFlag] = useState(null);
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -32,6 +36,7 @@ const Profile = () => {
           setResume(response.data.resume);
           setFirstName(response.data.firstName);
           setLastName(response.data.lastName);
+          setFullName(response.data.full_name);
           setPhone(response.data.phone);
           setEmail(response.data.email);
           setLocation(response.data.location);
@@ -41,6 +46,8 @@ const Profile = () => {
         } catch (error) {
           console.error('Profile error:', error.response.data);
         }
+      } else{
+        navigate('/login');
       }
     };
 
@@ -69,21 +76,10 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    /*
-        const profileData = {
-          firstName,
-          lastName,
-          phone,
-          email,
-          photo,
-          resume,
-          location,
-        };*/
-
     const formData = new FormData();
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
-    //formData.append("full_name", full_name);
+    formData.append("full_name", fullName);
     formData.append("phone", phone);
     formData.append("email", email);
     formData.append("location", location);
@@ -97,22 +93,21 @@ const Profile = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:4000/updateprofile', formData, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" }
+      await axios.post('http://localhost:4000/updateprofile', formData, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      console.log(`${response.status} ${response.statusText}\n`);
-      console.log('Update Profile Response:', response.data);
-      setUpdateFlag(true);
-      alert("Profile Updated");
+      setMessage("Profile Updated");
+      triggerProfileUpdate(); // Trigger profile update after successful submission
     } catch (error) {
-      console.error('Update Profile error:', error.response.data);
+      console.error('Error updating profile:', error);
+      setError('Failed to update profile. Please try again.');
     }
-    //setAuthToken(response.data.token);
-    // You can handle the response data as needed
   };
 
   return (
     <div className="profile-container">
+      {error && <NotificationBanner message={error} type="error" onDismiss={() => setError(null)} />}
+      {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
       <h2>Profile</h2>
       <form onSubmit={handleSubmit} className="profile-form">
         {/* Photo Upload */}
@@ -157,6 +152,19 @@ const Profile = () => {
             accept=".pdf,.doc,.docx"
             onChange={handleResumeChange}
             className="file-input"
+          />
+        </div>
+
+        {/* Full Name */}
+        <div className="profile-form-group">
+          <label className="profile-label">Full Name</label>
+          <input
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Enter your full name"
+            required
+            className="profile-input"
           />
         </div>
 

@@ -7,10 +7,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .swipe-job-card {
+  height: 300px;
   position: absolute;
   width: 300px;
   max-width: 90%;
@@ -20,16 +21,38 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   padding: 20px;
   cursor: grab;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease, background-color 0.3s ease;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  will-change: transform;
 }
 
 .swipe-job-card:active {
   cursor: grabbing;
+}
+
+.swipe-job-card.next {
+  transform: scale(0.95);
+  z-index: 1;
+}
+
+.swipe-job-card.current {
+  z-index: 2;
+}
+
+.swipe-job-card.swiping-left {
+  background-color: #f8bcbc; /* pastel red */
+}
+
+.swipe-job-card.swiping-right {
+  background-color: #8ef88e; /* pastel green */
+}
+
+.swipe-job-card.swiping-up {
+  background-color: #f5f243; /* pastel yellow */
 }
 
 .swipe-job-card h2 {
@@ -41,3 +64,72 @@
   margin: 10px 0;
   line-height: 1.4;
 }
+
+.icon {
+  position: absolute;
+  top: 20px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+}
+
+.empty-state {
+  width: 300px;
+  max-width: 90%;
+  height: 300px;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #666;
+  font-size: 1.2em;
+  padding: 20px;
+  background: #f9f9f9;
+}
+
+.job-count-label {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f0f0f0;
+  padding: 5px 15px;
+  border-radius: 15px;
+  font-size: 0.9em;
+  color: #666;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.swipe-direction-label {
+  position: absolute;
+  font-size: 1.2em;
+  color: #fafafc;
+  font-weight: 500;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.swipe-direction-label.left {
+  left: 400px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.swipe-direction-label.right {
+  right: 385px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.swipe-direction-label.up {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.swipe-container:hover .swipe-direction-label {
+  opacity: 1;
+}
+
