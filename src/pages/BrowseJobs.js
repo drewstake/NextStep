@@ -64,21 +64,20 @@ const BrowseJobs = () => {
       return;
     }
     try {
-      await axios.post(
-        "http://localhost:4000/apply",
-        { _id: jobId },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axios.post('http://localhost:4000/jobsTracker', { _id: jobId, swipeMode: APPLY }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log(`${response.status} ${response.statusText}\n`);
       setMessage("Applied successfully!");
       // Move to next job after applying
       setCurrentJobIndex((prev) => Math.min(prev + 1, jobs.length - 1));
     } catch (error) {
-      if (error.response?.status === 409) {
+
+      if (error.response && error.response.status === 409) {
+        console.log(error.response.data.error + jobId);
         setError(error.response.data.error);
       } else {
-        setError("An unexpected error occurred. Please try again later.");
+        setError('An unexpected error occurred. Please try again later.');
       }
     }
   };
