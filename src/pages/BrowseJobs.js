@@ -22,7 +22,7 @@ const BrowseJobs = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/jobs");
+        const response = await axios.get("http://localhost:4000/jobs");
         setJobs(response.data);
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -37,7 +37,7 @@ const BrowseJobs = () => {
     e.preventDefault();
     try {
       const response = await axios.get(
-        `http://localhost:3001/jobs?q=${searchQuery}`
+        `http://localhost:4000/jobs?q=${searchQuery}`
       );
       setJobs(response.data);
       setCurrentIndex(0); // Reset to first job when searching
@@ -56,7 +56,7 @@ const BrowseJobs = () => {
     }
     try {
       await axios.post(
-        "http://localhost:3001/apply",
+        "http://localhost:4000/apply",
         { _id: jobId },
         {
           headers: { Authorization: `Bearer ${token}` },
