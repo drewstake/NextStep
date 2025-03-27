@@ -1,0 +1,158 @@
+.details-page {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: linear-gradient(to bottom, #f5f7fa, #e4e7eb);
+}
+
+.details-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: #4a5568;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 8px 16px;
+  margin-bottom: 24px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.back-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #2d3748;
+}
+
+.job-header {
+  margin-bottom: 32px;
+}
+
+.job-header h1 {
+  font-size: 2.5rem;
+  color: #1a202c;
+  margin-bottom: 16px;
+}
+
+.company-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.company-section h2 {
+  font-size: 1.5rem;
+  color: #2d3748;
+  margin: 0;
+}
+
+.company-website {
+  color: #4299e1;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+
+.company-website:hover {
+  color: #2b6cb0;
+  text-decoration: underline;
+}
+
+.job-meta-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-item .label {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.job-section {
+  margin-bottom: 32px;
+}
+
+.job-section h3 {
+  font-size: 1.25rem;
+  color: #2d3748;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.description-content {
+  color: #4a5568;
+  line-height: 1.7;
+}
+
+.description-content p {
+  margin-bottom: 16px;
+}
+
+.skills-list,
+.benefits-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  list-style: none;
+  padding: 0;
+}
+
+.skills-list li,
+.benefits-list li {
+  background: #edf2f7;
+  padding: 12px 16px;
+  border-radius: 6px;
+  color: #4a5568;
+}
+
+.apply-section {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.apply-button {
+  background: #4299e1;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.apply-button:hover {
+  background: #2b6cb0;
+  transform: translateY(-1px);
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.2rem;
+  color: #4a5568;
+}
+
+.error {
+  color: #e53e3e;
+}

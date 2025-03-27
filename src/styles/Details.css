@@ -1,0 +1,213 @@
+.details-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.details-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  left: 0;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.back-button:hover {
+  color: #333;
+}
+
+.job-details {
+  margin-bottom: 40px;
+}
+
+.company-info {
+  margin-bottom: 20px;
+}
+
+.company-info h2 {
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.job-description,
+.requirements {
+  margin-bottom: 30px;
+}
+
+.requirements ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.requirements li {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.requirements li:last-child {
+  border-bottom: none;
+}
+
+.activities-section {
+  margin: 40px 0;
+}
+
+.activities-list {
+  margin-top: 20px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.activity-item:hover {
+  transform: translateX(5px);
+}
+
+.activity-icon {
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-time {
+  font-size: 12px;
+  color: #666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  justify-content: center;
+}
+
+.action-buttons button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.reject-button {
+  background-color: #ff4444;
+  color: white;
+}
+
+.accept-button {
+  background-color: #00c851;
+  color: white;
+}
+
+.message-button {
+  background-color: #33b5e5;
+  color: white;
+}
+
+.call-button {
+  background-color: #ffbb33;
+  color: white;
+}
+
+.action-buttons button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.next-job-preview {
+  margin-top: 40px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  animation: slideIn 0.5s ease;
+}
+
+.preview-card {
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Swipe Animation */
+.swipe-left {
+  animation: swipeLeft 0.5s ease forwards;
+}
+
+.swipe-right {
+  animation: swipeRight 0.5s ease forwards;
+}
+
+@keyframes swipeLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes swipeRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .details-container {
+    padding: 15px;
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+
+  .action-buttons button {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 0;
+  }
+}
