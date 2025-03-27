@@ -175,10 +175,9 @@
 }
 
 .close-btn {
-  background: transparent;
   border: none;
   font-size: 2rem;
-  color: #fff;
+  color: #171717;
   align-self: flex-end;
   cursor: pointer;
 }
