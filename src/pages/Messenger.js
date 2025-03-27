@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { TokenContext } from '../components/TokenContext';
 import jwt_decode from 'jwt-decode';
 import '../styles/Messenger.css';
@@ -12,21 +12,8 @@ const Messenger = () => {
   const decoded = token ? jwt_decode(token) : null;
   const currentUserId = decoded?.id;
 
-  useEffect(() => {
-    if (!token) return; // Don't fetch if not authenticated
-    
-    // Fetch messages and available users when component mounts
-    fetchMessages();
-    fetchUsers();
 
-    // Set up polling for new messages every 5 seconds
-    const interval = setInterval(fetchMessages, 5000);
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, [selectedUser, token]); // Re-fetch when selected user or token changes
-
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!token) return;
     try {
       const response = await fetch('http://localhost:4000/messages', {
@@ -40,9 +27,9 @@ const Messenger = () => {
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  };
+  }, [token]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     if (!token) return;
     try {
       const response = await fetch('http://localhost:4000/users', {
@@ -56,7 +43,7 @@ const Messenger = () => {
     } catch (error) {
       console.error('Error fetching users:', error);
     }
-  };
+  }, [token]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -87,15 +74,20 @@ const Messenger = () => {
   // Find the selected user's name
   const selectedUserName = users.find(user => user._id === selectedUser)?.full_name || '';
 
-  if (!token) {
-    return (
-      <div className="messenger-container">
-        <div className="no-chat-selected">
-          <p>Please log in to use the messenger</p>
-        </div>
-      </div>
-    );
-  }
+
+  useEffect(() => {
+    if (!token) return; // Don't fetch if not authenticated
+    
+    // Fetch messages and available users when component mounts
+    fetchMessages();
+    fetchUsers();
+
+    // Set up polling for new messages every 5 seconds
+    const interval = setInterval(fetchMessages, 5000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [selectedUser, token, fetchMessages, fetchUsers]); // Re-fetch when selected user or token changes
 
   return (
     <div className="messenger-container">
