@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import '../styles/EmployerApplicationTracker.css';
 
 const EmployerApplicationTracker = () => {
@@ -63,15 +63,22 @@ const EmployerApplicationTracker = () => {
     setEditedValues(prev => ({ ...prev, [id]: { status: app.status, notes: app.notes } }));
   };
 
-  const handleCancel = (id) => {
-    setApplications(applications.map(app => app.id === id ? { ...app, editing: false } : app));
-    setEditingId(null);
-    setEditedValues(prev => {
-      const newValues = { ...prev };
-      delete newValues[id];
-      return newValues;
-    });
-  };
+  const handleCancel = useCallback(
+    (id) => {
+      setApplications((prevApps) =>
+        prevApps.map((app) =>
+          app.id === id ? { ...app, editing: false } : app
+        )
+      );
+      setEditingId(null);
+      setEditedValues((prev) => {
+        const newValues = { ...prev };
+        delete newValues[id];
+        return newValues;
+      });
+    },
+    [setApplications, setEditingId, setEditedValues] // and any dependencies if needed (e.g., applications)
+  );
 
   const handleSave = (id) => {
     const newValues = editedValues[id];
@@ -114,7 +121,7 @@ const EmployerApplicationTracker = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [editingId]);
+  }, [editingId, handleCancel]);
 
   return (
     <div className="employer-application-tracker-container">
