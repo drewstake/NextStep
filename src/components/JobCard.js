@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import "../styles/JobCard.css";
 
 const JobCard = ({
@@ -166,17 +167,31 @@ const JobCard = ({
               </div>
             )}
 
-            <button
-              className="apply-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onApply(_id);
-              }}
-            >
-              Apply Now
-            </button>
+            <div className="action-buttons">
+              <Link
+                to={`/jobs/${_id}`}
+                className="view-details-button"
+                onClick={(e) => e.stopPropagation()}
+              >
+                View Full Details
+              </Link>
+              <button
+                className="apply-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onApply(_id);
+                }}
+              >
+                Apply Now
+              </button>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="swipe-overlay">
+        <div className="swipe-indicator left">Skip</div>
+        <div className="swipe-indicator right">Apply</div>
       </div>
     </div>
   );
