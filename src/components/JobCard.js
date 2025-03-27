@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
-import '../styles/JobCard.css';
-import { TokenContext } from './TokenContext';
+import React, { useState, useContext } from "react";
+import "../styles/JobCard.css";
+import { TokenContext } from "./TokenContext";
 
 const JobCard = ({
   job_id,
@@ -13,7 +13,7 @@ const JobCard = ({
   schedule,
   jobDescription,
   skills,
-  onApplyClick
+  onApplyClick,
 }) => {
   const { employerFlag } = useContext(TokenContext);
   const [slide, setSlide] = useState(false);
@@ -42,15 +42,19 @@ const JobCard = ({
 
   return (
     <div className="job-card-container">
-      <div className={`job-card ${slide ? 'slide-left' : ''}`}>
+      <div className={`job-card ${slide ? "slide-left" : ""}`}>
         <div className="job-card-header">
           <div className="header-left">
             <h2 className="job-title">{title}</h2>
             <div className="company-info">
-              <a href={companyWebsite} target="_blank" rel="noopener noreferrer">
+              <a
+                href={companyWebsite}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {companyName}
               </a>
-              <span className="job-location">{locations.join(', ')}</span>
+              <span className="job-location">{locations.join(", ")}</span>
             </div>
           </div>
           {!employerFlag && (
@@ -73,7 +77,7 @@ const JobCard = ({
             </div>
             {benefits && benefits.length > 0 && (
               <p className="job-benefits">
-                <strong>Benefits:</strong> {benefits.join(', ')}
+                <strong>Benefits:</strong> {benefits.join(", ")}
               </p>
             )}
           </div>
@@ -111,8 +115,12 @@ const JobCard = ({
             <h4>Responsibilities</h4>
             <ul>
               <li>Design and develop high-quality software solutions.</li>
-              <li>Collaborate with cross-functional teams to define product goals.</li>
-              <li>Maintain code integrity and ensure best practices are followed.</li>
+              <li>
+                Collaborate with cross-functional teams to define product goals.
+              </li>
+              <li>
+                Maintain code integrity and ensure best practices are followed.
+              </li>
               <li>Identify and resolve performance bottlenecks and bugs.</li>
             </ul>
           </div>
@@ -120,7 +128,10 @@ const JobCard = ({
             <h4>Qualifications</h4>
             <ul>
               <li>Bachelor's degree in Computer Science or a related field.</li>
-              <li>Proven experience with JavaScript, React, and modern front-end frameworks.</li>
+              <li>
+                Proven experience with JavaScript, React, and modern front-end
+                frameworks.
+              </li>
               <li>Strong analytical and problem-solving skills.</li>
               <li>Excellent communication and teamwork abilities.</li>
             </ul>
@@ -128,7 +139,9 @@ const JobCard = ({
           <div className="detailed-section">
             <h4>Benefits</h4>
             <p>
-              Competitive salary, comprehensive health insurance, 401(k) with company match, paid time off, and opportunities for professional growth.
+              Competitive salary, comprehensive health insurance, 401(k) with
+              company match, paid time off, and opportunities for professional
+              growth.
             </p>
           </div>
         </div>

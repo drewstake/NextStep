@@ -12,9 +12,10 @@ try {
     throw new Error("Twilio credentials are missing");
   }
 
-  console.log("Initializing Twilio with:", {
-    accountSid: accountSid.substring(0, 10) + "...",
+  console.log("Using Twilio credentials:", {
     fromNumber,
+    accountSid: accountSid.substring(0, 10) + "...",
+    authTokenPresent: !!authToken,
   });
 
   client = twilio(accountSid, authToken);
@@ -30,27 +31,68 @@ const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
 };
 
+const formatPhoneNumber = (phoneNumber) => {
+  if (!phoneNumber) return null;
+  // Remove any non-digit characters
+  const cleaned = phoneNumber.replace(/\D/g, "");
+  // Ensure the number has 10 or 11 digits
+  if (cleaned.length !== 10 && cleaned.length !== 11) {
+    throw new Error("Phone number must be 10 or 11 digits");
+  }
+  // Add +1 if not present
+  return cleaned.startsWith("1") ? `+${cleaned}` : `+1${cleaned}`;
+};
+
 const sendVerificationCode = async (phoneNumber) => {
   try {
     if (!client) {
-      console.error("Twilio client not initialized");
-      return false;
+      console.error("Twilio client not initialized - check your credentials");
+      throw new Error("Twilio client not initialized - check your credentials");
     }
 
-    if (!fromNumber) {
-      console.error("Twilio phone number is missing");
-      return false;
+    if (!phoneNumber) {
+      console.error("Phone number is missing");
+      throw new Error("Phone number is required");
     }
 
-    // Format the phone number to E.164 format if it's not already
-    const formattedPhone = phoneNumber.startsWith("+")
-      ? phoneNumber
-      : `+1${phoneNumber}`;
+    // Format the phone number consistently
+    const formattedPhone = formatPhoneNumber(phoneNumber);
+    if (!formattedPhone) {
+      console.error("Invalid phone number format for:", phoneNumber);
+      throw new Error("Invalid phone number format");
+    }
 
     const code = generateVerificationCode();
-    console.log(
-      `Attempting to call ${formattedPhone} with verification code ${code}`
-    );
+    console.log("\n=== Call Attempt Details ===");
+    console.log("Original phone number:", phoneNumber);
+    console.log("Formatted phone number:", formattedPhone);
+    console.log("Verification code:", code);
+    console.log("From number:", fromNumber);
+    console.log("Account SID:", accountSid);
+    console.log("Auth Token present:", !!authToken);
+    console.log("========================\n");
+
+    // Verify Twilio client status
+    try {
+      console.log("\nChecking Twilio account status...");
+      const account = await client.api.accounts(accountSid).fetch();
+      console.log("Twilio Account Status:", account.status);
+      console.log("Twilio Account Type:", account.type);
+
+      // Check if the number is verified
+      console.log("\nChecking if number is verified...");
+      const verifiedNumbers = await client.outgoingCallerIds.list();
+      const isVerified = verifiedNumbers.some(
+        (n) => n.phoneNumber === formattedPhone
+      );
+      console.log("Is number verified?", isVerified);
+      console.log(
+        "Verified numbers:",
+        verifiedNumbers.map((n) => n.phoneNumber).join(", ")
+      );
+    } catch (accountError) {
+      console.error("\nError checking Twilio account:", accountError);
+    }
 
     // Store the code with the phone number
     verificationCodes.set(formattedPhone, {
@@ -60,58 +102,75 @@ const sendVerificationCode = async (phoneNumber) => {
     });
 
     // Create TwiML to speak the verification code
-    const twiml = `<Response><Say>Your NextStep verification code is: ${code
-      .split("")
-      .join(", ")}. I repeat, your code is: ${code
-      .split("")
-      .join(", ")}</Say></Response>`;
+    const twiml = new twilio.twiml.VoiceResponse();
+    twiml.say(
+      { voice: "alice" },
+      `Your verification code is: ${code
+        .split("")
+        .join(", ")}. I repeat, your code is: ${code.split("").join(", ")}`
+    );
 
-    console.log("Using Twilio credentials:", {
-      fromNumber,
-      accountSid: accountSid ? accountSid.substring(0, 10) + "..." : "missing",
-      authTokenPresent: !!authToken,
-    });
+    console.log("\nTwiML generated:", twiml.toString());
 
-    // Make the call using Twilio
-    const call = await client.calls.create({
-      twiml: twiml,
-      to: formattedPhone,
-      from: fromNumber,
-    });
+    try {
+      console.log("\nAttempting to make Twilio call...");
+      // Make the call using Twilio
+      const call = await client.calls.create({
+        twiml: twiml.toString(),
+        to: formattedPhone,
+        from: fromNumber,
+        statusCallback: "http://localhost:4000/call-status",
+        statusCallbackEvent: ["initiated", "ringing", "answered", "completed"],
+      });
 
-    console.log(`Call initiated with details:`, {
-      sid: call.sid,
-      status: call.status,
-      direction: call.direction,
-      from: call.from,
-      to: call.to,
-    });
+      console.log("\nCall initiated successfully with details:", {
+        sid: call.sid,
+        status: call.status,
+        direction: call.direction,
+        from: call.from,
+        to: call.to,
+      });
 
-    return true;
-  } catch (error) {
-    console.error("Error making verification call:", error.message);
-    console.error("Error code:", error.code);
-    console.error("Error status:", error.status);
-    console.error("Full error details:", {
-      code: error.code,
-      status: error.status,
-      moreInfo: error.moreInfo,
-      details: error.details,
-    });
-    if (error.code === 21614) {
-      console.error(
-        "Invalid phone number format. Please use E.164 format (+1XXXXXXXXXX)"
-      );
+      // Fetch call details immediately after creation
+      const callDetails = await client.calls(call.sid).fetch();
+      console.log("\nImmediate call status:", callDetails.status);
+
+      return true;
+    } catch (twilioError) {
+      console.error("\n=== Twilio API Error Details ===");
+      console.error("Error code:", twilioError.code);
+      console.error("Error message:", twilioError.message);
+      console.error("Error status:", twilioError.status);
+      console.error("More info:", twilioError.moreInfo);
+      console.error("Full error object:", JSON.stringify(twilioError, null, 2));
+      console.error("============================\n");
+
+      if (twilioError.code === 21219) {
+        throw new Error(
+          "This phone number is not verified with your trial account. For trial accounts, you must verify phone numbers before sending messages or making calls."
+        );
+      } else if (twilioError.code === 21214) {
+        throw new Error(
+          "Invalid phone number format or phone number not verified with Twilio"
+        );
+      } else if (twilioError.code === 21608) {
+        throw new Error(
+          "Twilio account is not authorized to make calls to this number"
+        );
+      } else {
+        throw new Error(`Failed to initiate call: ${twilioError.message}`);
+      }
     }
-    return false;
+  } catch (error) {
+    console.error("\nError in sendVerificationCode:", error.message);
+    console.error("Full error:", error);
+    throw error;
   }
 };
 
 const verifyCode = (phoneNumber, code) => {
   // Format the phone number consistently
-  const formattedPhone = phoneNumber.startsWith("+")
-    ? phoneNumber
-    : `+1${phoneNumber}`;
+  const formattedPhone = formatPhoneNumber(phoneNumber);
 
   console.log(`Verifying code for phone number: ${formattedPhone}`);
   console.log(
@@ -158,4 +217,5 @@ const verifyCode = (phoneNumber, code) => {
 module.exports = {
   sendVerificationCode,
   verifyCode,
+  formatPhoneNumber,
 };
