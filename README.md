@@ -41,12 +41,8 @@ NextStep is a **web and mobile job-matching platform** designed to simplify the 
 
 #### **Backend**
 - **Node.js** – Server-side runtime
-- **Express.js** – Hosting
+- **Express.js** – Middleware
 - **MongoDB Atlas** – Cloud-based NoSQL database
-
-
-   **<u>Future Use?</u>**
-
 - **Mongoose** – ODM for MongoDB schema validation
 - **JWT (JSON Web Tokens)** – Authentication system
 - **Firebase Cloud Messaging (FCM)** – Push notifications
