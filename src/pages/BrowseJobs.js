@@ -12,21 +12,26 @@ const IGNORE = 2;
 
 const BrowseJobs = () => {
   const [jobs, setJobs] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentJobIndex, setCurrentJobIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const { token } = useContext(TokenContext);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Fetch jobs from the database when the component mounts
   useEffect(() => {
     const fetchJobs = async () => {
       try {
+        setLoading(true);
         const response = await axios.get("http://localhost:4000/jobs");
         setJobs(response.data);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
+        setError(null);
+      } catch (err) {
         setError("Failed to fetch jobs. Please try again later.");
+        console.error("Error fetching jobs:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -40,11 +45,15 @@ const BrowseJobs = () => {
         `http://localhost:4000/jobs?q=${searchQuery}`
       );
       setJobs(response.data);
-      setCurrentIndex(0); // Reset to first job when searching
+      setCurrentJobIndex(0); // Reset to first job when searching
     } catch (error) {
       console.error("Error searching jobs:", error);
       setError("Failed to search jobs. Please try again later.");
     }
+  };
+
+  const handleSkip = (jobId) => {
+    setCurrentJobIndex((prev) => Math.min(prev + 1, jobs.length - 1));
   };
 
   const handleApply = async (jobId) => {
@@ -64,7 +73,7 @@ const BrowseJobs = () => {
       );
       setMessage("Applied successfully!");
       // Move to next job after applying
-      setCurrentIndex((prev) => Math.min(prev + 1, jobs.length - 1));
+      setCurrentJobIndex((prev) => Math.min(prev + 1, jobs.length - 1));
     } catch (error) {
       if (error.response?.status === 409) {
         setError(error.response.data.error);
@@ -74,18 +83,18 @@ const BrowseJobs = () => {
     }
   };
 
-  const handleSwipe = (direction) => {
-    if (direction === "right") {
-      // Apply to job
-      handleApply(jobs[currentIndex]._id);
-    } else {
-      // Skip to next job
-      setCurrentIndex((prev) => Math.min(prev + 1, jobs.length - 1));
-    }
-  };
+  if (loading) {
+    return <div className="loading">Loading jobs...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
+  const currentJob = jobs[currentJobIndex];
 
   return (
-    <div className="browse-jobs-container">
+    <div className="browse-jobs">
       {error && (
         <NotificationBanner
           message={error}
@@ -100,45 +109,31 @@ const BrowseJobs = () => {
           onDismiss={() => setMessage(null)}
         />
       )}
-      <h1>Browse Jobs</h1>
-
-      {/* Search Bar */}
-      <form className="job-search-form" onSubmit={handleSearch}>
-        <input
-          type="text"
-          placeholder="Search for jobs..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="job-search-input"
-        />
-        <button type="submit" className="job-search-button">
-          Search
-        </button>
-      </form>
-
-      <div className="jobs-stack">
-        {jobs.length > 0 ? (
-          <>
-            <JobCard
-              key={jobs[currentIndex]._id}
-              {...jobs[currentIndex]}
-              onSwipe={handleSwipe}
-              isLast={currentIndex === jobs.length - 1}
-            />
-            <div className="swipe-hint">
-              <span>← Skip</span>
-              <span>Apply →</span>
-            </div>
-            <div className="jobs-progress">
-              {currentIndex + 1} of {jobs.length} jobs
-            </div>
-          </>
-        ) : (
-          <p className="placeholder-text">
-            No jobs available at this time. Please check back later.
-          </p>
-        )}
+      <div className="search-container">
+        <h1>Browse Jobs</h1>
+        <form onSubmit={handleSearch}>
+          <input
+            type="text"
+            placeholder="Search for jobs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+          <button type="submit" className="search-button">
+            Search
+          </button>
+        </form>
       </div>
+
+      {currentJob && (
+        <JobCard
+          {...currentJob}
+          onSkip={handleSkip}
+          onApply={handleApply}
+          currentIndex={currentJobIndex + 1}
+          totalJobs={jobs.length}
+        />
+      )}
     </div>
   );
 };
