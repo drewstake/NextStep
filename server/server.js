@@ -32,6 +32,28 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 app.use(express.json());
 app.use(cors());
 
+// JWT Verification Middleware
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized. Missing or invalid token." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        error: "Your session has expired. Please sign in again.",
+        code: "TOKEN_EXPIRED"
+      });
+    }
+    return res.status(401).json({ error: "Invalid authentication token." });
+  }
+};
+
 // MongoDB Connection
 const uri = process.env.MONGODB_URI;           // e.g. "mongodb+srv://..."
 const dbName = "mydb";                         // or process.env.DB_NAME
@@ -50,43 +72,42 @@ client
      ******************************************/
 
     /* ------------------
-       Apply to a Job
+       Tracks Apply(right-swipe), Skip, and Ignore(left-swipe) Jobs
+       mode: 1 for apply, 2 for skip, 3 for ignore
     ------------------ */
-    app.post("/apply", async (req, res) => {
+    // define constants for the swipe modes
+    const APPLY = 1;
+    const IGNORE = 2;
+
+    app.post("/jobsTracker", verifyToken, async (req, res) => {
       try {
         const applicationsCollection = db.collection("applications");
-        // retrieve job._id from req.body
-        const { _id } = req.body;
+        const { _id, swipeMode } = req.body;
 
-        // decode user._id from token
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-
-          return res
-            .status(401)
-            .json({ error: "Unauthorized. Missing or invalid token." });
-        }
-
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("Swipe mode: ", swipeMode);
 
         const applicationInfo = {
           job_id: ObjectId.createFromHexString(_id),
-          user_id: ObjectId.createFromHexString(decoded.id),
+          user_id: ObjectId.createFromHexString(req.user.id),
           date_applied: new Date(),
-          status: "Pending",
+          status: swipeMode === APPLY ? "Pending" :
+          swipeMode === IGNORE ? "Ignored" : "Unknown",
+          swipeMode: swipeMode,
+          swipeAction: swipeMode === APPLY ? "Applied" :
+            swipeMode === IGNORE ? "Ignored" : "Unknown"
         };
 
         // Check if this user has already applied for this job
         const existingApplication = await applicationsCollection.findOne({
           job_id: ObjectId.createFromHexString(_id),
-          user_id: ObjectId.createFromHexString(decoded.id),
+          user_id: ObjectId.createFromHexString(req.user.id),
+          swipeMode: APPLY
         });
 
         if (existingApplication) {
           return res.status(409).json({
             error:
-              "You've already applied for this job. Check your application status in 'Your Jobs'.",
+              "You've already applied for this job. Check your application status in 'My Jobs'.",
           });
         }
 
@@ -95,7 +116,7 @@ client
 
         res.status(200).json({
           job_id: _id,
-          user_id: decoded.id,
+          user_id: req.user.id,
         });
       } catch (err) {
         console.error(err);
@@ -259,14 +280,8 @@ client
     /* ------------------
        Get Applications (for logged-in user)
     ------------------ */
-    app.get("/applications", async (req, res) => {
+    app.get("/applications", verifyToken, async (req, res) => {
       try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-          return res.status(401).json({ message: "User not authenticated" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("Auth token is valid. in applications list");
 
         const applicationsCollection = db.collection("applications");
@@ -275,7 +290,7 @@ client
           .aggregate([
             {
               $match: {
-                user_id: ObjectId.createFromHexString(decoded.id),
+                user_id: ObjectId.createFromHexString(req.user.id),
               },
             },
             {
@@ -293,25 +308,23 @@ client
         res.status(200).json(applicationsWithJobDetails);
       } catch (error) {
         console.error(`Error in /applications. ${error}`);
-        if (error.name === "JsonWebTokenError") {
-          return res.status(401).json({ message: "Invalid token" });
-        }
-        res
-          .status(500)
-          .json({ error: `Error searching applications. ${error.message}` });
+        res.status(500).json({ error: `Error searching applications. ${error.message}` });
       }
     });
 
     /* ------------------
-       Search Jobs
+       Browse Jobs
     ------------------ */
     app.get("/jobs", async (req, res) => {
       try {
-        // Optional: Check token if you want to ensure only authenticated users can search
         const token = req.headers.authorization?.split(" ")[1];
         if (token) {
-          jwt.verify(token, process.env.JWT_SECRET);
-          console.log("Auth token is valid");
+          try {
+            jwt.verify(token, process.env.JWT_SECRET);
+            console.log("Auth token is valid");
+          } catch (error) {
+            // For optional auth, we don't need to handle token errors
+          }
         }
 
         console.log("in job search");
@@ -334,9 +347,71 @@ client
         res.status(200).json(jobs);
       } catch (error) {
         console.error(`Error in /jobs. ${error}`);
-        if (error.name === "JsonWebTokenError") {
-          return res.status(401).json({ message: "Invalid token" });
+        res.status(500).json({ error: `Error searching jobs. ${error}` });
+      }
+    });
+
+    /* ------------------
+      Jobs to show in the homepage
+    ------------------ */
+    app.get("/retrieveJobsForHomepage", async (req, res) => {
+      try {
+        console.log("in job search");
+        const jobsCollection = db.collection("Jobs");
+        const applicationsCollection = db.collection("applications");
+
+        const queryText = req.query.q || "";
+        const query = {
+          $or: [
+            { title: { $regex: queryText, $options: "i" } },
+            { jobDescription: { $regex: queryText, $options: "i" } },
+            { skills: { $regex: queryText, $options: "i" } },
+            { locations: { $regex: queryText, $options: "i" } },
+            { benefits: { $regex: queryText, $options: "i" } },
+            { schedule: { $regex: queryText, $options: "i" } },
+            { salary: { $regex: queryText, $options: "i" } },
+          ],
+        };
+
+        // Check if user is authenticated
+        const token = req.headers.authorization?.split(" ")[1];
+        let jobs = [];
+
+        // Base job search query
+        const baseJobs = await jobsCollection.find(query).toArray();
+
+        if (token) {
+          try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            //              user_id: ObjectId.createFromHexString(decoded.id),
+
+            // Get applied job IDs for the user
+            const appliedJobsResult = await applicationsCollection
+              .find({
+                user_id: ObjectId.createFromHexString(decoded.id)
+              })
+              .project({ job_id: 1, _id: 0 })
+              .toArray();
+
+            const appliedJobIds = appliedJobsResult.map(app => app.job_id);
+
+            // Filter out already applied jobs
+            jobs = baseJobs.filter(job =>
+              !appliedJobIds.some(appliedId =>
+                appliedId.toString() === job._id.toString()
+              )
+            );
+
+          } catch (error) {
+            // If token is invalid, just continue without filtering
+            console.error("Server error:", error.message);
+            jobs = baseJobs;
+          }
         }
+
+        res.status(200).json(jobs);
+      } catch (error) {
+        console.error(`Error in /jobs. ${error}`);
         res.status(500).json({ error: `Error searching jobs. ${error}` });
       }
     });
@@ -344,22 +419,13 @@ client
     /* ------------------
        Get Profile (for logged-in user)
     ------------------ */
-    app.get("/profile", async (req, res) => {
+    app.get("/profile", verifyToken, async (req, res) => {
       try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-          return res
-            .status(401)
-            .json({ error: "Unauthorized", message: "Check your access token." });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("Auth token is valid");
 
         const collection = db.collection("users");
-        //finds profile in MongoDB
         const profile = await collection.findOne(
-          { _id: ObjectId.createFromHexString(decoded.id) },
+          { _id: ObjectId.createFromHexString(req.user.id) },
           { projection: { password: 0 } }
         );
 
@@ -368,21 +434,10 @@ client
             message: "No matching record found. Check your access token.",
           });
         }
-        //retrieves all of profile's attributes
         res.status(200).json(profile);
       } catch (error) {
-        if (error.name === "TokenExpiredError") {
-          console.log("Token has expired");
-          return res.status(401).json({ message: "Token has expired" });
-        }
-        if (error.name === "JsonWebTokenError") {
-          console.log("Token is not valid:", error.message);
-          return res.status(401).json({ message: "Invalid token" });
-        }
         console.error(`Error in /profile. ${error}`);
-        res
-          .status(500)
-          .json({ error: `Error fetching user profile. ${error.message}` });
+        res.status(500).json({ error: `Error fetching user profile. ${error.message}` });
       }
     });
 
@@ -394,20 +449,13 @@ client
 
     app.post(
       "/updateprofile",
+      verifyToken,
       upload.fields([{ name: "photo" }, { name: "resume" }]),
       async (req, res) => {
         try {
-          const token = req.headers.authorization?.split(" ")[1];
-          if (!token) {
-            return res
-              .status(401)
-              .json({ error: "Unauthorized", message: "Check your token." });
-          }
-
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
           console.log("Auth token is valid");
 
-          const { firstName, lastName, phone, email, location } = req.body;
+          const { firstName, lastName, phone, email, location, full_name } = req.body;
           const collection = db.collection("users");
 
           let resumeFile = null;
@@ -433,12 +481,13 @@ client
             phone,
             email,
             location,
+            full_name,
             ...(encodedPhoto && { encodedPhoto }),
             ...(resumeFile && { resumeFile }),
           };
 
           const result = await collection.updateOne(
-            { _id: ObjectId.createFromHexString(decoded.id) },
+            { _id: ObjectId.createFromHexString(req.user.id) },
             { $set: updatedProfileData }
           );
 
@@ -447,18 +496,8 @@ client
           }
           res.status(200).json({ message: "Profile updated successfully" });
         } catch (err) {
-          if (err.name === "TokenExpiredError") {
-            console.log("Token has expired");
-            return res.status(401).json({ message: "Token has expired" });
-          }
-          if (err.name === "JsonWebTokenError") {
-            console.log("Token is not valid:", err.message);
-            return res.status(401).json({ message: "Invalid token" });
-          }
-          console.log(err);
-          res
-            .status(404)
-            .json({ error: `Error updating user profile. ${err.message}` });
+          console.error(err);
+          res.status(500).json({ error: `Error updating user profile. ${err.message}` });
         }
       }
     );
@@ -493,7 +532,7 @@ client
         //IN this case we retrieve email, full name, first name, last name, and profile picture if present 
         const { email, name, given_name, family_name, picture } = ticket.getPayload();
         //console.log(ticket.getPayload());
-        const collection = db.collection("users"); 
+        const collection = db.collection("users");
 
         // Check if user exists
         let user = await collection.findOne({ email });
@@ -535,23 +574,16 @@ client
     /* ------------------
        Get All Users (for messenger)
     ------------------ */
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyToken, async (req, res) => {
       try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-          return res.status(401).json({ message: "User not authenticated" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const collection = db.collection("users");
-        
-        // Get all users except the current user
+
         const users = await collection.find(
-          { 
-            _id: { $ne: ObjectId.createFromHexString(decoded.id) }
+          {
+            _id: { $ne: ObjectId.createFromHexString(req.user.id) }
           },
-          { 
-            projection: { 
+          {
+            projection: {
               _id: 1,
               full_name: 1,
               email: 1
@@ -569,21 +601,14 @@ client
     /* ------------------
        Get Messages
     ------------------ */
-    app.get("/messages", async (req, res) => {
+    app.get("/messages", verifyToken, async (req, res) => {
       try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-          return res.status(401).json({ message: "User not authenticated" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const messagesCollection = db.collection("messages");
-        
-        // Get all messages where the user is either sender or receiver
+
         const messages = await messagesCollection.find({
           $or: [
-            { senderId: decoded.id },
-            { receiverId: decoded.id }
+            { senderId: req.user.id },
+            { receiverId: req.user.id }
           ]
         }).sort({ createdAt: -1 }).toArray();
 
@@ -597,14 +622,8 @@ client
     /* ------------------
        Send Message
     ------------------ */
-    app.post("/messages", async (req, res) => {
+    app.post("/messages", verifyToken, async (req, res) => {
       try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-          return res.status(401).json({ message: "User not authenticated" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const { receiverId, content } = req.body;
 
         if (!content || !receiverId) {
@@ -612,10 +631,32 @@ client
         }
 
         const messagesCollection = db.collection("messages");
-        
+        const usersCollection = db.collection("users");
+
+        // Get sender and receiver details
+        const [sender, receiver] = await Promise.all([
+          usersCollection.findOne(
+            { _id: ObjectId.createFromHexString(req.user.id) },
+            { projection: { full_name: 1, first_name: 1, last_name: 1, email: 1 } }
+          ),
+          usersCollection.findOne(
+            { _id: ObjectId.createFromHexString(receiverId) },
+            { projection: { full_name: 1, first_name: 1, last_name: 1, email: 1 } }
+          )
+        ]);
+
+        // Get display names
+        const senderName = sender.full_name || `${sender.first_name || ''} ${sender.last_name || ''}`.trim();
+        const receiverName = receiver.full_name || `${receiver.first_name || ''} ${receiver.last_name || ''}`.trim();
+        const senderEmail = sender.email;
+        const receiverEmail = receiver.email;
         const message = {
-          senderId: decoded.id,
+          senderId: req.user.id,
           receiverId,
+          senderName,
+          receiverName,
+          senderEmail,
+          receiverEmail,
           content,
           createdAt: new Date(),
         };
@@ -625,6 +666,49 @@ client
       } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Failed to send message" });
+      }
+    });
+
+    /* ------------------
+       Get Recent Contacts
+    ------------------ */
+    app.get("/myRecentContacts", verifyToken, async (req, res) => {
+      try {
+        const messagesCollection = db.collection("messages");
+        const usersCollection = db.collection("users");
+
+        // Get all messages where user is either sender or receiver
+        const messages = await messagesCollection.find({
+          $or: [
+            { senderId: req.user.id },
+            { receiverId: req.user.id }
+          ]
+        }).toArray();
+
+        // Extract unique user IDs from messages
+        const uniqueUserIds = [...new Set(messages.flatMap(msg => 
+          [msg.senderId, msg.receiverId].filter(id => id !== req.user.id)
+        ))];
+
+        // Get user details for these IDs
+        const contacts = await usersCollection.find(
+          { _id: { $in: uniqueUserIds.map(id => ObjectId.createFromHexString(id)) } },
+          {
+            projection: {
+              _id: 1,
+              full_name: 1,
+              first_name: 1,
+              last_name: 1,
+              email: 1,
+              encodedPhoto: 1
+            }
+          }
+        ).toArray();
+
+        res.status(200).json(contacts);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to retrieve recent contacts" });
       }
     });
 

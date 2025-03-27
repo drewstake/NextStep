@@ -1,0 +1,66 @@
+.notification-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.9);
+  animation: slideDown 0.3s ease-out;
+}
+
+.notification-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 100%;
+}
+
+/* Error message styling */
+.notification-banner.error .notification-banner-content {
+  background-color: #f88c8c;
+  color: rgb(80, 3, 3);
+}
+
+/* Success message styling */
+.notification-banner.success .notification-banner-content {
+  background-color: #c7f7b4;
+  color: rgb(1, 92, 29);
+}
+
+.notification-banner-message {
+  font-size: 20px;
+  font-weight: 500;
+  margin-right: 16px;
+}
+
+.notification-banner-dismiss {
+  background: none;
+  border: none;
+  color: rgb(82, 35, 7);
+  font-size: 40px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.notification-banner-dismiss:hover {
+  opacity: 1;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+} 

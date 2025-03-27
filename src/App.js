@@ -12,15 +12,42 @@ import EmployerApplicationTracker from "./pages/EmployerApplicationTracker";
 import Messenger from "./pages/Messenger";
 import "./styles/App.css";
 import { TokenContext } from "./components/TokenContext";
+import axios from "axios";
 
 function App() {
-  const { token, employerFlag } = useContext(TokenContext);
+  const { token, employerFlag, profileUpdateTrigger } = useContext(TokenContext);
+  const [userName, setUserName] = useState("");
 
   // Track whether the mobile nav overlay is open
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   // Track if the viewport is mobile-sized (<= 768px)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Fetch user profile when token is available or profile is updated
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (token) {
+        try {
+          const response = await axios.get('http://localhost:4000/profile', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const user = response.data;
+          // Use full_name if available, otherwise combine first and last name
+          const displayName = user.full_name || 
+            `${user.first_name || ''} ${user.last_name || ''}`.trim();
+          setUserName(displayName);
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          setUserName('Profile');
+        }
+      } else {
+        setUserName('Profile');
+      }
+    };
+
+    fetchUserProfile();
+  }, [token, profileUpdateTrigger]); // Add profileUpdateTrigger to dependencies
 
   // Toggle the mobile nav overlay
   const toggleNav = () => {
@@ -66,7 +93,7 @@ function App() {
                 </Link>
                 {token && (
                   <Link className="app-nav__link" to="/profile">
-                    Profile
+                    Profile: {userName}
                   </Link>
                 )}
                 {token && employerFlag && (
@@ -83,7 +110,7 @@ function App() {
               <div className="auth-container">
                 {token && !employerFlag && (
                   <Link className="app-nav__link" to="/your-jobs">
-                    Your Jobs
+                    My Jobs
                   </Link>
                 )}
                 <Auth />
@@ -114,7 +141,7 @@ function App() {
                   to="/profile"
                   onClick={toggleNav}
                 >
-                  Profile
+                  {userName}
                 </Link>
               )}
               {token && employerFlag && (
@@ -132,7 +159,7 @@ function App() {
                   to="/your-jobs"
                   onClick={toggleNav}
                 >
-                  Your Jobs
+                  My Jobs
                 </Link>
               )}
               {token && (

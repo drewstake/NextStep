@@ -4,26 +4,18 @@ import axios from 'axios';
 import JobCard from '../components/JobCard';
 import '../styles/BrowseJobs.css';
 import { TokenContext } from '../components/TokenContext';
+import NotificationBanner from '../components/NotificationBanner';
+
+// Define swipe mode constants
+const APPLY = 1;
+const IGNORE = 2;
 
 const BrowseJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const { token } = useContext(TokenContext);
-
-  // Fetch jobs from the database when the component mounts.
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        // Replace the URL with your actual API endpoint.
-        // const response = await axios.get('http://localhost:4000/jobs?keyword=');
-        // setJobs(response.data);
-      } catch (error) {
-        console.error('Error fetching jobs:', error);
-      }
-    };
-
-    fetchJobs();
-  }, []);
+  const { token, setToken } = useContext(TokenContext);
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -35,29 +27,29 @@ const BrowseJobs = () => {
 
   const handleApply = async (jobId) => {
     if (!token) {
-      alert("Please sign in to apply for jobs. If you don't have an account, you can create one.");
+      setError("Please sign in to apply for jobs. If you don't have an account, you can create one.");
       return;
     }
     try {
-      const response = await axios.post('http://localhost:4000/apply', { _id: jobId }, {
+      const response = await axios.post('http://localhost:4000/jobsTracker', { _id: jobId, swipeMode: APPLY }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log(`${response.status} ${response.statusText}\n`);
-      alert("Applied successfully!");
+      setMessage("Applied successfully!");
     } catch (error) {
-      //debugger;
       if (error.response && error.response.status === 409) {
         console.log(error.response.data.error + jobId);
-        alert(error.response.data.error); // Display the error message from API
+        setError(error.response.data.error);
       } else {
-        alert('An unexpected error occurred. Please try again later.');
+        setError('An unexpected error occurred. Please try again later.');
       }
     }
-
   };
 
   return (
     <div className="browse-jobs-container">
+      {error && <NotificationBanner message={error} type="error" onDismiss={() => setError(null)} />}
+      {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
       <h1>Browse Jobs</h1>
 
       {/* Search Bar */}

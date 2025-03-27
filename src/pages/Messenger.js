@@ -45,7 +45,7 @@ const Messenger = () => {
   const fetchUsers = async () => {
     if (!token) return;
     try {
-      const response = await fetch('http://localhost:4000/users', {
+      const response = await fetch('http://localhost:4000/myRecentContacts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -84,8 +84,14 @@ const Messenger = () => {
     }
   };
 
-  // Find the selected user's name
-  const selectedUserName = users.find(user => user._id === selectedUser)?.full_name || '';
+  // Find the selected user's name from the most recent message
+  const selectedUserName = messages
+    .find(msg => 
+      (msg.senderId === selectedUser && msg.receiverId === currentUserId) || 
+      (msg.receiverId === selectedUser && msg.senderId === currentUserId)
+    )?.senderId === selectedUser ? 
+      messages.find(msg => msg.senderId === selectedUser)?.senderName :
+      messages.find(msg => msg.receiverId === selectedUser)?.receiverName || '';
 
   if (!token) {
     return (
@@ -100,7 +106,7 @@ const Messenger = () => {
   return (
     <div className="messenger-container">
       <div className="messenger-sidebar">
-        <h2>Conversations</h2>
+        <h2>Recent Contacts</h2>
         <div className="users-list">
           {users.map(user => (
             <div

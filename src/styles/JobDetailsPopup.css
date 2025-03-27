@@ -1,0 +1,126 @@
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.popup-content {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.popup-title {
+  margin: 0 0 24px 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-button:hover {
+  background-color: #f0f0f0;
+}
+
+.popup-content h2 {
+  margin: 0 0 16px 0;
+  color: #333;
+}
+
+.company-info {
+  margin-bottom: 24px;
+}
+
+.company-info h3 {
+  margin: 0;
+  color: #666;
+}
+
+.company-info a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.company-info a:hover {
+  text-decoration: underline;
+}
+
+.job-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-section {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 16px;
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+}
+
+.detail-section h4 {
+  margin: 0 0 8px 0;
+  color: #444;
+  font-size: 16px;
+}
+
+.detail-section p {
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.detail-section ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #666;
+}
+
+.detail-section li {
+  margin: 4px 0;
+}
+
+@media (max-width: 480px) {
+  .popup-content {
+    padding: 16px;
+  }
+  
+  .detail-section {
+    padding-bottom: 12px;
+  }
+
+  .popup-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+} 
