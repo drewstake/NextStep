@@ -1,57 +1,72 @@
 /* File: /src/styles/BrowseJobs.css */
 .browse-jobs-container {
-  padding: 20px;
-  color: #fff;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.browse-jobs-container h1 {
   text-align: center;
+  color: #2d3748;
+  margin-bottom: 32px;
+  font-size: 2.5rem;
 }
 
 .job-search-form {
-  margin-bottom: 20px;
   display: flex;
-  justify-content: center;
-  gap: 10px;
+  gap: 16px;
+  margin-bottom: 40px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .job-search-input {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 30px;
-  width: 300px;
-  outline: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
   font-size: 1rem;
+  transition: all 0.2s;
 }
 
-.job-search-input::placeholder {
-  color: #ddd;
+.job-search-input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
 }
 
 .job-search-button {
-  padding: 10px 20px;
+  padding: 12px 24px;
+  background: #4299e1;
+  color: white;
   border: none;
-  border-radius: 30px;
-  background: linear-gradient(90deg, #ff758c, #ff7eb3);
-  color: #fff;
+  border-radius: 8px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: all 0.2s;
 }
 
 .job-search-button:hover {
-  transform: scale(1.05);
+  background: #2b6cb0;
+  transform: translateY(-1px);
 }
 
 .jobs-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;  /* Ensure your environment supports this property */
-  align-items: flex-start;  /* Left-align job postings */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 20px 0;
 }
 
 .placeholder-text {
-  font-size: 1.2rem;
-  color: #ddd;
   text-align: center;
-  margin: 20px auto;
+  color: #718096;
+  font-size: 1.1rem;
+  grid-column: 1 / -1;
+  padding: 40px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 2px dashed #e2e8f0;
 }
