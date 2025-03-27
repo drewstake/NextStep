@@ -1,4 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
+import { TokenContext } from '../components/TokenContext';
+import axios from 'axios';
 import '../styles/EmployerApplicationTracker.css';
 import NotificationBanner from '../components/NotificationBanner';
 

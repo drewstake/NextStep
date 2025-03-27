@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { TokenContext } from '../components/TokenContext';
 import jwt_decode from 'jwt-decode';
 import '../styles/Messenger.css';
@@ -15,8 +15,18 @@ const Messenger = () => {
   const decoded = token ? jwt_decode(token) : null;
   const currentUserId = decoded?.id;
 
+  useEffect(() => {
+    if (!token) return;
+    
+    fetchMessages();
+    fetchUsers();
+    fetchAllUsers();
 
-  const fetchMessages = useCallback(async () => {
+    const interval = setInterval(fetchMessages, 5000);
+    return () => clearInterval(interval);
+  }, [selectedUser, token]);
+
+  const fetchMessages = async () => {
     if (!token) return;
     try {
       const response = await fetch('http://localhost:4000/messages', {
@@ -30,9 +40,9 @@ const Messenger = () => {
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  }, [token]);
+  };
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = async () => {
     if (!token) return;
     try {
       const response = await fetch('http://localhost:4000/myRecentContacts', {
@@ -46,7 +56,23 @@ const Messenger = () => {
     } catch (error) {
       console.error('Error fetching users:', error);
     }
-  }, [token]);
+  };
+
+  const fetchAllUsers = async () => {
+    if (!token) return;
+    try {
+      const response = await fetch('http://localhost:4000/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      const data = await response.json();
+      setAllUsers(data);
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+    }
+  };
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -74,23 +100,30 @@ const Messenger = () => {
     }
   };
 
-  // Find the selected user's name
-  const selectedUserName = users.find(user => user._id === selectedUser)?.full_name || '';
+  const filteredUsers = allUsers.filter(user => 
+    (user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+    user._id !== currentUserId
+  );
 
+  // Find the selected user's name from the most recent message
+  const selectedUserName = messages
+    .find(msg => 
+      (msg.senderId === selectedUser && msg.receiverId === currentUserId) || 
+      (msg.receiverId === selectedUser && msg.senderId === currentUserId)
+    )?.senderId === selectedUser ? 
+      messages.find(msg => msg.senderId === selectedUser)?.senderName :
+      messages.find(msg => msg.receiverId === selectedUser)?.receiverName || '';
 
-  useEffect(() => {
-    if (!token) return; // Don't fetch if not authenticated
-    
-    // Fetch messages and available users when component mounts
-    fetchMessages();
-    fetchUsers();
-
-    // Set up polling for new messages every 5 seconds
-    const interval = setInterval(fetchMessages, 5000);
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, [selectedUser, token, fetchMessages, fetchUsers]); // Re-fetch when selected user or token changes
+  if (!token) {
+    return (
+      <div className="messenger-container">
+        <div className="no-chat-selected">
+          <p>Please log in to use the messenger</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="messenger-container">
@@ -161,7 +194,6 @@ const Messenger = () => {
         {selectedUser ? (
           <>
             <div className="messenger-header">
-              <h3>{selectedUserName}</h3>
             </div>
             <div className="messages-container">
               {messages
