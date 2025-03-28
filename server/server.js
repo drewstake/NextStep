@@ -319,9 +319,7 @@ client
       try {
         const collection = db.collection("Jobs");
         const jobId = req.params.jobId;
-        
-        console.log("Fetching job with ID:", jobId);
-        
+                
         // Validate if the jobId is a valid MongoDB ObjectId
         if (!ObjectId.isValid(jobId)) {
           console.error("Invalid job ID format:", jobId);
@@ -337,7 +335,6 @@ client
           return res.status(404).json({ error: "Job not found" });
         }
 
-        console.log("Job found:", job._id);
         res.status(200).json(job);
       } catch (error) {
         console.error("Error fetching job:", error);
@@ -381,6 +378,59 @@ client
       } catch (error) {
         console.error(`Error in /jobs. ${error}`);
         res.status(500).json({ error: `Error searching jobs. ${error}` });
+      }
+    });
+
+    /* ------------------
+       Create New Job Posting
+    ------------------ */
+    app.post("/jobs", verifyToken, async (req, res) => {
+      try {
+        // Verify that the user is an employer
+        if (!req.user.isEmployer) {
+          return res.status(403).json({ error: "Only employers can create job postings" });
+        }
+
+        const collection = db.collection("Jobs");
+        const {
+          title,
+          companyName,
+          companyWebsite,
+          salaryRange,
+          benefits,
+          locations,
+          schedule,
+          jobDescription,
+          skills
+        } = req.body;
+
+        // Validate required fields
+        if (!title || !companyName || !jobDescription) {
+          return res.status(400).json({ error: "Title, company name, and job description are required" });
+        }
+
+        const newJob = {
+          title,
+          companyName,
+          companyWebsite,
+          salaryRange,
+          benefits: benefits || [],
+          locations: Array.isArray(locations) ? locations : [locations],
+          schedule,
+          jobDescription,
+          skills: Array.isArray(skills) ? skills : [skills],
+          createdAt: new Date(),
+          employerId: ObjectId.createFromHexString(req.user.id)
+        };
+
+        const result = await collection.insertOne(newJob);
+        res.status(201).json({
+          message: "Job posting created successfully",
+          jobId: result.insertedId
+        });
+      } catch (error) {
+        console.error("Error creating job posting:", error);
+        res.status(500).json({ error: "Failed to create job posting" });
       }
     });
 

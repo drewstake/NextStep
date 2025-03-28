@@ -1,13 +1,43 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/Details.css";
+import NotificationBanner from "../components/NotificationBanner";
+import { TokenContext } from '../components/TokenContext';
 
 const Details = () => {
-  const { jobId } = useParams();
+  const { jobId, returnTo } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
   const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
+  const { token } = useContext(TokenContext);
+
+  const handleBackToJobs = async () => {
+    if (returnTo === "jobs") {
+      navigate("/jobs");
+    } else {
+      navigate(`/`);
+    }
+  };
+
+  const handleApplyNow = async () => {
+    try {
+      await axios.post('http://localhost:4000/jobsTracker', {
+        _id: job._id,
+        swipeMode: 1 // 1 for apply
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}` // Ensure token is available
+        }
+      });
+      setMessage('Application successful!');
+      // Optionally, navigate to a confirmation page or show a success message
+    } catch (error) {
+      setError('Error applying for job: ' + error.response ? error.response.data.error : error.message);
+      // Optionally, show an error message to the user
+    }
+  };
 
   useEffect(() => {
     const fetchJobDetails = async () => {
@@ -23,17 +53,6 @@ const Details = () => {
     fetchJobDetails();
   }, [jobId]);
 
-  if (error) {
-    return (
-      <div className="details-container">
-        <div className="error-message">{error}</div>
-        <button onClick={() => navigate("/jobs")} className="back-button">
-          Back to Jobs
-        </button>
-      </div>
-    );
-  }
-
   if (!job) {
     return (
       <div className="details-container">
@@ -44,11 +63,14 @@ const Details = () => {
 
   return (
     <div className="details-container">
+      {error && <NotificationBanner message={error} type="error" onDismiss={() => setError(null)} />}
+      {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
+
       <div className="details-content">
         <button className="close-button" onClick={() => navigate("/jobs")}>
           ×
         </button>
-        
+
         <div className="job-header">
           <h1>{job.title}</h1>
           <div className="company-info">
@@ -86,10 +108,10 @@ const Details = () => {
         )}
 
         <div className="action-buttons">
-          <button onClick={() => navigate("/jobs")} className="back-button">
+          <button onClick={handleBackToJobs} className="back-button">
             Back to Jobs
           </button>
-          <button className="apply-button">
+          <button onClick={handleApplyNow} className="apply-button">
             Apply Now
           </button>
         </div>

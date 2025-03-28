@@ -215,7 +215,7 @@ const Swipe = () => {
 
   const handleCardTap = (job) => {
     if (!isSwiping) {
-      navigate(`/jobs/${job._id}`);
+      navigate(`/jobs/${job._id}/home`);
     }
   };
 
@@ -267,7 +267,7 @@ const Swipe = () => {
         <p>
           <strong>Location(s):</strong> {Array.isArray(job.locations) ? job.locations.join(', ') : job.locations}
         </p>
-        <p>{job.jobDescription}</p>
+        <p className="job-description-swipe">{job.jobDescription}</p>
         {swipeClass === 'swiping-right' && <ThumbsUp className="icon" />}
         {swipeClass === 'swiping-left' && <ThumbsDown className="icon" />}
       </div>

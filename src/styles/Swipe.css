@@ -11,7 +11,7 @@
 }
 
 .swipe-job-card {
-  height: 300px;
+  height: 222px;
   position: absolute;
   width: 300px;
   max-width: 90%;
@@ -58,6 +58,7 @@
 .swipe-job-card h2 {
   margin-top: 0;
   color: #ff758c;
+  font-size: 1.2em;
 }
 
 .swipe-job-card p {
@@ -133,3 +134,11 @@
   opacity: 1;
 }
 
+.job-description-swipe{
+  height: 81px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* number of lines to show */
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}

@@ -18,8 +18,7 @@ const JobCard = ({
 }) => {
   const navigate = useNavigate();
   const { employerFlag } = useContext(TokenContext);
-  const [slide, setSlide] = useState(false);
-  const [showDetailsWindow, setShowDetailsWindow] = useState(false);
+  const [slide] = useState(false);
 
   // Basic description is used as a summary fallback
   const description =
@@ -33,7 +32,7 @@ const JobCard = ({
 
   // Toggle details window and job card slide
   const handleDetails = () => {
-    navigate(`/jobs/${job_id}`);
+    navigate(`/jobs/${job_id}/jobs`);
   };
 
   return (
@@ -71,23 +70,17 @@ const JobCard = ({
                 <strong>Schedule:</strong> {schedule}
               </p>
             </div>
-            {benefits && benefits.length > 0 && (
-              <p className="job-benefits">
-                <strong>Benefits:</strong> {benefits.join(", ")}
-              </p>
-            )}
-          </div>
-          <div className="job-description">
-            <p>{description}</p>
+            <div className="job-description">
+              <p>{description}</p>
+            </div>
           </div>
           {skills && skills.length > 0 && (
             <div className="job-skills">
-              <strong>Skills/Requirements:</strong>
-              <ul>
-                {skills.map((skill, index) => (
-                  <li key={index}>{skill}</li>
-                ))}
-              </ul>
+              <p className="job-benefits">
+                <strong>Skills Requirement: </strong>
+                {skills.join(", ")}
+              </p>
+
             </div>
           )}
         </div>
@@ -97,51 +90,6 @@ const JobCard = ({
           </button>
         </div>
       </div>
-      {showDetailsWindow && (
-        <div className="details-window">
-          <button className="close-button" onClick={handleDetails}>
-            ×
-          </button>
-          {/* Removed the "Job Details" header */}
-          <div className="detailed-section">
-            <h4>Job Summary</h4>
-            <p>{description}</p>
-          </div>
-          <div className="detailed-section">
-            <h4>Responsibilities</h4>
-            <ul>
-              <li>Design and develop high-quality software solutions.</li>
-              <li>
-                Collaborate with cross-functional teams to define product goals.
-              </li>
-              <li>
-                Maintain code integrity and ensure best practices are followed.
-              </li>
-              <li>Identify and resolve performance bottlenecks and bugs.</li>
-            </ul>
-          </div>
-          <div className="detailed-section">
-            <h4>Qualifications</h4>
-            <ul>
-              <li>Bachelor's degree in Computer Science or a related field.</li>
-              <li>
-                Proven experience with JavaScript, React, and modern front-end
-                frameworks.
-              </li>
-              <li>Strong analytical and problem-solving skills.</li>
-              <li>Excellent communication and teamwork abilities.</li>
-            </ul>
-          </div>
-          <div className="detailed-section">
-            <h4>Benefits</h4>
-            <p>
-              Competitive salary, comprehensive health insurance, 401(k) with
-              company match, paid time off, and opportunities for professional
-              growth.
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

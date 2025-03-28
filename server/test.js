@@ -85,6 +85,14 @@ function generateEmail() {
     return email;
 }
 
+function generateRandomPhoneNumber() {
+    // Generate a random 10-digit phone number
+    const areaCode = Math.floor(Math.random() * 900) + 100; // 100-999
+    const prefix = Math.floor(Math.random() * 900) + 100;   // 100-999
+    const lineNumber = Math.floor(Math.random() * 9000) + 1000; // 1000-9999
+    return `${areaCode}${prefix}${lineNumber}`;
+}
+
 function generateRandomName() {
     const firstNames = ["John", "Jane", "Alex", "Emily", "Chris", "Katie", "Michael", "Laura"];
     const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis"];
@@ -102,8 +110,8 @@ function generateRandomName() {
 }
 
 const randomName = generateRandomName();
-
 const newEmail = generateEmail();
+const randomPhoneNumber = generateRandomPhoneNumber();
 
 function generateRandomLocation() {
     const cities = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego"];
@@ -122,20 +130,20 @@ const randomLocation = generateRandomLocation();
 // Sample data for testing
 const signupData = {
     full_name: randomName.fullName,
-    phone: '1234567890',
+    phone: randomPhoneNumber,
     email: newEmail,
     password: '123'
 };
 
-const signinData = {
-    email: '1@c.com',
+let signinData = {
+    email: newEmail,
     password: '123'
 };
 
 const updateProfileData = {
     firstName: randomName.firstName,
     lastName: randomName.lastName,
-    phone: '0987654321',
+    phone: randomPhoneNumber,
     email: newEmail,
     location: randomLocation,
     photo: 'photo_url2',
@@ -150,6 +158,9 @@ async function testSignup(asEmployer) {
         const response = await axios.post(`${BASE_URL}/signup`, signupData);
         console.log(`${response.status} ${response.statusText}\n`);
         console.log('Signup Response:', response.data);
+        signinData.email = signupData.email;
+        signinData.password = '123';
+        console.log(signupData);
     } catch (error) {
         console.error('Signup error:', error.response.data);
     }
@@ -313,20 +324,206 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function generateRandomJobTitle() {
+    const roles = [
+        "Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer",
+        "DevOps Engineer", "Data Engineer", "Machine Learning Engineer", "Product Manager",
+        "UX Designer", "UI Developer", "Mobile Developer", "Cloud Architect",
+        "Security Engineer", "QA Engineer", "Technical Lead", "Scrum Master"
+    ];
+    const levels = ["Junior", "Mid-Level", "Senior", "Lead", "Principal", "Staff"];
+    const role = roles[Math.floor(Math.random() * roles.length)];
+    const level = levels[Math.floor(Math.random() * levels.length)];
+    return `${level} ${role}`;
+}
+
+function generateRandomCompany() {
+    const companies = [
+        { name: "Tech Solutions Inc.", website: "https://techsolutions.com" },
+        { name: "Innovate Systems", website: "https://innovatesystems.com" },
+        { name: "Digital Dynamics", website: "https://digitaldynamics.com" },
+        { name: "Cloud Tech Solutions", website: "https://cloudtech.com" },
+        { name: "DataFlow Systems", website: "https://dataflow.com" },
+        { name: "Smart Software Solutions", website: "https://smartsoftware.com" },
+        { name: "Future Tech Innovations", website: "https://futuretech.com" },
+        { name: "Global Digital Solutions", website: "https://globaldigital.com" },
+        { name: "Enterprise Software Co.", website: "https://enterprisesoftware.com" },
+        { name: "NextGen Technologies", website: "https://nextgen.com" }
+    ];
+    return companies[Math.floor(Math.random() * companies.length)];
+}
+
+function generateRandomSalary() {
+    const baseSalaries = {
+        "Junior": { min: 70000, max: 100000 },
+        "Mid-Level": { min: 100000, max: 150000 },
+        "Senior": { min: 150000, max: 200000 },
+        "Lead": { min: 180000, max: 250000 },
+        "Principal": { min: 200000, max: 300000 },
+        "Staff": { min: 250000, max: 350000 }
+    };
+    const level = Object.keys(baseSalaries)[Math.floor(Math.random() * Object.keys(baseSalaries).length)];
+    const range = baseSalaries[level];
+    const min = range.min;
+    const max = range.max;
+    const salary = Math.floor(Math.random() * (max - min + 1)) + min;
+    return `$${salary.toLocaleString()} - $${(salary + 30000).toLocaleString()}`;
+}
+
+function generateRandomBenefits() {
+    const allBenefits = [
+        "Health Insurance", "Dental Insurance", "Vision Insurance", "401(k) with Company Match",
+        "Remote Work", "Flexible Hours", "Unlimited PTO", "Professional Development Budget",
+        "Gym Membership", "Mental Health Support", "Parental Leave", "Stock Options",
+        "Commuter Benefits", "Home Office Setup", "Annual Bonus", "Team Events"
+    ];
+    const numBenefits = Math.floor(Math.random() * 6) + 4; // 4-10 benefits
+    const shuffled = allBenefits.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, numBenefits);
+}
+
+function generateRandomLocations() {
+    const locations = [
+        ["San Francisco, CA", "Remote"],
+        ["New York, NY", "Remote"],
+        ["Seattle, WA", "Remote"],
+        ["Austin, TX", "Remote"],
+        ["Boston, MA", "Remote"],
+        ["Chicago, IL", "Remote"],
+        ["Denver, CO", "Remote"],
+        ["Atlanta, GA", "Remote"],
+        ["Remote Only"],
+        ["Los Angeles, CA", "Remote"]
+    ];
+    return locations[Math.floor(Math.random() * locations.length)];
+}
+
+function generateRandomSchedule() {
+    const schedules = ["Full-time", "Full-time (Remote)", "Full-time (Hybrid)", "Full-time (Flexible)"];
+    return schedules[Math.floor(Math.random() * schedules.length)];
+}
+
+function generateRandomSkills() {
+    const allSkills = [
+        "JavaScript", "TypeScript", "React", "Node.js", "Python", "Java", "Go", "Rust",
+        "AWS", "Azure", "GCP", "Docker", "Kubernetes", "Terraform", "CI/CD", "Git",
+        "MongoDB", "PostgreSQL", "Redis", "GraphQL", "REST APIs", "Microservices",
+        "Agile", "Scrum", "JIRA", "Confluence", "Figma", "Adobe XD", "UI/UX Design",
+        "Machine Learning", "Data Science", "Big Data", "DevOps", "Security"
+    ];
+    const numSkills = Math.floor(Math.random() * 5) + 5; // 5-10 skills
+    const shuffled = allSkills.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, numSkills);
+}
+
+function generateRandomJobDescription(title, company) {
+    const templates = [
+        `We are seeking a ${title} to join ${company}'s engineering team. The ideal candidate will have strong experience with modern web technologies and a passion for building scalable applications. You'll work on cutting-edge projects and collaborate with a talented team of engineers.`,
+        
+        `${company} is looking for a ${title} to help us build the next generation of our platform. You'll be responsible for developing and maintaining our core systems, working with cross-functional teams, and mentoring junior developers.`,
+        
+        `Join ${company}'s engineering team as a ${title} and help us shape the future of technology. You'll work on challenging problems, contribute to our architecture decisions, and help us maintain high code quality standards.`,
+        
+        `We're hiring a ${title} at ${company} to help us scale our infrastructure and improve our development processes. You'll work on both frontend and backend systems, participate in code reviews, and help us maintain our high performance standards.`,
+        
+        `${company} is seeking a ${title} to join our growing team. You'll work on complex technical challenges, help us improve our development practices, and contribute to our product roadmap.`
+    ];
+    return templates[Math.floor(Math.random() * templates.length)];
+}
+
+async function testCreateJobPosting() {
+    try {
+        // Create a sample job posting payload
+        const jobData = {
+            title: "Senior Software Engineer",
+            companyName: "Tech Solutions Inc.",
+            companyWebsite: "https://techsolutions.com",
+            salaryRange: "$120,000 - $150,000",
+            benefits: ["Health Insurance", "401(k)", "Remote Work", "Flexible Hours"],
+            locations: ["San Francisco, CA", "Remote"],
+            schedule: "Full-time",
+            jobDescription: "We are looking for an experienced software engineer to join our team. The ideal candidate will have strong experience with React, Node.js, and cloud technologies.",
+            skills: ["React", "Node.js", "MongoDB", "AWS", "TypeScript"]
+        };
+
+        // Make the POST request to create a job posting
+        const response = await axios.post(`${BASE_URL}/jobs`, jobData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        // Log the response status and data
+        console.log(`${response.status} ${response.statusText}\n`);
+        console.log('Create Job Posting Response:', response.data);
+
+    } catch (error) {
+        // Log any error that occurs
+        console.error('Create job posting error:', error.response ? error.response.data : error.message);
+    }
+}
+
+async function testCreateMultipleJobPostings() {
+    try {
+        console.log("Creating multiple job postings...");
+        
+        for (let i = 0; i < 10; i++) {
+            const title = generateRandomJobTitle();
+            const company = generateRandomCompany();
+            
+            const jobData = {
+                title: title,
+                companyName: company.name,
+                companyWebsite: company.website,
+                salaryRange: generateRandomSalary(),
+                benefits: generateRandomBenefits(),
+                locations: generateRandomLocations(),
+                schedule: generateRandomSchedule(),
+                jobDescription: generateRandomJobDescription(title, company.name),
+                skills: generateRandomSkills()
+            };
+
+            // Make the POST request to create a job posting
+            const response = await axios.post(`${BASE_URL}/jobs`, jobData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log(`\nCreated job posting ${i + 1}/10:`);
+            console.log(`Title: ${title}`);
+            console.log(`Company: ${company.name}`);
+            console.log(`Status: ${response.status} ${response.statusText}`);
+            console.log(`Job ID: ${response.data.jobId}`);
+            
+            // Add a small delay between requests to avoid overwhelming the server
+            await delay(1000);
+        }
+
+        console.log("\nAll job postings created successfully!");
+
+    } catch (error) {
+        console.error('Error creating multiple job postings:', error.response ? error.response.data : error.message);
+    }
+}
+
 // Run tests
 (async function () {
     const asEmployer = true; // set this to false to register as an applicant/job seeker
-    //await testSignup(asEmployer);
+    await testSignup(asEmployer);
     await testSignin();
     //await testProfile();
     //await testUpdateProfile();
     // await testApplyForJob();
     //await testGetApplications();
-    await testGetMessages();
-    await testSendMessage();
-    await testGetRecentContacts();
+    //await testCreateJobPosting();
+    await testCreateMultipleJobPostings();
+    //await testGetMessages();
+    //await testSendMessage();
+    //await testGetRecentContacts();
     //await testLogout();
-
 })();
 
 

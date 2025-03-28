@@ -193,7 +193,7 @@ function App() {
               element={<EmployerApplicationTracker />}
             />
             <Route path="/messenger" element={<Messenger />} />
-            <Route path="/jobs/:jobId" element={<Details />} />
+            <Route path="/jobs/:jobId/:returnTo" element={<Details />} />
           </Routes>
         </main>
       </div>
