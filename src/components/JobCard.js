@@ -1,4 +1,5 @@
 import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/JobCard.css";
 import { TokenContext } from "./TokenContext";
 
@@ -15,6 +16,7 @@ const JobCard = ({
   skills,
   onApplyClick,
 }) => {
+  const navigate = useNavigate();
   const { employerFlag } = useContext(TokenContext);
   const [slide, setSlide] = useState(false);
   const [showDetailsWindow, setShowDetailsWindow] = useState(false);
@@ -31,13 +33,7 @@ const JobCard = ({
 
   // Toggle details window and job card slide
   const handleDetails = () => {
-    if (showDetailsWindow) {
-      setSlide(false);
-      setShowDetailsWindow(false);
-    } else {
-      setSlide(true);
-      setShowDetailsWindow(true);
-    }
+    navigate(`/jobs/${job_id}`);
   };
 
   return (

@@ -1,11 +1,11 @@
 // File: /src/components/Swipe.js
 import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Swipe.css';
 import axios from 'axios';
 import { ThumbsUp, ThumbsDown } from 'lucide-react'; // Import icons
 import NotificationBanner from './NotificationBanner';
 import { TokenContext } from './TokenContext';
-import JobDetailsPopup from './JobDetailsPopup';
 
 // Define swipe mode constants
 const APPLY = 1;
@@ -13,6 +13,7 @@ const IGNORE = 2;
 
 // A simple single-card "infinite" swiping component
 const Swipe = () => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0); // Which job we're on
   const [isSwiping, setIsSwiping] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -25,9 +26,6 @@ const Swipe = () => {
   const [jobs, setJobs] = useState([]);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
-  const [selectedJob, setSelectedJob] = useState(null);
-
-  // The currently visible job object
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -216,11 +214,9 @@ const Swipe = () => {
   const getNextIndex = (current) => (current + 1) % jobs.length;
 
   const handleCardTap = (job) => {
-    setSelectedJob(job);
-  };
-
-  const handleClosePopup = () => {
-    setSelectedJob(null);
+    if (!isSwiping) {
+      navigate(`/jobs/${job._id}`);
+    }
   };
 
   const renderCard = (job, index, isCurrent = false) => {
@@ -256,7 +252,7 @@ const Swipe = () => {
         onMouseDown={isCurrent ? handleMouseDown : undefined}
         onMouseMove={isCurrent ? handleMouseMove : undefined}
         onMouseUp={isCurrent ? handleMouseUp : undefined}
-        onClick={() => !isSwiping && handleCardTap(job)}
+        onClick={() => handleCardTap(job)}
       >
         <h2>{job.title}</h2>
         <p>
@@ -306,12 +302,6 @@ const Swipe = () => {
             renderCard(jobs[getNextIndex(currentIndex)], getNextIndex(currentIndex))}
           {renderCard(jobs[currentIndex], currentIndex, true)}
         </>
-      )}
-      {selectedJob && (
-        <JobDetailsPopup
-          job={selectedJob}
-          onClose={handleClosePopup}
-        />
       )}
     </div>
   );

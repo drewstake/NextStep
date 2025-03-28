@@ -313,6 +313,39 @@ client
     });
 
     /* ------------------
+       Get Single Job by ID
+    ------------------ */
+    app.get("/jobs/:jobId", async (req, res) => {
+      try {
+        const collection = db.collection("Jobs");
+        const jobId = req.params.jobId;
+        
+        console.log("Fetching job with ID:", jobId);
+        
+        // Validate if the jobId is a valid MongoDB ObjectId
+        if (!ObjectId.isValid(jobId)) {
+          console.error("Invalid job ID format:", jobId);
+          return res.status(400).json({ error: "Invalid job ID format" });
+        }
+
+        const job = await collection.findOne({
+          _id: ObjectId.createFromHexString(jobId)
+        });
+
+        if (!job) {
+          console.error("Job not found with ID:", jobId);
+          return res.status(404).json({ error: "Job not found" });
+        }
+
+        console.log("Job found:", job._id);
+        res.status(200).json(job);
+      } catch (error) {
+        console.error("Error fetching job:", error);
+        res.status(500).json({ error: "Failed to fetch job details" });
+      }
+    });
+
+    /* ------------------
        Browse Jobs
     ------------------ */
     app.get("/jobs", async (req, res) => {
