@@ -112,13 +112,13 @@
 }
 
 .swipe-direction-label.left {
-  left: 400px;
+  left: calc(50% - 350px);
   top: 50%;
   transform: translateY(-50%);
 }
 
 .swipe-direction-label.right {
-  right: 385px;
+  left: calc(50% + 173px);
   top: 50%;
   transform: translateY(-50%);
 }
