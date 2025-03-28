@@ -67,7 +67,7 @@ const Details = () => {
       {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
 
       <div className="details-content">
-        <button className="close-button" onClick={() => navigate("/jobs")}>
+        <button className="close-button" onClick={handleBackToJobs}>
           ×
         </button>
 
