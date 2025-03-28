@@ -8,14 +8,27 @@ import NotificationBanner from '../components/NotificationBanner';
 
 // Define swipe mode constants
 const APPLY = 1;
-const IGNORE = 2;
 
 const BrowseJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const { token, setToken } = useContext(TokenContext);
+  const { token } = useContext(TokenContext);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        // Replace the URL with your actual API endpoint.
+        const response = await axios.get('http://localhost:4000/jobs?keyword=');
+        setJobs(response.data);
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+      }
+    };
+
+    fetchJobs();
+  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();

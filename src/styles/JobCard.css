@@ -88,15 +88,10 @@
   padding: 20px;
 }
 
-.job-details {
-  margin-bottom: 16px;
-}
-
 .job-info-row {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 8px;
 }
 
 .salary-range,
