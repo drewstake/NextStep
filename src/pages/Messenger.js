@@ -33,19 +33,17 @@ const Messenger = () => {
   const refreshMessages = useCallback(async () => {
     console.log("Refreshing messages");
     fetchMyExchanges();
-    fetchRecentContactsAndUnreadCounts();
-    if (selectedContact?.contactId) {
-      // Find the current contact in contacts array to check unread count
-       const currentContact = contacts.find(c => c.contactId === selectedContact.contactId);
+    if (selectedContact?._id) {
+      const currentContact = contacts.find(c => c._id === selectedContact._id);
       if (currentContact?.countOfUnreadMessages > 0) {
         console.log("Refreshed messages");
         setTimeout(() => {
-          markMessagesAsRead(selectedContact.contactId);
+          markMessagesAsRead(selectedContact._id);
         }, 1000);
       }
-     }
-     console.log("Exiting refreshMessages");
-    }, [fetchMyExchanges, selectedContact, contacts]);
+    }
+    console.log("Exiting refreshMessages");
+  }, [fetchMyExchanges, selectedContact, contacts]);
 
   useEffect(() => {
     console.log("Messenger useEffect");
@@ -55,11 +53,28 @@ const Messenger = () => {
     fetchRecentContactsAndUnreadCounts();
     fetchAllUsers();
 
-    const interval = setInterval(refreshMessages, 2000);
+    const interval = setInterval(() => {
+      fetchMyExchanges();
+      fetchRecentContactsAndUnreadCounts();
+    }, 2000);
+
     return () => clearInterval(interval);
-  }, [token, fetchMyExchanges, refreshMessages]);
+  }, [token, fetchMyExchanges]);
+
+  // Separate effect for handling unread messages
+  useEffect(() => {
+    if (selectedContact?._id) {
+      const currentContact = contacts.find(c => c._id === selectedContact._id);
+      if (currentContact?.countOfUnreadMessages > 0) {
+        setTimeout(() => {
+          markMessagesAsRead(selectedContact._id);
+        }, 1000);
+      }
+    }
+  }, [selectedContact, contacts]);
 
   const setSelectedContactForNewMessage = async (pickedUser) => {
+    console.log("Setting selected contact for new message " + pickedUser.full_name + " " + pickedUser.email + " " + pickedUser._id);
     setNewContact(pickedUser);
     setSelectedContact(pickedUser);
   };
@@ -78,7 +93,7 @@ const Messenger = () => {
     setSelectedContact(user);
     //    fetchMyExchanges();
     console.log("User selected");
-    markMessagesAsRead(user.contactId);
+    markMessagesAsRead(user._id);
     fetchRecentContactsAndUnreadCounts();
   };
 
@@ -101,11 +116,11 @@ const Messenger = () => {
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!selectedContact?.contactId || !newMessage || !token) return;
+    if (!selectedContact?._id || !newMessage || !token) return;
 
     try {
       await axiosInstance.post('/messages', {
-        receiverId: selectedContact.contactId,
+        receiverId: selectedContact._id,
         content: newMessage?.trim()
       });
 
@@ -125,12 +140,16 @@ const Messenger = () => {
   );
 
   // Find the selected user's name from the most recent message
-  const selectedUserName = messages.find(msg =>
-    (msg.senderId === selectedContact.contactId && msg.receiverId === currentUserId) ||
-    (msg.receiverId === selectedContact.contactId && msg.senderId === currentUserId)
-  )?.senderId === selectedContact?.contactId ?
-    messages.find(msg => msg.senderId === selectedContact.contactId)?.senderName :
-    messages.find(msg => msg.receiverId === selectedContact.contactId)?.receiverName || '';
+  let selectedUserName = messages.find(msg =>
+    (msg.senderId === selectedContact._id && msg.receiverId === currentUserId) ||
+    (msg.receiverId === selectedContact._id && msg.senderId === currentUserId)
+  )?.senderId === selectedContact?._id ?
+    messages.find(msg => msg.senderId === selectedContact._id)?.senderName :
+    messages.find(msg => msg.receiverId === selectedContact._id)?.receiverName || '';
+
+    if(!selectedUserName && newContact){
+      selectedUserName = newContact.full_name;
+    }
 
   if (!token) {
     navigate('/login');
@@ -153,13 +172,13 @@ const Messenger = () => {
         <div className="users-list">
           {contacts.map(contact => (
             <div
-              key={contact.contactId}
-              className={`user-item ${selectedContact?.contactId === contact.contactId ? 'selected' : ''}`}
+              key={contact._id}
+              className={`user-item ${selectedContact?._id === contact._id ? 'selected' : ''}`}
               onClick={() => handleUserSelected(contact)}
             >
               <div className="user-item-name">
                 <div className="contact-name">
-                  {contact.contactName}
+                  {contact.full_name}
                   {contact.countOfUnreadMessages > 0 && (
                     <span className="unread-badge">{contact.countOfUnreadMessages}</span>
                   )}
@@ -213,7 +232,7 @@ const Messenger = () => {
 
       {/* Messages Panel */}
       <div className="messenger-main">
-        {selectedContact?.contactId ? (
+        {selectedContact?._id || newContact ? (
           <>
             <div className="messenger-header">
               <h3>{newContact ? newContact.full_name : selectedUserName}</h3>
@@ -221,14 +240,14 @@ const Messenger = () => {
             <div className="messages-container">
               {messages
                 .filter(msg =>
-                  (msg.senderId === selectedContact?.contactId && msg.receiverId === currentUserId) ||
-                  (msg.receiverId === selectedContact?.contactId && msg.senderId === currentUserId)
+                  (msg.senderId === selectedContact?._id && msg.receiverId === currentUserId) ||
+                  (msg.receiverId === selectedContact?._id && msg.senderId === currentUserId)
                 )
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
                 .map(message => (
                   <div
                     key={message._id}
-                    className={`message ${message.senderId === selectedContact?.contactId ? 'received' : 'sent'}`}
+                    className={`message ${message.senderId === selectedContact?._id ? 'received' : 'sent'}`}
                   >
                     <div className="message-content">{message.content}</div>
                     <div className="message-time">

@@ -514,9 +514,9 @@ async function testCreateMultipleJobPostings() {
 
 // Run tests
 (async function () {
-    //const asEmployer = true; // set this to false to register as an applicant/job seeker
+    const asEmployer = true; // set this to false to register as an applicant/job seeker
     //await testSignup(asEmployer);
-    //await testSignin('1@c.com');
+    await testSignin('1@c.com');
     //await testProfile();
     //await testUpdateProfile();
     // await testApplyForJob();
@@ -525,7 +525,7 @@ async function testCreateMultipleJobPostings() {
    // await testCreateMultipleJobPostings();
     //await testGetMessages();
     //await testSendMessage();
-    //await testGetRecentContacts();
+    await testGetRecentContacts();
     //await testLogout();
 })();
 

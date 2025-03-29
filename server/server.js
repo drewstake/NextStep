@@ -835,13 +835,13 @@ client
           {
             $project: {
               _id: 0,
-              contactId: '$_id.contactId',
-              contactName: '$_id.contactName',
+              _id: '$_id.contactId',
+              full_name: '$_id.contactName',
               countOfUnreadMessages: 1,
             },
           },
           {
-            $sort: { contactName: 1, contactId: 1 },
+            $sort: { full_name: 1, _id: 1 },
           },
         ]).toArray();
 
