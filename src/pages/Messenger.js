@@ -1,87 +1,99 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { TokenContext } from '../components/TokenContext';
 import jwt_decode from 'jwt-decode';
+import axiosInstance from '../utils/axiosConfig';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Messenger.css';
 
 const Messenger = () => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [newSelectedUser, setNewSelectedUser] = useState('');
+  const [contacts, setContacts] = useState([]);
+  const [newContact, setNewContact] = useState('');
   const [allUsers, setAllUsers] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedContact, setSelectedContact] = useState('');
   const [showNewMessagePanel, setShowNewMessagePanel] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { token } = useContext(TokenContext);
   const decoded = token ? jwt_decode(token) : null;
   const currentUserId = decoded?.id;
 
-  useEffect(() => {
-    if (!token) return;
-
-    fetchMessages();
-    fetchUsers();
-    fetchAllUsers();
-
-    const interval = setInterval(fetchMessages, 5000);
-    return () => clearInterval(interval);
-  }, [selectedUser, token]);
-
-  const setSelectAccount = async (pickedUser) => {
-//    alert("test " + pickedUser._id + " " + pickedUser.full_name);
-    users.push({"_id": pickedUser._id, "full_name": pickedUser.full_name || pickedUser.email });
-    setNewSelectedUser(pickedUser);
-    setSelectedUser(pickedUser._id);
-  };
-
-  const fetchMessages = async () => {
+  const fetchMyExchanges = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await fetch('http://localhost:4000/messages', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch messages');
-      const data = await response.json();
-      console.log("newSelectedUser " + newSelectedUser);
-      if (newSelectedUser) {
-        data.push({"_id": newSelectedUser._id, "full_name": newSelectedUser.full_name || newSelectedUser.email });
-      }
-      setMessages(data);
+      const response = await axiosInstance.get('/messages');
+      //console.log("Fetching messages");
+      setMessages(response.data);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
+  }, [token]);
+
+  const refreshMessages = useCallback(async () => {
+    console.log("Refreshing messages");
+    fetchMyExchanges();
+    fetchRecentContactsAndUnreadCounts();
+    if (selectedContact?.contactId) {
+      // Find the current contact in contacts array to check unread count
+       const currentContact = contacts.find(c => c.contactId === selectedContact.contactId);
+      if (currentContact?.countOfUnreadMessages > 0) {
+        console.log("Refreshed messages");
+        setTimeout(() => {
+          markMessagesAsRead(selectedContact.contactId);
+        }, 1000);
+      }
+     }
+     console.log("Exiting refreshMessages");
+    }, [fetchMyExchanges, selectedContact, contacts]);
+
+  useEffect(() => {
+    console.log("Messenger useEffect");
+    if (!token) return;
+
+    fetchMyExchanges();
+    fetchRecentContactsAndUnreadCounts();
+    fetchAllUsers();
+
+    const interval = setInterval(refreshMessages, 2000);
+    return () => clearInterval(interval);
+  }, [token, fetchMyExchanges, refreshMessages]);
+
+  const setSelectedContactForNewMessage = async (pickedUser) => {
+    setNewContact(pickedUser);
+    setSelectedContact(pickedUser);
   };
 
-  const fetchUsers = async () => {
-    if (!token) return;
+  const fetchRecentContactsAndUnreadCounts = async () => {
     try {
-      const response = await fetch('http://localhost:4000/myRecentContacts', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      console.log("fetchUsers reloaded");
-      if (!response.ok) throw new Error('Failed to fetch users');
-      const data = await response.json();
-      setUsers(data);
+      const response = await axiosInstance.get('/myRecentContacts');
+      setContacts(response.data);
+     // console.log("Fetching recent contacts");
     } catch (error) {
       console.error('Error fetching users:', error);
     }
   };
 
-  const fetchAllUsers = async () => {
-    if (!token) return;
+  const handleUserSelected = (user) => {
+    setSelectedContact(user);
+    //    fetchMyExchanges();
+    console.log("User selected");
+    markMessagesAsRead(user.contactId);
+    fetchRecentContactsAndUnreadCounts();
+  };
+
+  const markMessagesAsRead = async (contactId) => {
     try {
-      const response = await fetch('http://localhost:4000/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch users');
-      const data = await response.json();
-      setAllUsers(data);
+      await axiosInstance.put(`/messages/read/${contactId}`);
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const response = await axiosInstance.get('/users');
+      setAllUsers(response.data);
     } catch (error) {
       console.error('Error fetching all users:', error);
     }
@@ -89,30 +101,23 @@ const Messenger = () => {
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!selectedUser || !newMessage.trim() || !token) return;
+    if (!selectedContact?.contactId || !newMessage || !token) return;
 
     try {
-      const response = await fetch('http://localhost:4000/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          receiverId: selectedUser,
-          content: newMessage.trim()
-        })
+      await axiosInstance.post('/messages', {
+        receiverId: selectedContact.contactId,
+        content: newMessage?.trim()
       });
 
-      if (!response.ok) throw new Error('Failed to send message');
-
       setNewMessage('');
-      fetchMessages(); // Refresh messages after sending
+      setNewContact('');
+      refreshMessages(); // Refresh messages after sending
     } catch (error) {
       console.error('Error sending message:', error);
     }
   };
 
+  // Filter users based on search query
   const filteredUsers = allUsers.filter(user =>
     (user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchQuery.toLowerCase())) &&
@@ -120,22 +125,15 @@ const Messenger = () => {
   );
 
   // Find the selected user's name from the most recent message
-  const selectedUserName = messages
-    .find(msg =>
-      (msg.senderId === selectedUser && msg.receiverId === currentUserId) ||
-      (msg.receiverId === selectedUser && msg.senderId === currentUserId)
-    )?.senderId === selectedUser ?
-    messages.find(msg => msg.senderId === selectedUser)?.senderName :
-    messages.find(msg => msg.receiverId === selectedUser)?.receiverName || '';
+  const selectedUserName = messages.find(msg =>
+    (msg.senderId === selectedContact.contactId && msg.receiverId === currentUserId) ||
+    (msg.receiverId === selectedContact.contactId && msg.senderId === currentUserId)
+  )?.senderId === selectedContact?.contactId ?
+    messages.find(msg => msg.senderId === selectedContact.contactId)?.senderName :
+    messages.find(msg => msg.receiverId === selectedContact.contactId)?.receiverName || '';
 
   if (!token) {
-    return (
-      <div className="messenger-container">
-        <div className="no-chat-selected">
-          <p>Please log in to use the messenger</p>
-        </div>
-      </div>
-    );
+    navigate('/login');
   }
 
   return (
@@ -147,28 +145,38 @@ const Messenger = () => {
             className="new-message-btn"
             onClick={() => setShowNewMessagePanel(true)}
           >
-            New Message
+            New
           </button>
         </div>
 
+        {/* Contacts list */}
         <div className="users-list">
-          {users.map(user => (
+          {contacts.map(contact => (
             <div
-              key={user._id}
-              className={`user-item ${selectedUser === user._id ? 'selected' : ''}`}
-              onClick={() => setSelectedUser(user._id)}
+              key={contact.contactId}
+              className={`user-item ${selectedContact?.contactId === contact.contactId ? 'selected' : ''}`}
+              onClick={() => handleUserSelected(contact)}
             >
-              <div className="user-item-name">{user.full_name || user.email}</div>
+              <div className="user-item-name">
+                <div className="contact-name">
+                  {contact.contactName}
+                  {contact.countOfUnreadMessages > 0 && (
+                    <span className="unread-badge">{contact.countOfUnreadMessages}</span>
+                  )}
+                </div>
+                <div className="contact-email">{contact.email}</div>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
+      {/* New message panel */}
       {showNewMessagePanel && (
         <div className="new-message-panel">
           <div className="new-message-content">
             <div className="new-message-header">
-              <h3>New Message</h3>
+              <h3>Select a Contact</h3>
               <button
                 className="close-btn"
                 onClick={() => setShowNewMessagePanel(false)}
@@ -191,7 +199,7 @@ const Messenger = () => {
                   key={user._id}
                   className="user-item"
                   onClick={() => {
-                    setSelectAccount(user);
+                    setSelectedContactForNewMessage(user);
                     setShowNewMessagePanel(false);
                   }}
                 >
@@ -203,22 +211,24 @@ const Messenger = () => {
         </div>
       )}
 
+      {/* Messages Panel */}
       <div className="messenger-main">
-        {selectedUser ? (
+        {selectedContact?.contactId ? (
           <>
             <div className="messenger-header">
+              <h3>{newContact ? newContact.full_name : selectedUserName}</h3>
             </div>
             <div className="messages-container">
               {messages
                 .filter(msg =>
-                  (msg.senderId === selectedUser && msg.receiverId === currentUserId) ||
-                  (msg.receiverId === selectedUser && msg.senderId === currentUserId)
+                  (msg.senderId === selectedContact?.contactId && msg.receiverId === currentUserId) ||
+                  (msg.receiverId === selectedContact?.contactId && msg.senderId === currentUserId)
                 )
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
                 .map(message => (
                   <div
                     key={message._id}
-                    className={`message ${message.senderId === selectedUser ? 'received' : 'sent'}`}
+                    className={`message ${message.senderId === selectedContact?.contactId ? 'received' : 'sent'}`}
                   >
                     <div className="message-content">{message.content}</div>
                     <div className="message-time">
@@ -238,7 +248,7 @@ const Messenger = () => {
               <button
                 type="submit"
                 className="send-button"
-                disabled={!newMessage.trim()}
+                disabled={!newMessage?.trim()}
               >
                 Send
               </button>

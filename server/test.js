@@ -166,8 +166,11 @@ async function testSignup(asEmployer) {
     }
 }
 
-async function testSignin() {
+async function testSignin(email='') {
     try {
+        if(email) {
+            signinData.email = email;
+        }
         const response = await axios.post(`${BASE_URL}/signin`, signinData);
         console.log(`${response.status} ${response.statusText}\n`);
         console.log('Signin Response:', response.data);
@@ -280,7 +283,7 @@ async function testSendMessage() {
     try {
         // Create a sample message payload
         const messageData = {
-            receiverId: '67ad5570864e201691652f4a', // Replace with actual receiver ID
+            receiverId: '67a51b9435b4200ce77fae57', // Replace with actual receiver ID
             content: 'Hello! This is a test message.'
         };
 
@@ -511,15 +514,15 @@ async function testCreateMultipleJobPostings() {
 
 // Run tests
 (async function () {
-    const asEmployer = true; // set this to false to register as an applicant/job seeker
-    await testSignup(asEmployer);
-    await testSignin();
+    //const asEmployer = true; // set this to false to register as an applicant/job seeker
+    //await testSignup(asEmployer);
+    //await testSignin('1@c.com');
     //await testProfile();
     //await testUpdateProfile();
     // await testApplyForJob();
     //await testGetApplications();
     //await testCreateJobPosting();
-    await testCreateMultipleJobPostings();
+   // await testCreateMultipleJobPostings();
     //await testGetMessages();
     //await testSendMessage();
     //await testGetRecentContacts();

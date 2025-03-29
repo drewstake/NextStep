@@ -7,8 +7,7 @@
   display: flex;
   justify-content: center;
   padding: 10px;
-  background-color: rgba(0, 0, 0, 0.9);
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.2s ease-out;
 }
 
 .notification-banner-content {

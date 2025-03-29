@@ -11,8 +11,8 @@ const NotificationBanner = ({ message, type = 'error', onDismiss, duration = 700
   }, [duration, onDismiss]);
 
   return (
-    <div className={`notification-banner ${type}`}>
-      <div className="notification-banner-content">
+    <div className={`notification-banner ${type}`} onClick={onDismiss}>
+      <div className="notification-banner-content" onClick={onDismiss}>
         <span className="notification-banner-message">{message}</span>
         <button className="notification-banner-dismiss" onClick={onDismiss}>×</button>
       </div>

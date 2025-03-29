@@ -47,6 +47,7 @@
   font-size: 1.5rem;
   margin: 0 0 4px 0;
   color: #0073b1;
+  text-align: left;
 }
 
 .company-info {
@@ -110,6 +111,10 @@
   line-height: 1.6;
   margin-bottom: 16px;
   color: #444;
+}
+
+.job-description p{
+  text-align: left;
 }
 
 .job-skills {

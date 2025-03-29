@@ -179,8 +179,8 @@ h6 span {
   line-height: 22px;
   letter-spacing: 0.5px;
   outline: none;
-  color: #fff;
-  background-color: rgba(255, 255, 255, 0.1);
+  color: #3f3f3f;
+  background-color: rgba(255, 255, 255, 0.952);
   border: none;
   transition: all 200ms linear;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
@@ -202,7 +202,7 @@ h6 span {
   line-height: 48px;
   text-align: left;
   transition: all 200ms linear;
-  color: #fff;
+  color: purple;
 }
 
 .login-btn {

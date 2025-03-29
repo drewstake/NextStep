@@ -84,14 +84,14 @@ client
         const applicationsCollection = db.collection("applications");
         const { _id, swipeMode } = req.body;
 
-        console.log("Swipe mode: ", swipeMode);
+        //console.log("Swipe mode: ", swipeMode);
 
         const applicationInfo = {
           job_id: ObjectId.createFromHexString(_id),
           user_id: ObjectId.createFromHexString(req.user.id),
           date_applied: new Date(),
           status: swipeMode === APPLY ? "Pending" :
-          swipeMode === IGNORE ? "Ignored" : "Unknown",
+            swipeMode === IGNORE ? "Ignored" : "Unknown",
           swipeMode: swipeMode,
           swipeAction: swipeMode === APPLY ? "Applied" :
             swipeMode === IGNORE ? "Ignored" : "Unknown"
@@ -282,7 +282,6 @@ client
     ------------------ */
     app.get("/applications", verifyToken, async (req, res) => {
       try {
-        console.log("Auth token is valid. in applications list");
 
         const applicationsCollection = db.collection("applications");
 
@@ -319,7 +318,7 @@ client
       try {
         const collection = db.collection("Jobs");
         const jobId = req.params.jobId;
-                
+
         // Validate if the jobId is a valid MongoDB ObjectId
         if (!ObjectId.isValid(jobId)) {
           console.error("Invalid job ID format:", jobId);
@@ -347,17 +346,6 @@ client
     ------------------ */
     app.get("/jobs", async (req, res) => {
       try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (token) {
-          try {
-            jwt.verify(token, process.env.JWT_SECRET);
-            console.log("Auth token is valid");
-          } catch (error) {
-            // For optional auth, we don't need to handle token errors
-          }
-        }
-
-        console.log("in job search");
         const collection = db.collection("Jobs");
 
         const queryText = req.query.q || "";
@@ -504,7 +492,6 @@ client
     ------------------ */
     app.get("/profile", verifyToken, async (req, res) => {
       try {
-        console.log("Auth token is valid");
 
         const collection = db.collection("users");
         const profile = await collection.findOne(
@@ -536,7 +523,6 @@ client
       upload.fields([{ name: "photo" }, { name: "resume" }]),
       async (req, res) => {
         try {
-          console.log("Auth token is valid");
 
           const { firstName, lastName, phone, email, location, full_name } = req.body;
           const collection = db.collection("users");
@@ -672,7 +658,8 @@ client
               email: 1
             }
           }
-        ).toArray();
+        ).sort({ full_name: 1 })
+        .toArray();
 
         res.status(200).json(users);
       } catch (error) {
@@ -699,6 +686,48 @@ client
       } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Failed to retrieve messages" });
+      }
+    });
+
+
+  /* ------------------
+       Mark Messages as Read
+    ------------------ */
+      app.put("/messages/read/:contactId", verifyToken, async (req, res) => {
+      try {
+        const messagesCollection = db.collection("messages");
+        const contactId = req.params.contactId;
+        const userId = req.user.id;
+        const readTimestamp = new Date(); // Current timestamp
+    
+        const result = await messagesCollection.updateMany(
+          {
+            $and: [
+              {
+                $or: [
+                  { senderId: contactId, receiverId: userId },
+                  { senderId: userId, receiverId: contactId },
+                ],
+              },
+              { read_timestamp: null }, // Only mark unread messages
+            ],
+          },
+          {
+            $set: { read_timestamp: readTimestamp },
+          }
+        );
+    
+        if (result.modifiedCount > 0) {
+          res.status(200).json({
+            message: `${result.modifiedCount} messages marked as read.`,
+            modifiedCount: result.modifiedCount,
+          });
+        } else {
+          res.status(200).json({ message: "No unread messages found for this contact." });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to mark messages as read" });
       }
     });
 
@@ -760,33 +789,63 @@ client
         const messagesCollection = db.collection("messages");
         const usersCollection = db.collection("users");
 
-        // Get all messages where user is either sender or receiver
-        const messages = await messagesCollection.find({
-          $or: [
-            { senderId: req.user.id },
-            { receiverId: req.user.id }
-          ]
-        }).toArray();
-
-        // Extract unique user IDs from messages
-        const uniqueUserIds = [...new Set(messages.flatMap(msg => 
-          [msg.senderId, msg.receiverId].filter(id => id !== req.user.id)
-        ))];
-
-        // Get user details for these IDs
-        const contacts = await usersCollection.find(
-          { _id: { $in: uniqueUserIds.map(id => ObjectId.createFromHexString(id)) } },
+        const contacts = await messagesCollection.aggregate([
           {
-            projection: {
-              _id: 1,
-              full_name: 1,
-              first_name: 1,
-              last_name: 1,
-              email: 1,
-              encodedPhoto: 1
-            }
-          }
-        ).toArray();
+            $match: {
+              $or: [
+                { senderId: req.user.id },
+                { receiverId: req.user.id },
+              ],
+            },
+          },
+          {
+            $group: {
+              _id: {
+                contactId: {
+                  $cond: {
+                    if: { $eq: ['$senderId', req.user.id] },
+                    then: '$receiverId',
+                    else: '$senderId',
+                  },
+                },
+                contactName: {
+                  $cond: {
+                    if: { $eq: ['$senderId', req.user.id] },
+                    then: '$receiverName',
+                    else: '$senderName',
+                  },
+                },
+              },
+              countOfUnreadMessages: {
+                $sum: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        { $eq: ['$receiverId', req.user.id] },
+                        { $not: ['$read_timestamp'] },
+                      ],
+                    },
+                    then: 1,
+                    else: 0,
+                  },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              contactId: '$_id.contactId',
+              contactName: '$_id.contactName',
+              countOfUnreadMessages: 1,
+            },
+          },
+          {
+            $sort: { contactName: 1, contactId: 1 },
+          },
+        ]).toArray();
+
+        //console.log('Unique Contacts with Unread Message Counts:', contacts);
 
         res.status(200).json(contacts);
       } catch (error) {
