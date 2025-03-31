@@ -9,6 +9,25 @@ const ApplicantProfile = () => {
   const [applicant, setApplicant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showResumeOverlay, setShowResumeOverlay] = useState(false);
+
+  const formatPhoneNumber = (phone) => {
+    if (!phone) return '';
+    // If phone already contains hyphens, return as is
+    if (phone.includes('-')) return phone;
+    
+    // Remove all non-digit characters
+    const cleaned = phone.replace(/\D/g, '');
+    // Format as XXX-XXX-XXXX
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      console.log(match);
+      return `${match[1]}-${match[2]}-${match[3]}`;
+    }else{
+      console.log(phone);
+      return phone;
+    }
+  };
 
   useEffect(() => {
     const fetchApplicantProfile = async () => {
@@ -55,35 +74,50 @@ const ApplicantProfile = () => {
         )}
         <div className="profile-info">
           <h2>{applicant.full_name}</h2>
-          <p className="email">{applicant.email}</p>
-          {applicant.phone && <p className="phone">{applicant.phone}</p>}
+          <a href={`mailto:${applicant.email}`} className="email-link">
+            {applicant.email}
+          </a>
+          {applicant.phone && <p className="phone">{formatPhoneNumber(applicant.phone)}</p>}
           {applicant.location && <p className="location">{applicant.location}</p>}
         </div>
-      </div>
-
-      <div className="profile-section">
-        <h3>Resume</h3>
+        {applicant.resumeFile && (
+          <button 
+            onClick={() => setShowResumeOverlay(true)}
+            className="view-resume-button"
+          >
+            View Resume
+          </button>
+        )}
         {applicant.resumeFile ? (
           <div className="resume-section">
-            {applicant.resumeFile.mimetype === 'application/pdf' ? (
-              <div className="pdf-viewer">
-                <iframe
-                  src={`data:${applicant.resumeFile.mimetype};base64,${applicant.resumeFile.buffer}`}
-                  title={`${applicant.full_name}'s resume`}
-                  width="100%"
-                  height="600px"
-                  style={{ border: 'none' }}
-                />
+            {showResumeOverlay && (
+              <div className="resume-overlay">
+                <div className="resume-overlay-content">
+                  <button 
+                    className="close-overlay-button"
+                    onClick={() => setShowResumeOverlay(false)}
+                  >
+                    ×
+                  </button>
+                  {applicant.resumeFile.mimetype === 'application/pdf' ? (
+                    <iframe
+                      src={`data:${applicant.resumeFile.mimetype};base64,${applicant.resumeFile.buffer}`}
+                      title={`${applicant.full_name}'s resume`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 'none' }}
+                    />
+                  ) : (
+                    <iframe
+                      src={`data:${applicant.resumeFile.mimetype};base64,${applicant.resumeFile.buffer}`}
+                      title={`${applicant.full_name}'s resume`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 'none' }}
+                    />
+                  )}
+                </div>
               </div>
-            ) : (
-              <a 
-                href={`data:${applicant.resumeFile.mimetype};base64,${applicant.resumeFile.buffer}`}
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="view-resume-button"
-              >
-                View Resume
-              </a>
             )}
           </div>
         ) : (
