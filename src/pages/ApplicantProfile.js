@@ -77,7 +77,11 @@ const ApplicantProfile = () => {
           <a href={`mailto:${applicant.email}`} className="email-link">
             {applicant.email}
           </a>
-          {applicant.phone && <p className="phone">{formatPhoneNumber(applicant.phone)}</p>}
+          {applicant.phone && (
+            <a href={`tel:${applicant.phone.replace(/\D/g, '')}`} className="phone-link">
+              {formatPhoneNumber(applicant.phone)}
+            </a>
+          )}
           {applicant.location && <p className="location">{applicant.location}</p>}
         </div>
         {applicant.resumeFile && (

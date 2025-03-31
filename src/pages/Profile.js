@@ -113,7 +113,7 @@ const Profile = () => {
         {/* Photo Upload - Only show for non-employers */}
         {!employerFlag && (
           <>
-            <div>
+            <div className="profile-image-container">
               {profileImage ? (
                 <img className="profile-image"
                   src={profileImage}
@@ -130,8 +130,14 @@ const Profile = () => {
                   }}
                 />
               )}
+              <div 
+                className="profile-image-edit"
+                onClick={() => document.getElementById('photo-upload').click()}
+              >
+                ✎
+              </div>
             </div>
-            <div className="profile-form-group">
+            <div className="profile-form-group-hidden">
               <label className="profile-label">Profile Photo</label>
               <label htmlFor="photo-upload" className="upload-label">Upload...</label>
               <input
@@ -148,8 +154,13 @@ const Profile = () => {
         {/* Resume Upload - Only show for non-employers */}
         {!employerFlag && (
           <div className="profile-form-group">
-            <label className="profile-label">Resume (PDF or DOC)</label>
-            <label htmlFor="resume-upload" className="upload-label">Upload...</label>
+            <label className="profile-label"></label>
+            <label htmlFor="resume-upload" className="upload-button">
+              <span>
+                Upload Resume
+              </span>
+            </label>
+            (afterwards, remember to select "Save Profile" to upload)
             <input
               id="resume-upload"
               type="file"
@@ -239,7 +250,7 @@ const Profile = () => {
         </div>
 
         {/* Submit */}
-        <button type="submit" className="profile-button">Submit Profile</button>
+        <button type="submit" className="profile-button">Save Profile</button>
       </form>
     </div>
   );

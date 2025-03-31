@@ -49,17 +49,17 @@
   opacity: 0.9;
 }
 
-.email-link {
+.email-link, .phone-link {
   display: block;
   margin: 5px 0;
   font-size: 1.1rem;
   opacity: 0.9;
-  color: #fff;
-  text-decoration: none;
+  color: #ff7dad;
+  text-decoration: underline;
   transition: opacity 0.2s;
 }
 
-.email-link:hover {
+.email-link:hover, .phone-link:hover {
   opacity: 1;
   text-decoration: underline;
 }
