@@ -854,6 +854,400 @@ client
       }
     });
 
+    /* ------------------
+       Get Employer's Applications with Details
+    ------------------ */
+    app.get("/employer/applications", verifyToken, async (req, res) => {
+      try {
+        // Verify that the user is an employer
+        if (!req.user.isEmployer) {
+          return res.status(403).json({ error: "Only employers can access this endpoint" });
+        }
+
+        const applicationsCollection = db.collection("applications");
+        const jobsCollection = db.collection("Jobs");
+        const usersCollection = db.collection("users");
+
+        // Get all applications for jobs posted by this employer
+        const applications = await applicationsCollection.aggregate([
+          {
+            $lookup: {
+              from: "Jobs",
+              localField: "job_id",
+              foreignField: "_id",
+              as: "jobDetails"
+            }
+          },
+          {
+            $unwind: "$jobDetails"
+          },
+          {
+            $match: {
+              "jobDetails.employerId": ObjectId.createFromHexString(req.user.id)
+            }
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "user_id",
+              foreignField: "_id",
+              as: "userDetails"
+            }
+          },
+          {
+            $unwind: "$userDetails"
+          },
+          {
+            $project: {
+              _id: 1,
+              job_id: 1,
+              user_id: 1,
+              date_applied: 1,
+              status: 1,
+              swipeMode: 1,
+              swipeAction: 1,
+              "jobDetails.title": 1,
+              "jobDetails.companyName": 1,
+              "userDetails.full_name": 1,
+              "userDetails.resume": 1
+            }
+          }
+        ]).toArray();
+
+        // Transform the data to match the frontend format
+        const transformedApplications = applications.map(app => ({
+          id: app._id,
+          applicantId: app.user_id,
+          applicantName: app.userDetails.full_name,
+          position: app.jobDetails.title,
+          dateApplied: new Date(app.date_applied).toLocaleDateString(),
+          status: app.status,
+          notes: "", // This can be added to the schema if needed
+          resume: app.userDetails.resume,
+          editing: false
+        }));
+
+        res.status(200).json(transformedApplications);
+      } catch (error) {
+        console.error("Error fetching employer applications:", error);
+        res.status(500).json({ error: "Failed to fetch applications" });
+      }
+    });
+
+    /* ------------------
+       Update Application Status
+    ------------------ */
+    app.put("/employer/applications/:applicationId", verifyToken, async (req, res) => {
+      try {
+        // Verify that the user is an employer
+        if (!req.user.isEmployer) {
+          return res.status(403).json({ error: "Only employers can update applications" });
+        }
+
+        const { applicationId } = req.params;
+        const { status, notes } = req.body;
+
+        // Validate status
+        const validStatuses = ["Pending", "Reviewed", "Interviewing", "Offered", "Rejected"];
+        if (!validStatuses.includes(status)) {
+          return res.status(400).json({ error: "Invalid status value" });
+        }
+
+        const applicationsCollection = db.collection("applications");
+        
+        // First verify that this application belongs to a job posted by this employer
+        const application = await applicationsCollection.aggregate([
+          {
+            $match: {
+              _id: ObjectId.createFromHexString(applicationId)
+            }
+          },
+          {
+            $lookup: {
+              from: "Jobs",
+              localField: "job_id",
+              foreignField: "_id",
+              as: "jobDetails"
+            }
+          },
+          {
+            $unwind: "$jobDetails"
+          },
+          {
+            $match: {
+              "jobDetails.employerId": ObjectId.createFromHexString(req.user.id)
+            }
+          }
+        ]).toArray();
+
+        if (application.length === 0) {
+          return res.status(404).json({ error: "Application not found or unauthorized" });
+        }
+
+        // Update the application
+        const result = await applicationsCollection.updateOne(
+          { _id: ObjectId.createFromHexString(applicationId) },
+          { 
+            $set: { 
+              status,
+              updatedAt: new Date()
+            }
+          }
+        );
+
+        if (result.modifiedCount === 0) {
+          return res.status(404).json({ error: "Application not found" });
+        }
+
+        res.status(200).json({ message: "Application status updated successfully" });
+      } catch (error) {
+        console.error("Error updating application status:", error);
+        res.status(500).json({ error: "Failed to update application status" });
+      }
+    });
+
+    /* ------------------
+       Get Application Details
+    ------------------ */
+    app.get("/employer/applications/:applicationId", verifyToken, async (req, res) => {
+      try {
+        // Verify that the user is an employer
+        if (!req.user.isEmployer) {
+          return res.status(403).json({ error: "Only employers can access this endpoint" });
+        }
+
+        const { applicationId } = req.params;
+        const applicationsCollection = db.collection("applications");
+        const jobsCollection = db.collection("Jobs");
+        const usersCollection = db.collection("users");
+
+        const application = await applicationsCollection.aggregate([
+          {
+            $match: {
+              _id: ObjectId.createFromHexString(applicationId)
+            }
+          },
+          {
+            $lookup: {
+              from: "Jobs",
+              localField: "job_id",
+              foreignField: "_id",
+              as: "jobDetails"
+            }
+          },
+          {
+            $unwind: "$jobDetails"
+          },
+          {
+            $match: {
+              "jobDetails.employerId": ObjectId.createFromHexString(req.user.id)
+            }
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "user_id",
+              foreignField: "_id",
+              as: "userDetails"
+            }
+          },
+          {
+            $unwind: "$userDetails"
+          }
+        ]).toArray();
+
+        if (application.length === 0) {
+          return res.status(404).json({ error: "Application not found or unauthorized" });
+        }
+
+        res.status(200).json(application[0]);
+      } catch (error) {
+        console.error("Error fetching application details:", error);
+        res.status(500).json({ error: "Failed to fetch application details" });
+      }
+    });
+
+    app.get("/userProfile/:userId", async (req, res) => {
+      try {
+        const { userId } = req.params;
+        const usersCollection = db.collection("users");
+        const user = await usersCollection.findOne(
+          { _id: ObjectId.createFromHexString(userId) },
+          { projection: { password: 0 } }  // Exclude password field
+        );
+        res.status(200).json(user);
+      } catch (error) {
+        console.error("Error fetching applicant profile:", error);
+        res.status(500).json({ error: "Failed to fetch applicant profile" });
+      }
+    });
+    /* ------------------
+       Update Job Posting
+    ------------------ */
+    app.put("/employer/jobs/:jobId", verifyToken, async (req, res) => {
+      try {
+        if (!req.user.isEmployer) {
+          return res.status(403).json({ error: "Only employers can update jobs" });
+        }
+
+        const { jobId } = req.params;
+        const {
+          title,
+          companyName,
+          companyWebsite,
+          salaryRange,
+          benefits,
+          locations,
+          schedule,
+          jobDescription,
+          skills
+        } = req.body;
+
+        // Validate required fields
+        if (!title || !companyName || !jobDescription) {
+          return res.status(400).json({ error: "Title, company name, and job description are required" });
+        }
+
+        const jobsCollection = db.collection("Jobs");
+
+        // Verify job ownership
+        const job = await jobsCollection.findOne({
+          _id: ObjectId.createFromHexString(jobId),
+          employerId: ObjectId.createFromHexString(req.user.id)
+        });
+
+        if (!job) {
+          return res.status(404).json({ error: "Job not found or unauthorized" });
+        }
+
+        // Update the job
+        const result = await jobsCollection.updateOne(
+          { _id: ObjectId.createFromHexString(jobId) },
+          {
+            $set: {
+              title,
+              companyName,
+              companyWebsite,
+              salaryRange,
+              benefits: Array.isArray(benefits) ? benefits : [benefits],
+              locations: Array.isArray(locations) ? locations : [locations],
+              schedule,
+              jobDescription,
+              skills: Array.isArray(skills) ? skills : [skills],
+              updatedAt: new Date()
+            }
+          }
+        );
+
+        if (result.modifiedCount === 0) {
+          return res.status(404).json({ error: "Job not found" });
+        }
+
+        res.status(200).json({ message: "Job updated successfully" });
+      } catch (error) {
+        console.error("Error updating job:", error);
+        res.status(500).json({ error: "Failed to update job" });
+      }
+    });
+
+    /* ------------------
+       Delete Job Posting
+    ------------------ */
+    app.delete("/employer/jobs/:jobId", verifyToken, async (req, res) => {
+      try {
+        if (!req.user.isEmployer) {
+          return res.status(403).json({ error: "Only employers can delete jobs" });
+        }
+
+        const { jobId } = req.params;
+        const jobsCollection = db.collection("Jobs");
+
+        // Verify job ownership
+        const job = await jobsCollection.findOne({
+          _id: ObjectId.createFromHexString(jobId),
+          employerId: ObjectId.createFromHexString(req.user.id)
+        });
+
+        if (!job) {
+          return res.status(404).json({ error: "Job not found or unauthorized" });
+        }
+
+        // Delete the job
+        const result = await jobsCollection.deleteOne({
+          _id: ObjectId.createFromHexString(jobId)
+        });
+
+        if (result.deletedCount === 0) {
+          return res.status(404).json({ error: "Job not found" });
+        }
+
+        res.status(200).json({ message: "Job deleted successfully" });
+      } catch (error) {
+        console.error("Error deleting job:", error);
+        res.status(500).json({ error: "Failed to delete job" });
+      }
+    });
+
+    /* ------------------
+       Search Employer's Job Postings
+    ------------------ */
+    app.get("/employer/jobs/search", verifyToken, async (req, res) => {
+      try {
+        if (!req.user.isEmployer) {
+          return res.status(403).json({ error: "Only employers can search jobs" });
+        }
+
+        const { query } = req.query;
+        const jobsCollection = db.collection("Jobs");
+        const applicationsCollection = db.collection("applications");
+
+        // First, get all jobs matching the search criteria
+        const jobs = await jobsCollection.aggregate([
+          {
+            $match: {
+              employerId: ObjectId.createFromHexString(req.user.id),
+              $or: [
+                { title: { $regex: query, $options: "i" } },
+                { companyName: { $regex: query, $options: "i" } },
+                { jobDescription: { $regex: query, $options: "i" } },
+                { skills: { $regex: query, $options: "i" } },
+                { locations: { $regex: query, $options: "i" } }
+              ]
+            }
+          },
+          {
+            $lookup: {
+              from: "applications",
+              localField: "_id",
+              foreignField: "job_id",
+              as: "applications"
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              title: 1,
+              companyName: 1,
+              companyWebsite: 1,
+              salaryRange: 1,
+              benefits: 1,
+              locations: 1,
+              schedule: 1,
+              jobDescription: 1,
+              skills: 1,
+              createdAt: 1,
+              applicationCount: { $size: "$applications" }
+            }
+          }
+        ]).toArray();
+
+        res.status(200).json(jobs);
+      } catch (error) {
+        console.error("Error searching jobs:", error);
+        res.status(500).json({ error: "Failed to search jobs" });
+      }
+    });
+
     /******************************************
      *         ROUTES DEFINITION END          *
      ******************************************/

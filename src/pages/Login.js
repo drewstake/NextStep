@@ -43,9 +43,13 @@ const Login = () => {
   useEffect(() => {
     if (token) {
       setToken(token);
-      navigate("/profile");
+      if (employerFlag) {
+        navigate("/employer-dashboard");
+      } else {
+        navigate("/profile");
+      }
     }
-  }, [token, navigate, setToken]);
+  }, [token, navigate, setToken, employerFlag]);
 
   // ======================
   // Phone Verification

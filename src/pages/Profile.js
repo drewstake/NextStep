@@ -21,7 +21,7 @@ const Profile = () => {
 
   const navigate = useNavigate(1);
   //const location = useLocation();
-  const { token, setToken, triggerProfileUpdate } = useContext(TokenContext);
+  const { token, setToken, triggerProfileUpdate, employerFlag } = useContext(TokenContext);
   const [updateFlag] = useState(null);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -110,127 +110,132 @@ const Profile = () => {
       {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
       <h2>Profile</h2>
       <form onSubmit={handleSubmit} className="profile-form">
-        {/* Photo Upload */}
-        <div>
-          {profileImage ? (
-            <img className="profile-image"
-              src={profileImage}
-              alt="Profile"
+        {/* Photo Upload - Only show for non-employers */}
+        {!employerFlag && (
+          <>
+            <div>
+              {profileImage ? (
+                <img className="profile-image"
+                  src={profileImage}
+                  alt="Profile"
+                />
+              ) : (
+                <img
+                  className="profile-image"
+                  src={profilePic}
+                  alt={profilePicAlt}
+                  onError={() => {
+                    setProfilePicAlt("Too many requests");
+                    setProfilePic(null);
+                  }}
+                />
+              )}
+            </div>
+            <div className="profile-form-group">
+              <label className="profile-label">Profile Photo</label>
+              <label htmlFor="photo-upload" className="upload-label">Upload...</label>
+              <input
+                id="photo-upload"
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="file-input"
+              />
+            </div>
+          </>
+        )}
+
+        {/* Resume Upload - Only show for non-employers */}
+        {!employerFlag && (
+          <div className="profile-form-group">
+            <label className="profile-label">Resume (PDF or DOC)</label>
+            <label htmlFor="resume-upload" className="upload-label">Upload...</label>
+            <input
+              id="resume-upload"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleResumeChange}
+              className="file-input"
             />
-          ) : (
-            <img
-              className="profile-image"
-              src={profilePic}
-              alt={profilePicAlt} // Use the state variable for alt text
-              onError={() => {
-                // Simulate an HTTP 409 error by setting the alt text
-                setProfilePicAlt("Too many requests");
-                setProfilePic(null); //clear the image.
-              }}
+          </div>
+        )}
+
+        {/* Name Fields Row */}
+        <div className="profile-form-row">
+          <div className="profile-form-group">
+            <label className="profile-label">Full Name</label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Enter your full name"
+              required
+              className="profile-input"
             />
-          )}
-        </div>
-        <div className="profile-form-group">
-          <label className="profile-label">Profile Photo</label>
-          <label htmlFor="photo-upload" className="upload-label">Upload...</label>
-          <input
-            id="photo-upload"
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoChange}
-            className="file-input"
-          />
+          </div>
+
+          <div className="profile-form-group">
+            <label className="profile-label">First Name</label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Enter your first name"
+              required
+              className="profile-input"
+            />
+          </div>
+
+          <div className="profile-form-group">
+            <label className="profile-label">Last Name</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Enter your last name"
+              required
+              className="profile-input"
+            />
+          </div>
         </div>
 
-        {/* Resume Upload */}
-        <div className="profile-form-group">
-          <label className="profile-label">Resume (PDF or DOC)</label>
-          <label htmlFor="resume-upload" className="upload-label">Upload...</label>
-          <input
-            id="resume-upload"
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={handleResumeChange}
-            className="file-input"
-          />
-        </div>
+        {/* Contact Information Row */}
+        <div className="profile-form-row">
+          <div className="profile-form-group">
+            <label className="profile-label">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="example@email.com"
+              required
+              className="profile-input"
+            />
+          </div>
 
-        {/* Full Name */}
-        <div className="profile-form-group">
-          <label className="profile-label">Full Name</label>
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="Enter your full name"
-            required
-            className="profile-input"
-          />
-        </div>
+          <div className="profile-form-group">
+            <label className="profile-label">Phone Number</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="123-456-7890"
+              required
+              className="profile-input"
+            />
+          </div>
 
-        {/* First Name */}
-        <div className="profile-form-group">
-          <label className="profile-label">First Name</label>
-          <input
-            type="text"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            placeholder="Enter your first name"
-            required
-            className="profile-input"
-          />
-        </div>
-
-        {/* Last Name */}
-        <div className="profile-form-group">
-          <label className="profile-label">Last Name</label>
-          <input
-            type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            placeholder="Enter your last name"
-            required
-            className="profile-input"
-          />
-        </div>
-
-        {/* Phone */}
-        <div className="profile-form-group">
-          <label className="profile-label">Phone Number</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="123-456-7890"
-            required
-            className="profile-input"
-          />
-        </div>
-
-        {/* Email */}
-        <div className="profile-form-group">
-          <label className="profile-label">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="example@email.com"
-            required
-            className="profile-input"
-          />
-        </div>
-
-        {/* Location */}
-        <div className="profile-form-group">
-          <label className="profile-label">Location</label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Enter your location"
-            required
-            className="profile-input"
-          />
+          <div className="profile-form-group">
+            <label className="profile-label">Location</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Enter your location"
+              required
+              className="profile-input"
+            />
+          </div>
         </div>
 
         {/* Submit */}

@@ -30,6 +30,8 @@ const db = client.db(dbName);
 
 const usersCollection = db.collection("users");
 const messagesCollection = db.collection("messages");
+const jobsCollection = db.collection("Jobs");
+const applicationsCollection = db.collection("applications");
 
 const user = await usersCollection.findOne({ email: "1@c.com" });
 console.log("User:", user);
@@ -210,7 +212,7 @@ const duplicateNames = await usersCollection.aggregate([
 ]).toArray();
 
 console.log('Duplicate Names:', duplicateNames);
-
+/* 
 async function deleteDuplicateUsersExcept(
     usersCollection,
     fullName,
@@ -245,10 +247,10 @@ async function deleteDuplicateUsersExcept(
         throw error; // Rethrow the error to be handled upstream if needed
     }
 }
-
+ */
 // Example Usage (assuming you have usersCollection and the data from your prompt)
 // const usersCollection = db.collection("users"); // Replace with your actual collection
-const fullName = "Bryan Mathews";
+/* const fullName = "Bryan Mathews";
 const keepEmail = "1@c.com";
 
 await deleteDuplicateUsersExcept(usersCollection, fullName, keepEmail)
@@ -258,6 +260,33 @@ await deleteDuplicateUsersExcept(usersCollection, fullName, keepEmail)
     .catch((error) => {
         console.error("Error deleting duplicate users:", error);
     });
+ */
+
+let recordId = '67a51b9435b4200ce77fae57';
+
+let record = await usersCollection.findOne(
+    { _id: ObjectId.createFromHexString(recordId) }, // Use the ObjectId directly
+    { projection: { password: 0, encodedPhoto: 0} } // The projection option
+);
+
+console.log("user:", record)
+
+const jId = '67e6103f4f519648100abe4a';
+
+const job = await jobsCollection.find(
+    { _id: ObjectId.createFromHexString(jId) }
+).toArray();
+
+console.log("job:", job)
+
+const aId = '67e8456c5d4c32ccc02c8b46';
+
+const application = await applicationsCollection.find(
+    { _id: ObjectId.createFromHexString(aId) }
+).toArray();
+
+console.log("application:", application)
+
 
 client.close();
 

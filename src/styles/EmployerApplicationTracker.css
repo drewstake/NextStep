@@ -68,10 +68,24 @@
   
   .employer-tracker-table input,
   .employer-tracker-table select {
-    background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 4px;
-    color: #fff;
     padding: 4px 8px;
+  }
+  
+  .applicant-name-link {
+    color: rgb(255 122 163);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    text-align: left;
+    width: 100%;
+  }
+  
+  .applicant-name-link:hover {
+    opacity: 0.8;
   }
   

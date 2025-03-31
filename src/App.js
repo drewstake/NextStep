@@ -9,8 +9,10 @@ import BrowseJobs from "./pages/BrowseJobs";
 import YourJobs from "./pages/YourJobs";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import EmployerApplicationTracker from "./pages/EmployerApplicationTracker";
+import ManageJobPostings from "./pages/ManageJobPostings";
 import Messenger from "./pages/Messenger";
 import Details from "./pages/Details";
+import ApplicantProfile from "./pages/ApplicantProfile";
 import "./styles/App.css";
 import { TokenContext } from "./components/TokenContext";
 import axios from "axios";
@@ -35,7 +37,7 @@ function App() {
           });
           const user = response.data;
           // Use full_name if available, otherwise combine first and last name
-          const displayName = user.full_name || 
+          const displayName = user.full_name ||
             `${user.first_name || ''} ${user.last_name || ''}`.trim();
           setUserName(displayName);
         } catch (error) {
@@ -83,9 +85,15 @@ function App() {
           ) : (
             <>
               <nav className="app-nav">
-                <Link className="app-nav__link" to="/">
-                  Home
-                </Link>
+                {(token && employerFlag)? (
+                  <Link className="app-nav__link" to="/employer-dashboard">
+                    Home
+                  </Link>
+                ) : (
+                  <Link className="app-nav__link" to="/">
+                    Home
+                  </Link>
+                )}
                 <Link className="app-nav__link" to="/about">
                   About
                 </Link>
@@ -95,11 +103,6 @@ function App() {
                 {token && (
                   <Link className="app-nav__link" to="/profile">
                     Profile: {userName}
-                  </Link>
-                )}
-                {token && employerFlag && (
-                  <Link className="app-nav__link" to="/employer-dashboard">
-                    Employer Dashboard
                   </Link>
                 )}
                 {token && (
@@ -188,12 +191,14 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/your-jobs" element={<YourJobs />} />
             <Route path="/employer-dashboard" element={<EmployerDashboard />} />
+            <Route path="/manage-job-postings" element={<ManageJobPostings />} />
             <Route
               path="/employer-application-tracker"
               element={<EmployerApplicationTracker />}
             />
             <Route path="/messenger" element={<Messenger />} />
             <Route path="/jobs/:jobId/:returnTo" element={<Details />} />
+            <Route path="/applicant-profile/:userId" element={<ApplicantProfile />} />
           </Routes>
         </main>
       </div>

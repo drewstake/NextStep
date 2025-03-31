@@ -1,3 +1,5 @@
+// Details.js handles the job details page that appears when a user clicks on a job card in the Home page
+// It also is the page that appears when a user clicks "Details" button in /jobs page that opens from the "Jobs" menu
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";

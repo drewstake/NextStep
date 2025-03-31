@@ -62,17 +62,16 @@ const JobCard = ({
         </div>
         <div className="job-card-body">
           <div className="job-details">
-            <div className="job-info-row">
-              <p className="salary-range">
-                <strong>Salary:</strong> {salaryRange}
-              </p>
-              <p className="job-schedule">
-                <strong>Schedule:</strong> {schedule}
-              </p>
-            </div>
-            <div className="job-description">
-              <p>{description}</p>
-            </div>
+          <p className="job-description">{description}</p>
+          </div>
+          <div className="job-details">
+            <p className="salary-range">
+              <strong>Salary:</strong> {salaryRange}
+            </p>
+            <p className="job-schedule">
+              <strong>Schedule:</strong> {schedule}
+            </p>
+
           </div>
           {skills && skills.length > 0 && (
             <div className="job-skills">

@@ -7,14 +7,12 @@ const EmployerDashboard = () => {
   const navigate = useNavigate();
 
   const functions = [
-    { label: "Create Job Posting", action: () => { /* TODO: Hook up create job posting functionality */ } },
-    { label: "Manage Job Postings", action: () => { /* TODO: Hook up manage job postings functionality */ } },
-    { label: "Applicant Tracking", action: () => { navigate('/employer-application-tracker'); } },
-    { label: "Communication Tools", action: () => { /* TODO: Hook up communication tools functionality */ } },
-    { label: "Analytics & Reporting", action: () => { /* TODO: Hook up analytics & reporting functionality */ } },
-    { label: "Candidate Profiles", action: () => { /* TODO: Hook up candidate profiles functionality */ } },
-    { label: "Company Profile", action: () => { /* TODO: Hook up company profile & branding functionality */ } },
-    { label: "Integrations", action: () => { /* TODO: Hook up integrations functionality */ } }
+    { label: "Manage Job Postings", action: () => { navigate('/manage-job-postings'); }, isUrl: true },
+    { label: "Applicant Tracking", action: () => { navigate('/employer-application-tracker'); }, isUrl: true },
+    { label: "Communication Tools", action: () => { /* TODO: Hook up communication tools functionality */ }, isUrl: false },
+    { label: "Analytics & Reporting", action: () => { /* TODO: Hook up analytics & reporting functionality */ }, isUrl: false },
+    { label: "Company Profile", action: () => { /* TODO: Hook up company profile & branding functionality */ }, isUrl: false },
+    { label: "Integrations", action: () => { /* TODO: Hook up integrations functionality */ }, isUrl: false }
   ];
 
   return (
@@ -22,7 +20,11 @@ const EmployerDashboard = () => {
       <h1>Employer Dashboard</h1>
       <div className="dashboard-boxes">
         {functions.map((func, index) => (
-          <div key={index} className="dashboard-box" onClick={func.action}>
+          <div 
+            key={index} 
+            className={`dashboard-box ${func.isUrl ? 'has-url' : ''}`} 
+            onClick={func.action}
+          >
             {func.label}
           </div>
         ))}

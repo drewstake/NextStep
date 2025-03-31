@@ -19,7 +19,7 @@
   /* Grid container with 4 columns (each 400px wide) and 2 rows */
   .dashboard-boxes {
     display: grid;
-    grid-template-columns: repeat(4, 300px); /* Each box is now 300px wide */
+    grid-template-columns: repeat(3, 300px); /* Each box is now 300px wide */
     grid-auto-rows: 200px;                  /* Height is now 200px */
     gap: 20px;
     justify-content: center;
@@ -44,5 +44,16 @@
   .dashboard-box:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(255, 118, 136, 0.4);
+  }
+
+  /* Glow effect for boxes with URLs */
+  .dashboard-box.has-url {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+  }
+
+  .dashboard-box.has-url:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
   }
   

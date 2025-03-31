@@ -1,6 +1,6 @@
 /* File: /src/styles/Profile.css */
 .profile-container {
-  max-width: 500px;
+  max-width: 1000px;
   margin: 30px auto;
   background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
   padding: 20px;
@@ -9,20 +9,34 @@
   min-height: 100vh; /* Ensures the container covers the full viewport */
 }
 
+.profile-container h2 {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+
 .profile-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
+}
+
+.profile-form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .profile-form-group {
   display: flex;
   flex-direction: column;
+  gap: 5px;
 }
 
 .profile-label {
   font-weight: bold;
-  margin-bottom: 5px;
+  color: #fff;
 }
 
 .profile-input {
@@ -30,6 +44,12 @@
   border-radius: 4px;
   border: none;
   font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.profile-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .file-input {
@@ -41,6 +61,8 @@
   border-radius: 2px;
   border-width: 1px;
   border-color: aliceblue;
+  color: #fff;
+  cursor: pointer;
 }
 
 .profile-button {
@@ -52,6 +74,14 @@
   color: #fff;
   cursor: pointer;
   font-size: 1rem;
+  margin: 20px auto 0;
+  width: 300px;
+  display: block;
+  transition: background-color 0.3s ease;
+}
+
+.profile-button:hover {
+  background-color: #ff6ba1;
 }
 
 .profile-image {
@@ -59,4 +89,19 @@
   height: 120px;
   display: block;
   margin: 0 auto 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    margin: 15px;
+    padding: 15px;
+  }
+
+  .profile-form-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
 }

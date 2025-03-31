@@ -8,7 +8,7 @@
 }
 
 /* Job card styles remain unchanged */
-.job-card {
+.job-card-container .job-card {
   background: #fff;
   border: 1px solid #e1e4e8;
   border-radius: 8px;
@@ -92,12 +92,23 @@
 .job-info-row {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 .salary-range,
 .job-schedule {
+  flex: 1;
   font-size: 1rem;
+  margin: 0;
+}
+
+.salary-range {
+  text-align: left;
+}
+
+.job-schedule {
+  text-align: right;
 }
 
 .job-benefits {
@@ -109,12 +120,18 @@
 .job-description {
   font-size: 1rem;
   line-height: 1.6;
-  margin-bottom: 16px;
+  margin-bottom: 0px;
   color: #444;
+  text-align: justify;
+}
+
+.job-details {
+  margin: 0px;
 }
 
 .job-description p{
-  text-align: left;
+  text-align: justify;
+  margin-bottom: 0px;
 }
 
 .job-skills {
