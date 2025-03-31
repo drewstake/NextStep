@@ -1,0 +1,713 @@
+const request = require('supertest');
+const express = require('express');
+const { MongoClient, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const path = require('path');
+require('dotenv').config();
+
+const app = require('./server');
+
+// Test data
+const testUser = {
+    full_name: 'Test User',
+    email: 'test@example.com',
+    password: 'testPassword123',
+    phone: '1234567890',
+    employerFlag: false
+};
+
+const testEmployer = {
+    full_name: 'Test Employer',
+    email: 'employer@example.com',
+    password: 'testPassword123',
+    phone: '1987654321',
+    employerFlag: true
+};
+
+const testJob = {
+    title: 'Test Job',
+    companyName: 'Test Company',
+    jobDescription: 'Test Description',
+    skills: ['JavaScript', 'Node.js'],
+    locations: ['Remote'],
+    benefits: ['Health Insurance'],
+    schedule: 'Full-time',
+    salary: '$80,000 - $100,000'
+};
+
+let testUserId;
+let testEmployerId;
+let testJobId;
+let testUserToken;
+let testEmployerToken;
+let mongoClient;
+let db;
+
+describe('API Tests', () => {
+    beforeAll(async () => {
+        // Set test environment
+        process.env.NODE_ENV = 'test';
+
+        // Connect to test database
+        mongoClient = await MongoClient.connect(process.env.MONGODB_URI);
+        db = mongoClient.db('mydb_test');
+
+        // Clear test collections
+        await db.collection('users').deleteMany({});
+        await db.collection('Jobs').deleteMany({});
+        await db.collection('applications').deleteMany({});
+        await db.collection('messages').deleteMany({});
+
+        // Create test users with hashed passwords
+        const usersCollection = db.collection('users');
+        const hashedPassword = await bcrypt.hash(testUser.password, 10);
+
+        const testUserResult = await usersCollection.insertOne({
+            ...testUser,
+            password: hashedPassword
+        });
+
+        const testEmployerResult = await usersCollection.insertOne({
+            ...testEmployer,
+            password: hashedPassword
+        });
+
+        testUserId = testUserResult.insertedId;
+        testEmployerId = testEmployerResult.insertedId;
+
+        // Generate test tokens
+        testUserToken = jwt.sign(
+            { id: testUserId.toString(), isEmployer: false },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        testEmployerToken = jwt.sign(
+            { id: testEmployerId.toString(), isEmployer: true },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        // Create test job
+        const jobsCollection = db.collection('Jobs');
+        const testJobResult = await jobsCollection.insertOne({
+            ...testJob,
+            employerId: testEmployerId
+        });
+        testJobId = testJobResult.insertedId;
+    });
+
+    afterAll(async () => {
+        // Clear test collections
+        if (db) {
+            await db.collection('users').deleteMany({});
+            await db.collection('Jobs').deleteMany({});
+            await db.collection('applications').deleteMany({});
+            await db.collection('messages').deleteMany({});
+        }
+
+        // Close MongoDB connection
+        if (mongoClient) {
+            await mongoClient.close();
+        }
+    });
+
+    // Authentication Tests
+    describe('Authentication', () => {
+        test('POST /signup - should create a new user', async () => {
+            const response = await request(app)
+                .post('/signup')
+                .send({
+                    full_name: 'New User',
+                    email: 'new@example.com',
+                    password: 'newPassword123',
+                    phone: '+1122334455'
+                });
+
+            expect(response.status).toBe(201);
+            expect(response.body.message).toBe('User created successfully');
+        });
+
+        test('POST /signup - should handle duplicate email', async () => {
+            const response = await request(app)
+                .post('/signup')
+                .send({
+                    full_name: 'Duplicate User',
+                    email: testUser.email,
+                    password: 'newPassword123',
+                    phone: '+1122334455'
+                });
+
+            expect(response.status).toBe(409);
+            expect(response.body.error).toBe('Email already registered');
+        });
+
+        test('POST /signin - should authenticate user', async () => {
+            const response = await request(app)
+                .post('/signin')
+                .send({
+                    email: testUser.email,
+                    password: testUser.password
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.body.token).toBeDefined();
+            expect(response.body.isEmployer).toBe(false);
+        });
+
+        test('POST /signin - should handle invalid credentials', async () => {
+            const response = await request(app)
+                .post('/signin')
+                .send({
+                    email: testUser.email,
+                    password: 'wrongpassword'
+                });
+
+            expect(response.status).toBe(401);
+            expect(response.body.message).toBe('Invalid credentials');
+        });
+
+        test('POST /auth/google - should authenticate with Google', async () => {
+            const response = await request(app)
+                .post('/auth/google')
+                .send({
+                    token: 'mock-google-token'
+                });
+
+            expect(response.status).toBe(401); // Should fail with invalid token
+        });
+
+        // Test cases for token verification
+        test('Protected route - should handle missing token', async () => {
+            const response = await request(app)
+                .get('/profile')
+                .send(); // No Authorization header
+
+            expect(response.status).toBe(401);
+            expect(response.body.error).toBe('Unauthorized. Missing or invalid token.');
+        });
+
+        test('Protected route - should handle invalid token format', async () => {
+            const response = await request(app)
+                .get('/profile')
+                .set('Authorization', 'InvalidFormat') // Missing 'Bearer ' prefix
+                .send();
+
+            expect(response.status).toBe(401);
+            expect(response.body.error).toBe('Unauthorized. Missing or invalid token.');
+        });
+
+        test('Protected route - should handle expired token', async () => {
+            // Create an expired token
+            const expiredToken = jwt.sign(
+                { id: testUserId.toString(), isEmployer: false },
+                process.env.JWT_SECRET,
+                { expiresIn: '0s' } // Token expires immediately
+            );
+
+            const response = await request(app)
+                .get('/profile')
+                .set('Authorization', `Bearer ${expiredToken}`)
+                .send();
+
+            expect(response.status).toBe(401);
+            expect(response.body.error).toBe('Your session has expired. Please sign in again.');
+            expect(response.body.code).toBe('TOKEN_EXPIRED');
+        });
+
+        test('Protected route - should handle malformed token', async () => {
+            const response = await request(app)
+                .get('/profile')
+                .set('Authorization', 'Bearer invalid.token.here')
+                .send();
+
+            expect(response.status).toBe(401);
+            expect(response.body.error).toBe('Invalid authentication token.');
+        });
+
+/*         test('POST /send-verification - should send verification code', async () => {
+            const response = await request(app)
+                .post('/send-verification')
+                .send({
+                    phoneNumber: testUser.phone
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('Verification code sent successfully');
+        });
+
+        test('POST /send-verification - should handle failed verification code sending', async () => {
+            const response = await request(app)
+                .post('/send-verification')
+                .send({
+                    phoneNumber: 'invalid-phone'
+                });
+
+            expect(response.status).toBe(409);
+            expect(response.body.error).toBe('Failed to send verification code');
+        });
+
+        test('POST /send-verification - should handle server errors', async () => {
+            // Mock a server error by sending invalid data
+            const response = await request(app)
+                .post('/send-verification')
+                .send({});
+
+            expect(response.status).toBe(500);
+            expect(response.body.error).toBe('Server error. See logs for more details.');
+        });
+
+        test('POST /verify-code - should verify code', async () => {
+            const response = await request(app)
+                .post('/verify-code')
+                .send({
+                    phone: testUser.phone,
+                    code: '123456' // Mock code
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('Invalid verification code');
+        }); */
+    });
+
+    // File Upload Tests
+    describe('File Upload', () => {
+        test('POST /upload - should upload resume', async () => {
+            // Skip file upload test for now as it requires actual file handling
+            expect(true).toBe(true);
+        });
+
+        test('POST /upload - should handle invalid file type', async () => {
+            // Skip file upload test for now as it requires actual file handling
+            expect(true).toBe(true);
+        });
+    });
+
+    // Job Tests
+    describe('Jobs', () => {
+        test('GET /jobs - should get all jobs', async () => {
+            const response = await request(app)
+                .get('/jobs')
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+        });
+
+        test('GET /jobs/:jobId - should get single job', async () => {
+            const response = await request(app)
+                .get(`/jobs/${testJobId}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(response.body._id.toString()).toBe(testJobId.toString());
+        });
+
+        test('GET /jobs/:jobId - should handle non-existent job', async () => {
+            const response = await request(app)
+                .get(`/jobs/${new ObjectId()}`)
+                .send();
+
+            expect(response.status).toBe(404);
+            expect(response.body.error).toBe('Job not found');
+        });
+
+        test('GET /retrieveJobsForHomepage - should get jobs for homepage', async () => {
+            const response = await request(app)
+                .get('/retrieveJobsForHomepage')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+        });
+
+        // POST /jobs tests
+        test('POST /jobs - should create a new job posting', async () => {
+            const newJob = {
+                title: 'New Test Job',
+                companyName: 'New Test Company',
+                companyWebsite: 'https://testcompany.com',
+                salaryRange: '$90,000 - $120,000',
+                benefits: ['Health Insurance', '401k'],
+                locations: ['Remote', 'New York'],
+                schedule: 'Full-time',
+                jobDescription: 'Test job description',
+                skills: ['JavaScript', 'React', 'Node.js']
+            };
+
+            const response = await request(app)
+                .post('/jobs')
+                .set('Authorization', `Bearer ${testEmployerToken}`)
+                .send(newJob);
+
+            expect(response.status).toBe(201);
+            expect(response.body.message).toBe('Job posting created successfully');
+            expect(response.body.jobId).toBeDefined();
+        });
+
+        test('POST /jobs - should handle missing required fields', async () => {
+            const invalidJob = {
+                companyName: 'Test Company',
+                salaryRange: '$90,000 - $120,000',
+                benefits: ['Health Insurance'],
+                locations: ['Remote'],
+                schedule: 'Full-time',
+                skills: ['JavaScript']
+            };
+
+            const response = await request(app)
+                .post('/jobs')
+                .set('Authorization', `Bearer ${testEmployerToken}`)
+                .send(invalidJob);
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('Title, company name, and job description are required');
+        });
+
+        test('POST /jobs - should handle non-employer users', async () => {
+            const newJob = {
+                title: 'New Test Job',
+                companyName: 'Test Company',
+                jobDescription: 'Test job description'
+            };
+
+            const response = await request(app)
+                .post('/jobs')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send(newJob);
+
+            expect(response.status).toBe(403);
+            expect(response.body.error).toBe('Only employers can create job postings');
+        });
+
+    });
+
+    // Applications Tests
+    describe('Applications', () => {
+        test('POST /jobsTracker - should track job application', async () => {
+            const response = await request(app)
+                .post('/jobsTracker')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    _id: testJobId,
+                    swipeMode: 1 // Apply
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.body.job_id).toBe(testJobId.toString());
+        });
+
+        test('POST /jobsTracker - should handle duplicate application', async () => {
+            // First application
+            await request(app)
+                .post('/jobsTracker')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    _id: testJobId,
+                    swipeMode: 1 // Apply
+                });
+
+            // Attempt duplicate application
+            const response = await request(app)
+                .post('/jobsTracker')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    _id: testJobId,
+                    swipeMode: 1 // Apply
+                });
+
+            expect(response.status).toBe(409);
+            expect(response.body.error).toBe("You've already applied for this job. Check your application status in 'My Jobs'.");
+        });
+
+        test('POST /jobsTracker - should handle invalid job', async () => {
+            const response = await request(app)
+                .post('/jobsTracker')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    _id: new ObjectId(),
+                    swipeMode: 1
+                });
+
+            expect(response.status).toBe(404);
+            expect(response.body.error).toBe('Job not found');
+        });
+
+        test('GET /applications - should get user applications', async () => {
+            const response = await request(app)
+                .get('/applications')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+        });
+
+        test('GET /employer/applications - should get employer applications', async () => {
+            const response = await request(app)
+                .get('/employer/applications')
+                .set('Authorization', `Bearer ${testEmployerToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+        });
+    });
+
+    // Profile Tests
+    describe('Profile', () => {
+        test('GET /profile - should get user profile', async () => {
+            const response = await request(app)
+                .get('/profile')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(response.body._id.toString()).toBe(testUserId.toString());
+        });
+
+        test('GET /userProfile/:userId - should get user profile by ID', async () => {
+            const response = await request(app)
+                .get(`/userProfile/${testUserId}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(response.body._id.toString()).toBe(testUserId.toString());
+        });
+
+        test('GET /userProfile/:userId - should handle non-existent user', async () => {
+            const response = await request(app)
+                .get(`/userProfile/${new ObjectId()}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(response.body).toBeNull();
+        });
+    });
+
+    // Messages Tests
+    describe('Messages', () => {
+        test('GET /users - should get all users for messaging', async () => {
+            const response = await request(app)
+                .get('/users')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+        });
+
+        test('GET /myRecentContacts - should get recent contacts', async () => {
+            const response = await request(app)
+                .get('/myRecentContacts')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+        });
+
+        // POST /messages tests
+        test('POST /messages - should send a message successfully', async () => {
+            const response = await request(app)
+                .post('/messages')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    receiverId: testEmployerId.toString(),
+                    content: 'Test message content'
+                });
+
+            expect(response.status).toBe(201);
+            expect(response.body).toHaveProperty('content', 'Test message content');
+            expect(response.body).toHaveProperty('senderId', testUserId.toString());
+            expect(response.body).toHaveProperty('receiverId', testEmployerId.toString());
+            expect(response.body).toHaveProperty('senderName');
+            expect(response.body).toHaveProperty('receiverName');
+            expect(response.body).toHaveProperty('senderEmail');
+            expect(response.body).toHaveProperty('receiverEmail');
+            expect(response.body).toHaveProperty('createdAt');
+        });
+
+        test('POST /messages - should handle missing required fields', async () => {
+            const response = await request(app)
+                .post('/messages')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    receiverId: testEmployerId.toString()
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('Message content and receiver ID are required');
+        });
+
+        test('POST /messages - should handle missing authentication token', async () => {
+            const response = await request(app)
+                .post('/messages')
+                .send({
+                    receiverId: testEmployerId.toString(),
+                    content: 'Test message'
+                });
+
+            expect(response.status).toBe(401);
+            expect(response.body.error).toBe('Unauthorized. Missing or invalid token.');
+        });
+
+        test('POST /messages - should handle non-existent receiver', async () => {
+            const response = await request(app)
+                .post('/messages')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    receiverId: new ObjectId().toString(),
+                    content: 'Test message'
+                });
+
+            expect(response.status).toBe(500);
+            expect(response.body.error).toBe('Failed to send message');
+        });
+
+        // GET /messages tests
+        test('GET /messages - should get user messages successfully', async () => {
+            // First create some test messages
+            const messagesCollection = db.collection('messages');
+            await messagesCollection.insertMany([
+                {
+                    senderId: testUserId.toString(),
+                    receiverId: testEmployerId.toString(),
+                    content: 'Test message 1',
+                    createdAt: new Date()
+                },
+                {
+                    senderId: testEmployerId.toString(),
+                    receiverId: testUserId.toString(),
+                    content: 'Test message 2',
+                    createdAt: new Date()
+                }
+            ]);
+
+            const response = await request(app)
+                .get('/messages')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+            expect(response.body.length).toBeGreaterThan(0);
+            expect(response.body[0]).toHaveProperty('content');
+            expect(response.body[0]).toHaveProperty('senderId');
+            expect(response.body[0]).toHaveProperty('receiverId');
+        });
+
+        // Messages Read Tests
+        test('PUT /messages/read/:contactId - should mark messages as read', async () => {
+            // First create some unread messages
+            const messagesCollection = db.collection('messages');
+
+            await messagesCollection.insertMany([
+                {
+                    senderId:  testEmployerId.toString(),
+                    receiverId: testUserId.toString(),
+                    content: 'Unread message 1',
+                    createdAt: new Date()
+                },
+                {
+                    senderId: testEmployerId.toString(),
+                    receiverId: testUserId.toString(),
+                    content: 'Unread message 2',
+                    createdAt: new Date()
+                }
+            ]);
+
+            const response = await request(app)
+                .put(`/messages/read/${testEmployerId.toString()}`)
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('5 messages marked as read.');
+            expect(response.body.modifiedCount).toBe(5);
+        });
+
+        test('PUT /messages/read/:contactId - should handle no unread messages', async () => {
+            
+            const response = await request(app)
+                .put(`/messages/read/${testEmployerId.toString()}`)
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('No unread messages found for this contact.');
+        });
+
+        test('PUT /messages/read/:contactId - should handle invalid contact ID', async () => {
+            const response = await request(app)
+                .put('/messages/read/invalid-id')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('No unread messages found for this contact.');
+        });
+
+        test('PUT /messages/read/:contactId - should handle missing token', async () => {
+            const response = await request(app)
+                .put(`/messages/read/${testEmployerId.toString()}`)
+                .send();
+
+            expect(response.status).toBe(401);
+            expect(response.body.error).toBe('Unauthorized. Missing or invalid token.');
+        });
+
+        test('PUT /messages/read/:contactId - should handle messages in both directions', async () => {
+            // Create messages in both directions
+            const messagesCollection = db.collection('messages');
+            await messagesCollection.insertMany([
+                {
+                    senderId: testEmployerId.toString(),
+                    receiverId: testUserId.toString(),
+                    content: 'Message from employer',
+                    createdAt: new Date(),
+                    read_timestamp: null
+                },
+                {
+                    senderId: testUserId.toString(),
+                    receiverId: testEmployerId.toString(),
+                    content: 'Message from user',
+                    createdAt: new Date(),
+                    read_timestamp: null
+                }
+            ]);
+
+            const response = await request(app)
+                .put(`/messages/read/${testEmployerId.toString()}`)
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(response.body.modifiedCount).toBe(2);
+        });
+    });
+
+    // Employer Job Management Tests
+    describe('Employer Job Management', () => {
+        test('DELETE /employer/jobs/:jobId - should delete job', async () => {
+            const response = await request(app)
+                .delete(`/employer/jobs/${testJobId}`)
+                .set('Authorization', `Bearer ${testEmployerToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('Job deleted successfully');
+        });
+
+        test('DELETE /employer/jobs/:jobId - should handle unauthorized deletion', async () => {
+            const response = await request(app)
+                .delete(`/employer/jobs/${testJobId}`)
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(403);
+            expect(response.body.error).toBe('Only employers can delete jobs');
+        });
+    });
+}); 

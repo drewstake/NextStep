@@ -1,4 +1,4 @@
-const twilio = require("twilio");
+/* const twilio = require("twilio");
 
 // Initialize the Twilio client with proper credentials
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -21,7 +21,8 @@ try {
   client = twilio(accountSid, authToken);
   console.log("Twilio client initialized successfully");
 } catch (error) {
-  console.error("Error initializing Twilio client:", error.message);
+  console.log("Ignored Twilio client initialization error");
+  //console.error("Error initializing Twilio client:", error.message);
 }
 
 // Store verification codes temporarily (in production, use Redis or similar)
@@ -181,7 +182,7 @@ const verifyCode = (phoneNumber, code) => {
   const verification = verificationCodes.get(formattedPhone);
   if (!verification) {
     console.log(`No verification found for ${formattedPhone}`);
-    return { valid: false, message: "No verification code found" };
+    return { valid: false, message: "Invalid verification code" };
   }
 
   console.log(`Found verification for ${formattedPhone}:`, verification);
@@ -219,3 +220,4 @@ module.exports = {
   verifyCode,
   formatPhoneNumber,
 };
+ */

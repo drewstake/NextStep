@@ -117,6 +117,7 @@ const Profile = () => {
               {profileImage ? (
                 <img className="profile-image"
                   src={profileImage}
+                  alt=""
                 />
               ) : (
                 <img

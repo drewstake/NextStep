@@ -23,6 +23,7 @@ console.log("Environment check:", {
     !!process.env.TWILIO_PHONE_NUMBER,
   mongoConfigured: !!process.env.MONGODB_URI,
   googleConfigured: !!process.env.GOOGLE_CLIENT_ID,
+  env: process.env.NODE_ENV,
 });
 
 // Initialize Google OAuth client
@@ -56,7 +57,7 @@ const verifyToken = (req, res, next) => {
 
 // MongoDB Connection
 const uri = process.env.MONGODB_URI;           // e.g. "mongodb+srv://..."
-const dbName = "mydb";                         // or process.env.DB_NAME
+const dbName = process.env.NODE_ENV === 'test' ? "mydb_test" : "mydb";                         // or process.env.DB_NAME
 const client = new MongoClient(uri);
 const PORT = process.env.PORT || 4000;
 
@@ -65,7 +66,7 @@ client
   .connect()
   .then(() => {
     const db = client.db(dbName);
-    console.log(`Connected to MongoDB: ${new Date().toLocaleString()}`);
+    //console.log(`Connected to MongoDB: ${new Date().toLocaleString()}`);
 
     /******************************************
      *        ROUTES DEFINITION START         *
@@ -82,9 +83,17 @@ client
     app.post("/jobsTracker", verifyToken, async (req, res) => {
       try {
         const applicationsCollection = db.collection("applications");
+        const jobsCollection = db.collection("Jobs");
         const { _id, swipeMode } = req.body;
 
-        //console.log("Swipe mode: ", swipeMode);
+        // First verify if the job exists
+        const job = await jobsCollection.findOne({
+          _id: ObjectId.createFromHexString(_id)
+        });
+
+        if (!job) {
+          return res.status(404).json({ error: "Job not found" });
+        }
 
         const applicationInfo = {
           job_id: ObjectId.createFromHexString(_id),
@@ -119,7 +128,7 @@ client
           user_id: req.user.id,
         });
       } catch (err) {
-        console.error(err);
+        //console.error(err);
         res.status(500).json({
           error: `Failed to save job application. ${err.message}`,
         });
@@ -132,7 +141,7 @@ client
     ------------------ */
     app.post("/signin", async (req, res) => {
       try {
-        console.log("/signin called");
+        //console.log("/signin called");
         const collection = db.collection("users");
         const { email, password, phone, verificationCode } = req.body;
 
@@ -155,7 +164,7 @@ client
           // If signing in with email, verify password
           const passwordMatch = await bcrypt.compare(password, user.password);
           if (!passwordMatch) {
-            return res.status(401).json({ message: "Invalid password." });
+            return res.status(401).json({ message: "Invalid credentials" });
           }
         }
 
@@ -172,7 +181,7 @@ client
           isEmployer: user.employerFlag,
         });
       } catch (err) {
-        console.error(err);
+        //console.error(err);
         res.status(500).json({ error: "Failed to retrieve users" });
       }
     });
@@ -180,7 +189,7 @@ client
     /* ------------------
        Send Verification Code (Twilio call)
     ------------------ */
-    app.post("/send-verification", async (req, res) => {
+/*     app.post("/send-verification", async (req, res) => {
       try {
         const { phoneNumber } = req.body;
         const sent = await sendVerificationCode(phoneNumber);
@@ -189,18 +198,18 @@ client
             .status(200)
             .json({ message: "Verification code sent successfully" });
         } else {
-          res.status(500).json({ error: "Failed to send verification code" });
+          res.status(409).json({ error: "Failed to send verification code" });
         }
       } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Server error" });
+        res.status(500).json({ error: "Server error. See logs for more details." });
       }
     });
-
+*/
     /* ------------------
        Verify Code (Twilio)
     ------------------ */
-    app.post("/verify-code", async (req, res) => {
+/*    app.post("/verify-code", async (req, res) => {
       try {
         const { phoneNumber, code } = req.body;
         const result = verifyCode(phoneNumber, code);
@@ -214,7 +223,7 @@ client
         res.status(500).json({ error: "Server error" });
       }
     });
-
+ */
     /* ------------------
        Sign Up (Phone verification optional)
     ------------------ */
@@ -270,7 +279,7 @@ client
         await collection.insertOne(newUser);
         res.status(201).json({ message: "User created successfully" });
       } catch (error) {
-        console.error(error);
+        //console.error(error);
         res
           .status(400)
           .json({ error: `Error creating user. ${error.message}` });
@@ -306,7 +315,7 @@ client
 
         res.status(200).json(applicationsWithJobDetails);
       } catch (error) {
-        console.error(`Error in /applications. ${error}`);
+        //console.error(`Error in /applications. ${error}`);
         res.status(500).json({ error: `Error searching applications. ${error.message}` });
       }
     });
@@ -321,7 +330,7 @@ client
 
         // Validate if the jobId is a valid MongoDB ObjectId
         if (!ObjectId.isValid(jobId)) {
-          console.error("Invalid job ID format:", jobId);
+          //console.error("Invalid job ID format:", jobId);
           return res.status(400).json({ error: "Invalid job ID format" });
         }
 
@@ -330,13 +339,13 @@ client
         });
 
         if (!job) {
-          console.error("Job not found with ID:", jobId);
+          //console.error("Job not found with ID:", jobId);
           return res.status(404).json({ error: "Job not found" });
         }
 
         res.status(200).json(job);
       } catch (error) {
-        console.error("Error fetching job:", error);
+        //console.error("Error fetching job:", error);
         res.status(500).json({ error: "Failed to fetch job details" });
       }
     });
@@ -364,7 +373,7 @@ client
         const jobs = await collection.find(query).toArray();
         res.status(200).json(jobs);
       } catch (error) {
-        console.error(`Error in /jobs. ${error}`);
+        //console.error(`Error in /jobs. ${error}`);
         res.status(500).json({ error: `Error searching jobs. ${error}` });
       }
     });
@@ -417,7 +426,7 @@ client
           jobId: result.insertedId
         });
       } catch (error) {
-        console.error("Error creating job posting:", error);
+        //console.error("Error creating job posting:", error);
         res.status(500).json({ error: "Failed to create job posting" });
       }
     });
@@ -427,7 +436,7 @@ client
     ------------------ */
     app.get("/retrieveJobsForHomepage", async (req, res) => {
       try {
-        console.log("in job search");
+        //console.log("in job search");
         const jobsCollection = db.collection("Jobs");
         const applicationsCollection = db.collection("applications");
 
@@ -475,14 +484,13 @@ client
 
           } catch (error) {
             // If token is invalid, just continue without filtering
-            console.error("Server error:", error.message);
             jobs = baseJobs;
           }
         }
 
         res.status(200).json(jobs);
       } catch (error) {
-        console.error(`Error in /jobs. ${error}`);
+        //console.error(`Error in /jobs. ${error}`);
         res.status(500).json({ error: `Error searching jobs. ${error}` });
       }
     });
@@ -506,7 +514,7 @@ client
         }
         res.status(200).json(profile);
       } catch (error) {
-        console.error(`Error in /profile. ${error}`);
+        //console.error(`Error in /profile. ${error}`);
         res.status(500).json({ error: `Error fetching user profile. ${error.message}` });
       }
     });
@@ -565,7 +573,7 @@ client
           }
           res.status(200).json({ message: "Profile updated successfully" });
         } catch (err) {
-          console.error(err);
+          //console.error(err);
           res.status(500).json({ error: `Error updating user profile. ${err.message}` });
         }
       }
@@ -576,12 +584,12 @@ client
     ------------------ */
     app.get("/logout", async (req, res) => {
       try {
-        console.log("/logout called");
+        //console.log("/logout called");
         // Clear cookie (if you use JWT in cookies)
         res.cookie("nextstep_auth", "", { expires: new Date(0), httpOnly: true });
         res.json({ message: "You've been logged out" });
       } catch (err) {
-        console.error(err);
+        //console.error(err);
         res.status(500).json({ error: "Failed to logout" });
       }
     });
@@ -635,7 +643,7 @@ client
           isEmployer: user.employerFlag,
         });
       } catch (error) {
-        console.error("Google authentication error:", error);
+        //console.error("Google authentication error:", error);
         res.status(401).json({ error: "Invalid Google token" });
       }
     });
@@ -663,7 +671,7 @@ client
 
         res.status(200).json(users);
       } catch (error) {
-        console.error(error);
+        //console.error(error);
         res.status(500).json({ error: "Failed to retrieve users" });
       }
     });
@@ -684,7 +692,7 @@ client
 
         res.status(200).json(messages);
       } catch (error) {
-        console.error(error);
+        //console.error(error);
         res.status(500).json({ error: "Failed to retrieve messages" });
       }
     });
@@ -726,7 +734,7 @@ client
           res.status(200).json({ message: "No unread messages found for this contact." });
         }
       } catch (error) {
-        console.error(error);
+        //console.error(error);
         res.status(500).json({ error: "Failed to mark messages as read" });
       }
     });
@@ -776,7 +784,7 @@ client
         await messagesCollection.insertOne(message);
         res.status(201).json(message);
       } catch (error) {
-        console.error(error);
+        //console.error(error);
         res.status(500).json({ error: "Failed to send message" });
       }
     });
@@ -845,11 +853,11 @@ client
           },
         ]).toArray();
 
-        //console.log('Unique Contacts with Unread Message Counts:', contacts);
+        ////console.log('Unique Contacts with Unread Message Counts:', contacts);
 
         res.status(200).json(contacts);
       } catch (error) {
-        console.error(error);
+        //console.error(error);
         res.status(500).json({ error: "Failed to retrieve recent contacts" });
       }
     });
@@ -929,7 +937,7 @@ client
 
         res.status(200).json(transformedApplications);
       } catch (error) {
-        console.error("Error fetching employer applications:", error);
+        //console.error("Error fetching employer applications:", error);
         res.status(500).json({ error: "Failed to fetch applications" });
       }
     });
@@ -1001,7 +1009,7 @@ client
 
         res.status(200).json({ message: "Application status updated successfully" });
       } catch (error) {
-        console.error("Error updating application status:", error);
+        //console.error("Error updating application status:", error);
         res.status(500).json({ error: "Failed to update application status" });
       }
     });
@@ -1062,7 +1070,7 @@ client
 
         res.status(200).json(application[0]);
       } catch (error) {
-        console.error("Error fetching application details:", error);
+        //console.error("Error fetching application details:", error);
         res.status(500).json({ error: "Failed to fetch application details" });
       }
     });
@@ -1077,7 +1085,7 @@ client
         );
         res.status(200).json(user);
       } catch (error) {
-        console.error("Error fetching applicant profile:", error);
+        //console.error("Error fetching applicant profile:", error);
         res.status(500).json({ error: "Failed to fetch applicant profile" });
       }
     });
@@ -1145,7 +1153,7 @@ client
 
         res.status(200).json({ message: "Job updated successfully" });
       } catch (error) {
-        console.error("Error updating job:", error);
+        //console.error("Error updating job:", error);
         res.status(500).json({ error: "Failed to update job" });
       }
     });
@@ -1183,7 +1191,7 @@ client
 
         res.status(200).json({ message: "Job deleted successfully" });
       } catch (error) {
-        console.error("Error deleting job:", error);
+        //console.error("Error deleting job:", error);
         res.status(500).json({ error: "Failed to delete job" });
       }
     });
@@ -1243,7 +1251,7 @@ client
 
         res.status(200).json(jobs);
       } catch (error) {
-        console.error("Error searching jobs:", error);
+        //console.error("Error searching jobs:", error);
         res.status(500).json({ error: "Failed to search jobs" });
       }
     });
@@ -1252,12 +1260,16 @@ client
      *         ROUTES DEFINITION END          *
      ******************************************/
 
-    // Start the server
-    app.listen(PORT, (err) => {
-      if (err) console.log("Error starting server:", err);
-      console.log(`Server listening on PORT ${PORT}`);
-    });
+    // Start the server only if not in test environment
+    if (process.env.NODE_ENV !== 'test') {
+      app.listen(PORT, (err) => {
+        if (err) console.log("Error starting server:", err);
+        console.log(`Server listening on PORT ${PORT}`);
+      });
+    }
   })
   .catch((error) => {
     console.error("Error connecting to MongoDB:", error);
   });
+
+module.exports = app;
