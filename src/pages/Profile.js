@@ -117,7 +117,6 @@ const Profile = () => {
               {profileImage ? (
                 <img className="profile-image"
                   src={profileImage}
-                  alt="Profile"
                 />
               ) : (
                 <img
@@ -125,7 +124,7 @@ const Profile = () => {
                   src={profilePic}
                   alt={profilePicAlt}
                   onError={() => {
-                    setProfilePicAlt("Too many requests");
+                    setProfilePicAlt("");
                     setProfilePic(null);
                   }}
                 />
