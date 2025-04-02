@@ -1,0 +1,35 @@
+{
+  "source": {
+    "include": ["README.md", "server/controllers", "server/middleware", "server/server.js", "server/server.test.js"],
+    "includePattern": ".+\\.js$",
+    "excludePattern": "(node_modules/|Next-step-docs|server/node_modules/)"
+  },
+  "opts": {
+    "encoding": "utf8",
+    "destination": "./Next-step-docs/",
+    "readme": "./README.md",
+    "recurse": true,
+    "verbose": true
+  },
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false,
+    "default": {
+      "outputSourceFiles": true,
+      "includeDate": false,
+      "requireReturnDescription": false,
+      "requireParamDescription": false,
+      "sortMaintainers": true,
+      "search": true,
+      "systemName": "Next-step Website UI",
+      "footer": "Next-step Website UI Documentation",
+      "copyright": "Next-step Copyright © 2025",
+      "navType": "inline",
+      "theme": "cosmo",
+      "linenums": true,
+      "collapseSymbols": false,
+      "inverseNav": true
+    }
+  }
+} 

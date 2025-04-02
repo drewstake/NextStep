@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>NextStep - A Swipe-Based Job Matching App</h1>
+<img src="src/assets/NextStep_Logo.png">
+<p>NextStep is a <strong>web and mobile job-matching platform</strong> designed to simplify the job search process using a <strong>swipe-based</strong> interface. It leverages <strong>AI-driven recommendations</strong> and <strong>real-time tracking</strong> to connect job seekers with employers efficiently.</p>
+<h3>Table of Contents</h3>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#core-objectives">Core Objectives</a></li>
+<li><a href="#technology-stack">Technology Stack</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#running-the-application">Running the Application</a></li>
+<li><a href="#api-endpoints">API Endpoints</a></li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<hr>
+<h3>Overview</h3>
+<p><strong>NextStep</strong> is a job-matching application with a <strong>swipe-based</strong> interface that helps job seekers efficiently browse and apply for jobs. Employers can post job listings, track applications, and connect with candidates in real time.</p>
+<h3><strong>Core Objectives</strong></h3>
+<ul>
+<li><strong>Swipe-Based Job Discovery</strong> – Browse jobs with a swipe-like/scroll experience inspired from popular apps such as Hinge, Tiktok, Tinder.</li>
+<li><strong>AI-Powered Job Recommendations</strong> – Tailored job suggestions based on profile &amp; history</li>
+<li><strong>One-Click Apply</strong> – Apply instantly with stored profile/resume</li>
+<li><strong>Application Tracking</strong> – Track job application statuses in real-time</li>
+<li><strong>Employer Dashboard</strong> – Post jobs, review candidates, and schedule interviews</li>
+<li><strong>Multi-Platform Support</strong> – Accessible via Web and Mobile</li>
+</ul>
+<hr>
+<h3><strong>Technology Stack</strong></h3>
+<h4><strong>Frontend</strong></h4>
+<ul>
+<li><strong>Framework</strong>: React.js(Web)/React Native (Mobile)</li>
+<li><strong>Styling</strong>: TailwindCSS</li>
+<li><strong>React Router</strong> – Frontend navigation</li>
+<li><strong>Axios</strong> – API communication</li>
+</ul>
+<h4><strong>Backend</strong></h4>
+<ul>
+<li><strong>Node.js</strong> – Server-side runtime</li>
+<li><strong>Express.js</strong> – Middleware</li>
+<li><strong>MongoDB Atlas</strong> – Cloud-based NoSQL database</li>
+<li><strong>MongoDB Client</strong> – MongoDB SDK</li>
+<li><strong>JWT (JSON Web Tokens)</strong> – Authentication system</li>
+<li><strong>Firebase Cloud Messaging (FCM)</strong> – Push notifications</li>
+<li><strong>AWS/GCP</strong> – Cloud hosting (for scalability)</li>
+<li><strong>Jest</strong> - Unit testing</li>
+<li><strong>JSDoc</strong> - Code documentation</li>
+</ul>
+<h4><strong>DevOps &amp; Deployment</strong></h4>
+<ul>
+<li>pending.</li>
+</ul>
+<hr>
+<h3><strong>Installation</strong></h3>
+<pre class="prettyprint source lang-bash"><code># 1 Clone the Repository
+git clone https://github.com/drewstake/nextstep.git
+cd nextstep
+
+# 2 Install Backend Dependencies
+cd server
+npm install
+
+# 3 Run server unit tests (you must be in server folder)
+cd server
+npm test
+# Run unit tests with code coverage report (you must be in server folder)
+npm run test:coverage 
+
+# 4 Install Frontend Dependencies
+cd ../src
+npm install
+
+# 5 Regenerate jsdocs (currently available only for server-side API code)
+cd server
+# Notice: this is a global install. Hence, must be installed separately.
+npm install -g jsdoc
+jsdoc -c jsdoc.json
+</code></pre>
+<h3><strong>Configuration</strong></h3>
+<p>Before running the app, configure the environment variables.</p>
+<h4>Frontend .env File</h4>
+<pre class="prettyprint source lang-bash"><code>REACT_APP_BACKEND_URL=http://localhost:4000
+</code></pre>
+<h4>Backend .env File</h4>
+<pre class="prettyprint source lang-bash"><code>MONGO_URI=mongodb+srv://&lt;username>:&lt;password>@cluster0.mongodb.net/nextstep
+PORT=4000
+JWT_SECRET=your_jwt_secret
+FIREBASE_SERVER_KEY=your_firebase_server_key
+</code></pre>
+<h3><strong>Running The Application</strong></h3>
+<pre class="prettyprint source lang-bash"><code># 1 Start Backend
+cd backend
+npm start
+
+Server will run on http://localhost:4000
+
+# 2 Start Frontend
+cd src
+npm start
+
+Frontend will run on http://localhost:3000
+</code></pre>
+<h3><strong>API Endpoints</strong></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td>/api/register</td>
+<td>Register a new user</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/api/login</td>
+<td>Authenticate user</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/api/jobs</td>
+<td>Retrieve job listings</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/api/apply</td>
+<td>Apply for a job</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/api/applications</td>
+<td>Get user’s job applications</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/api/applications/:id</td>
+<td>Withdraw an application</td>
+</tr>
+</tbody>
+</table>
+<h3><strong>Contributing</strong></h3>
+<p>We welcome contributions! Follow these steps:</p>
+<ul>
+<li>Fork the repository</li>
+<li>Create a new branch (feature/your-feature-name)</li>
+<li>Commit your changes</li>
+<li>Push to your fork</li>
+<li>Submit a pull request</li>
+</ul>
+<h3><strong>License</strong></h3>
+<p>This project is licensed under the MIT License.</p>
+<h3><strong>Future Enhancements</strong></h3>
+<ul>
+<li>Real-Time Chat for Employers &amp; Candidates</li>
+<li>AI-Powered Resume Screening</li>
+<li>Interview Scheduling with Google Calendar</li>
+</ul></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-middleware_auth.html">middleware/auth</a></li><li><a href="module-server.html">server</a></li><li><a href="server.module_test.html">test</a></li></ul><h3>Namespaces</h3><ul><li><a href="applicationsController.html">applicationsController</a></li><li><a href="authController.html">authController</a></li><li><a href="jobsController.html">jobsController</a></li><li><a href="messagesController.html">messagesController</a></li><li><a href="profileController.html">profileController</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

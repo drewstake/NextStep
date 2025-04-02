@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/jobsController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/jobsController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const { ObjectId } = require("mongodb");
+
+/**
+ * Controller for handling job-related operations
+ * @namespace jobsController
+ */
+const jobsController = {
+  /**
+   * Retrieves all jobs with optional search functionality
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.query - Query parameters
+   * @param {string} [req.query.q] - Search query string
+   * @param {Object} res - Express response object
+   * @returns {Promise&lt;Array>} Array of matching jobs
+   * @throws {Error} 500 if server error occurs
+   */
+  getAllJobs: async (req, res) => {
+    try {
+      const collection = req.app.locals.db.collection("Jobs");
+      const queryText = req.query.q || "";
+      const query = {
+        $or: [
+          { title: { $regex: queryText, $options: "i" } },
+          { jobDescription: { $regex: queryText, $options: "i" } },
+          { skills: { $regex: queryText, $options: "i" } },
+          { locations: { $regex: queryText, $options: "i" } },
+          { benefits: { $regex: queryText, $options: "i" } },
+          { schedule: { $regex: queryText, $options: "i" } },
+          { salary: { $regex: queryText, $options: "i" } },
+        ],
+      };
+
+      const jobs = await collection.find(query).toArray();
+      res.status(200).json(jobs);
+    } catch (error) {
+      res.status(500).json({ error: `Error searching jobs. ${error}` });
+    }
+  },
+
+  /**
+   * Retrieves a single job by its ID
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Route parameters
+   * @param {string} req.params.jobId - Job ID
+   * @param {Object} res - Express response object
+   * @returns {Promise&lt;Object>} Job details
+   * @throws {Error} 400 if job ID is invalid
+   * @throws {Error} 404 if job not found
+   * @throws {Error} 500 if server error occurs
+   */
+  getJobById: async (req, res) => {
+    try {
+      const collection = req.app.locals.db.collection("Jobs");
+      const jobId = req.params.jobId;
+
+      if (!ObjectId.isValid(jobId)) {
+        return res.status(400).json({ error: "Invalid job ID format" });
+      }
+
+      const job = await collection.findOne({
+        _id: ObjectId.createFromHexString(jobId)
+      });
+
+      if (!job) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+
+      res.status(200).json(job);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch job details" });
+    }
+  },
+
+  /**
+   * Creates a new job posting
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.body - Request body
+   * @param {string} req.body.title - Job title
+   * @param {string} req.body.companyName - Company name
+   * @param {string} [req.body.companyWebsite] - Company website
+   * @param {string} [req.body.salaryRange] - Salary range
+   * @param {Array} [req.body.benefits] - Job benefits
+   * @param {Array|string} req.body.locations - Job locations
+   * @param {string} [req.body.schedule] - Work schedule
+   * @param {string} req.body.jobDescription - Job description
+   * @param {Array|string} req.body.skills - Required skills
+   * @param {Object} req.user - User object from authentication middleware
+   * @param {boolean} req.user.isEmployer - Whether user is an employer
+   * @param {Object} res - Express response object
+   * @returns {Promise&lt;Object>} Created job details
+   * @throws {Error} 403 if user is not an employer
+   * @throws {Error} 400 if required fields are missing
+   * @throws {Error} 500 if server error occurs
+   */
+  createJob: async (req, res) => {
+    try {
+      if (!req.user.isEmployer) {
+        return res.status(403).json({ error: "Only employers can create job postings" });
+      }
+
+      const collection = req.app.locals.db.collection("Jobs");
+      const {
+        title,
+        companyName,
+        companyWebsite,
+        salaryRange,
+        benefits,
+        locations,
+        schedule,
+        jobDescription,
+        skills
+      } = req.body;
+
+      if (!title || !companyName || !jobDescription) {
+        return res.status(400).json({ error: "Title, company name, and job description are required" });
+      }
+
+      const newJob = {
+        title,
+        companyName,
+        companyWebsite,
+        salaryRange,
+        benefits: benefits || [],
+        locations: Array.isArray(locations) ? locations : [locations],
+        schedule,
+        jobDescription,
+        skills: Array.isArray(skills) ? skills : [skills],
+        createdAt: new Date(),
+        employerId: ObjectId.createFromHexString(req.user.id)
+      };
+
+      const result = await collection.insertOne(newJob);
+      res.status(201).json({
+        message: "Job posting created successfully",
+        jobId: result.insertedId
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create job posting" });
+    }
+  },
+
+  /**
+   * Updates an existing job posting
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Route parameters
+   * @param {string} req.params.jobId - Job ID
+   * @param {Object} req.body - Request body
+   * @param {string} req.body.title - Job title
+   * @param {string} req.body.companyName - Company name
+   * @param {string} [req.body.companyWebsite] - Company website
+   * @param {string} [req.body.salaryRange] - Salary range
+   * @param {Array} [req.body.benefits] - Job benefits
+   * @param {Array|string} req.body.locations - Job locations
+   * @param {string} [req.body.schedule] - Work schedule
+   * @param {string} req.body.jobDescription - Job description
+   * @param {Array|string} req.body.skills - Required skills
+   * @param {Object} req.user - User object from authentication middleware
+   * @param {boolean} req.user.isEmployer - Whether user is an employer
+   * @param {Object} res - Express response object
+   * @returns {Promise&lt;Object>} Success message
+   * @throws {Error} 403 if user is not an employer
+   * @throws {Error} 400 if required fields are missing
+   * @throws {Error} 404 if job not found
+   * @throws {Error} 500 if server error occurs
+   */
+  updateJob: async (req, res) => {
+    try {
+      if (!req.user.isEmployer) {
+        return res.status(403).json({ error: "Only employers can update jobs" });
+      }
+
+      const { jobId } = req.params;
+      const {
+        title,
+        companyName,
+        companyWebsite,
+        salaryRange,
+        benefits,
+        locations,
+        schedule,
+        jobDescription,
+        skills
+      } = req.body;
+
+      if (!title || !companyName || !jobDescription) {
+        return res.status(400).json({ error: "Title, company name, and job description are required" });
+      }
+
+      const collection = req.app.locals.db.collection("Jobs");
+
+      // Verify job ownership
+      const job = await collection.findOne({
+        _id: ObjectId.createFromHexString(jobId),
+        employerId: ObjectId.createFromHexString(req.user.id)
+      });
+
+      if (!job) {
+        return res.status(404).json({ error: "Job not found or unauthorized" });
+      }
+
+      const result = await collection.updateOne(
+        { _id: ObjectId.createFromHexString(jobId) },
+        {
+          $set: {
+            title,
+            companyName,
+            companyWebsite,
+            salaryRange,
+            benefits: Array.isArray(benefits) ? benefits : [benefits],
+            locations: Array.isArray(locations) ? locations : [locations],
+            schedule,
+            jobDescription,
+            skills: Array.isArray(skills) ? skills : [skills],
+            updatedAt: new Date()
+          }
+        }
+      );
+
+      if (result.modifiedCount === 0) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+
+      res.status(200).json({ message: "Job updated successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update job" });
+    }
+  },
+
+  /**
+   * Deletes a job posting
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Route parameters
+   * @param {string} req.params.jobId - Job ID
+   * @param {Object} req.user - User object from authentication middleware
+   * @param {boolean} req.user.isEmployer - Whether user is an employer
+   * @param {Object} res - Express response object
+   * @returns {Promise&lt;Object>} Success message
+   * @throws {Error} 403 if user is not an employer
+   * @throws {Error} 404 if job not found
+   * @throws {Error} 500 if server error occurs
+   */
+  deleteJob: async (req, res) => {
+    try {
+      if (!req.user.isEmployer) {
+        return res.status(403).json({ error: "Only employers can delete jobs" });
+      }
+
+      const { jobId } = req.params;
+      const collection = req.app.locals.db.collection("Jobs");
+
+      // Verify job ownership
+      const job = await collection.findOne({
+        _id: ObjectId.createFromHexString(jobId),
+        employerId: ObjectId.createFromHexString(req.user.id)
+      });
+
+      if (!job) {
+        return res.status(404).json({ error: "Job not found or unauthorized" });
+      }
+
+      const result = await collection.deleteOne({
+        _id: ObjectId.createFromHexString(jobId)
+      });
+
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+
+      res.status(200).json({ message: "Job deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete job" });
+    }
+  },
+
+  /**
+   * Searches jobs posted by the logged-in employer
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.query - Query parameters
+   * @param {string} req.query.query - Search query string
+   * @param {Object} req.user - User object from authentication middleware
+   * @param {boolean} req.user.isEmployer - Whether user is an employer
+   * @param {Object} res - Express response object
+   * @returns {Promise&lt;Array>} Array of matching jobs with application counts
+   * @throws {Error} 403 if user is not an employer
+   * @throws {Error} 500 if server error occurs
+   */
+  searchEmployerJobs: async (req, res) => {
+    try {
+      if (!req.user.isEmployer) {
+        return res.status(403).json({ error: "Only employers can search jobs" });
+      }
+
+      const { query } = req.query;
+      const jobsCollection = req.app.locals.db.collection("Jobs");
+      const applicationsCollection = req.app.locals.db.collection("applications");
+
+      const jobs = await jobsCollection.aggregate([
+        {
+          $match: {
+            employerId: ObjectId.createFromHexString(req.user.id),
+            $or: [
+              { title: { $regex: query, $options: "i" } },
+              { companyName: { $regex: query, $options: "i" } },
+              { jobDescription: { $regex: query, $options: "i" } },
+              { skills: { $regex: query, $options: "i" } },
+              { locations: { $regex: query, $options: "i" } }
+            ]
+          }
+        },
+        {
+          $lookup: {
+            from: "applications",
+            localField: "_id",
+            foreignField: "job_id",
+            as: "applications"
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            companyName: 1,
+            companyWebsite: 1,
+            salaryRange: 1,
+            benefits: 1,
+            locations: 1,
+            schedule: 1,
+            jobDescription: 1,
+            skills: 1,
+            createdAt: 1,
+            applicationCount: { $size: "$applications" }
+          }
+        }
+      ]).toArray();
+
+      res.status(200).json(jobs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search jobs" });
+    }
+  },
+
+  // Get jobs for homepage
+  getHomepageJobs: async (req, res) => {
+    try {
+      const jobsCollection = req.app.locals.db.collection("Jobs");
+      const applicationsCollection = req.app.locals.db.collection("applications");
+
+      const queryText = req.query.q || "";
+      const query = {
+        $or: [
+          { title: { $regex: queryText, $options: "i" } },
+          { jobDescription: { $regex: queryText, $options: "i" } },
+          { skills: { $regex: queryText, $options: "i" } },
+          { locations: { $regex: queryText, $options: "i" } },
+          { benefits: { $regex: queryText, $options: "i" } },
+          { schedule: { $regex: queryText, $options: "i" } },
+          { salary: { $regex: queryText, $options: "i" } },
+        ],
+      };
+
+      let jobs = [];
+      const baseJobs = await jobsCollection.find(query).toArray();
+
+      const token = req.headers.authorization?.split(" ")[1];
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          const appliedJobsResult = await applicationsCollection
+            .find({
+              user_id: ObjectId.createFromHexString(decoded.id)
+            })
+            .project({ job_id: 1, _id: 0 })
+            .toArray();
+
+          const appliedJobIds = appliedJobsResult.map(app => app.job_id);
+          jobs = baseJobs.filter(job =>
+            !appliedJobIds.some(appliedId =>
+              appliedId.toString() === job._id.toString()
+            )
+          );
+        } catch (error) {
+          jobs = baseJobs;
+        }
+      }
+
+      res.status(200).json(jobs);
+    } catch (error) {
+      res.status(500).json({ error: `Error searching jobs. ${error}` });
+    }
+  }
+};
+
+module.exports = jobsController; </code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-middleware_auth.html">middleware/auth</a></li><li><a href="module-server.html">server</a></li><li><a href="server.module_test.html">test</a></li></ul><h3>Namespaces</h3><ul><li><a href="applicationsController.html">applicationsController</a></li><li><a href="authController.html">authController</a></li><li><a href="jobsController.html">jobsController</a></li><li><a href="messagesController.html">messagesController</a></li><li><a href="profileController.html">profileController</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

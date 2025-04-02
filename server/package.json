@@ -6,7 +6,8 @@
     "start": "npx nodemon server.js",
     "dev": "npx nodemon server.js",
     "test": "jest --detectOpenHandles --forceExit",
-    "test:coverage": "jest --coverage --detectOpenHandles --forceExit"
+    "test:coverage": "jest --coverage --detectOpenHandles --forceExit",
+    "docs": "jsdoc -c jsdoc.json"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.1.9",
-    "supertest": "^6.3.4"
+    "supertest": "^6.3.4",
+    "jsdoc": "^4.0.2"
   }
 }
