@@ -1,3 +1,5 @@
+// src/App.js
+
 import React, { useContext, useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/Home";
@@ -16,6 +18,7 @@ import ApplicantProfile from "./pages/ApplicantProfile";
 import "./styles/App.css";
 import { TokenContext } from "./components/TokenContext";
 import axios from "axios";
+import ChatWidget from "./components/ChatWidget"; // Import the global chat widget
 
 function App() {
   const { token, employerFlag, profileUpdateTrigger } = useContext(TokenContext);
@@ -32,25 +35,26 @@ function App() {
     const fetchUserProfile = async () => {
       if (token) {
         try {
-          const response = await axios.get('http://localhost:4000/profile', {
-            headers: { Authorization: `Bearer ${token}` }
+          const response = await axios.get("http://localhost:4000/profile", {
+            headers: { Authorization: `Bearer ${token}` },
           });
           const user = response.data;
           // Use full_name if available, otherwise combine first and last name
-          const displayName = user.full_name ||
-            `${user.first_name || ''} ${user.last_name || ''}`.trim();
+          const displayName =
+            user.full_name ||
+            `${user.first_name || ""} ${user.last_name || ""}`.trim();
           setUserName(displayName);
         } catch (error) {
-          console.error('Error fetching user profile:', error);
-          setUserName('Profile');
+          console.error("Error fetching user profile:", error);
+          setUserName("Profile");
         }
       } else {
-        setUserName('Profile');
+        setUserName("Profile");
       }
     };
 
     fetchUserProfile();
-  }, [token, profileUpdateTrigger]); // Add profileUpdateTrigger to dependencies
+  }, [token, profileUpdateTrigger]);
 
   // Toggle the mobile nav overlay
   const toggleNav = () => {
@@ -75,7 +79,6 @@ function App() {
     <Router>
       <div className="app-container">
         <header className="app-header">
-          {/* Desktop Nav vs. Mobile Hamburger */}
           {isMobile ? (
             <button className="hamburger" onClick={toggleNav}>
               <span className="bar"></span>
@@ -85,7 +88,7 @@ function App() {
           ) : (
             <>
               <nav className="app-nav">
-                {(token && employerFlag)? (
+                {token && employerFlag ? (
                   <Link className="app-nav__link" to="/employer-dashboard">
                     Home
                   </Link>
@@ -175,7 +178,6 @@ function App() {
                   Messenger
                 </Link>
               )}
-              {/* Auth button (Sign In / Sign Out) in mobile overlay */}
               <Auth onClick={toggleNav} />
             </div>
           </div>
@@ -198,9 +200,14 @@ function App() {
             />
             <Route path="/messenger" element={<Messenger />} />
             <Route path="/jobs/:jobId/:returnTo" element={<Details />} />
-            <Route path="/applicant-profile/:userId" element={<ApplicantProfile />} />
+            <Route
+              path="/applicant-profile/:userId"
+              element={<ApplicantProfile />}
+            />
           </Routes>
         </main>
+        {/* Global Chat Widget rendered at the bottom-right */}
+        <ChatWidget />
       </div>
     </Router>
   );
