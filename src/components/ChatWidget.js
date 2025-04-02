@@ -130,7 +130,7 @@ const ChatWidget = () => {
                   />
                   <div className="bot-content">
                     <div className="bot-name">NextStep Bot</div>
-                    Loading...
+                    Typing...
                   </div>
                 </div>
               </div>
