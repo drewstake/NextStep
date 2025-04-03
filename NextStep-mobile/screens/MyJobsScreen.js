@@ -10,6 +10,10 @@ const DUMMY_APPLICATIONS = [
     company: 'Tech Corp',
     status: 'Applied',
     date: '2024-03-15',
+    salary: '$120,000 - $150,000',
+    type: 'Full-time',
+    location: 'New York, NY',
+
   },
   {
     id: '2',
@@ -17,6 +21,9 @@ const DUMMY_APPLICATIONS = [
     company: 'Innovation Labs',
     status: 'Offered',
     date: '2024-03-10',
+    salary: '$100,000 - $130,000',
+    type: 'Full-time',
+    location: 'Remote',
   },
   {
     id: '3',
@@ -24,6 +31,9 @@ const DUMMY_APPLICATIONS = [
     company: 'Design Studio',
     status: 'Rejected',
     date: '2024-03-05',
+    salary: '$80,000 - $100,000',
+    type: 'Part-time',
+    location: 'San Francisco, CA',
   },
 ];
 

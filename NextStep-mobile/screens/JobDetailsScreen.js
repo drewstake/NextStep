@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, Animated, PanResponder, Alert, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH;
@@ -85,15 +86,17 @@ export default function JobDetailsScreen({ route, navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#2A0845', '#6441A5']}
+      style={styles.container}
+    >
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color="#007AFF" />
+          <Ionicons name="close" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Job Details</Text>
       </View>
 
       <Animated.View 
@@ -102,80 +105,74 @@ export default function JobDetailsScreen({ route, navigation }) {
       >
         <Text style={styles.jobTitle}>{job.title}</Text>
         <Text style={styles.companyName}>{job.company}</Text>
+        <Text style={styles.location}>{job.location}</Text>
         
-        <View style={styles.detailsContainer}>
-          <View style={styles.detailRow}>
-            <Ionicons name="location-outline" size={20} color="#666" />
-            <Text style={styles.detailText}>{job.location}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Ionicons name="cash-outline" size={20} color="#666" />
-            <Text style={styles.detailText}>{job.salary}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Ionicons name="time-outline" size={20} color="#666" />
-            <Text style={styles.detailText}>{job.type}</Text>
-          </View>
+        <View style={styles.salaryContainer}>
+          <Text style={styles.salaryLabel}>Salary Range</Text>
+          <Text style={styles.salaryAmount}>{job.salary}</Text>
         </View>
 
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>Job Description</Text>
-          <Text style={styles.description}>
-            We are looking for a talented {job.title} to join our team. 
-            The ideal candidate will have strong experience in the field and 
-            be passionate about their work.
+        <View style={styles.scheduleContainer}>
+          <Text style={styles.scheduleLabel}>Schedule</Text>
+          <Text style={styles.scheduleType}>{job.type}</Text>
+        </View>
+
+        <View style={styles.benefitsContainer}>
+          <Text style={styles.benefitsLabel}>Benefits</Text>
+          <Text style={styles.benefitsList}>
+            Home Office Setup, Stock Options, Vision Insurance, Remote Work,{'\n'}
+            Annual Bonus, Gym Membership, Flexible Hours, Team Events
           </Text>
         </View>
 
-        <View style={styles.requirementsContainer}>
-          <Text style={styles.requirementsTitle}>Requirements</Text>
-          <Text style={styles.requirements}>
-            • 3+ years of experience{'\n'}
-            • Strong problem-solving skills{'\n'}
-            • Excellent communication abilities{'\n'}
-            • Bachelor's degree or equivalent
+        <View style={styles.summaryContainer}>
+          <Text style={styles.summaryLabel}>Job Summary</Text>
+          <Text style={styles.summaryText}>
+            Join {job.company}'s engineering team as a {job.title} and help us shape the
+            future of technology. You'll work on challenging problems, contribute to our architecture
+            decisions, and help us maintain high code quality standards.
+          </Text>
+        </View>
+
+        <View style={styles.skillsContainer}>
+          <Text style={styles.skillsLabel}>Required Skills</Text>
+          <Text style={styles.skillsList}>
+            Security, Confluence, Machine Learning, React, Scrum, CI/CD, AWS, GCP, Git
           </Text>
         </View>
       </Animated.View>
 
-      <View style={styles.swipeInstructions}>
-        <Text style={styles.instructionText}>Swipe right to apply</Text>
-        <Text style={styles.instructionText}>Swipe left to reject</Text>
-        <Text style={styles.instructionText}>Swipe up to ignore</Text>
+      <View style={styles.actionButtons}>
+        <TouchableOpacity style={styles.backToJobsButton}>
+          <Text style={styles.backToJobsText}>Back to Jobs</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.applyNowButton}>
+          <Text style={styles.applyNowText}>Apply Now</Text>
+        </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    marginTop: 40,
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
     padding: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingTop: 40,
   },
   backButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginLeft: 15,
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 20,
   },
   card: {
-    position: 'absolute',
-    width: SCREEN_WIDTH,
-    top: 370,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 15,
-    marginTop: 60,
+    margin: 20,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: {
@@ -187,64 +184,120 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   jobTitle: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 5,
+    color: '#fff',
+    marginBottom: 10,
   },
   companyName: {
     fontSize: 18,
-    color: '#666',
-    marginBottom: 20,
-  },
-  detailsContainer: {
-    marginBottom: 20,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  detailText: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#666',
-  },
-  descriptionContainer: {
-    marginBottom: 20,
-  },
-  descriptionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  description: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 24,
-  },
-  requirementsContainer: {
-    marginBottom: 20,
-  },
-  requirementsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  requirements: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 24,
-  },
-  swipeInstructions: {
-    position: 'absolute',
-    bottom: 30,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  instructionText: {
-    fontSize: 14,
-    color: '#666',
+    color: '#FFB6C1',
     marginBottom: 5,
+  },
+  location: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 20,
+  },
+  salaryContainer: {
+    marginBottom: 15,
+  },
+  salaryLabel: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 5,
+  },
+  salaryAmount: {
+    fontSize: 20,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  scheduleContainer: {
+    marginBottom: 15,
+  },
+  scheduleLabel: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 5,
+  },
+  scheduleType: {
+    fontSize: 18,
+    color: '#fff',
+  },
+  benefitsContainer: {
+    marginBottom: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 15,
+    borderRadius: 10,
+  },
+  benefitsLabel: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 10,
+  },
+  benefitsList: {
+    fontSize: 16,
+    color: '#fff',
+    lineHeight: 24,
+  },
+  summaryContainer: {
+    marginBottom: 20,
+  },
+  summaryLabel: {
+    fontSize: 18,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 10,
+  },
+  summaryText: {
+    fontSize: 16,
+    color: '#fff',
+    lineHeight: 24,
+  },
+  skillsContainer: {
+    marginBottom: 20,
+  },
+  skillsLabel: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 10,
+  },
+  skillsList: {
+    fontSize: 16,
+    color: '#fff',
+    lineHeight: 24,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20,
+    paddingBottom: 40,
+  },
+  backToJobsButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    flex: 1,
+    marginRight: 10,
+    alignItems: 'center',
+  },
+  backToJobsText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  applyNowButton: {
+    backgroundColor: '#FFB6C1',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    flex: 1,
+    marginLeft: 10,
+    alignItems: 'center',
+  },
+  applyNowText: {
+    color: '#2A0845',
+    fontSize: 16,
+    fontWeight: '600',
   },
 }); 
