@@ -97,7 +97,9 @@ Important:
  Finalize Poster
  Refine Chatbot
  Email verification 
- 
+ New user animation
+ Google API map.
+ MailJet API
  
  
  
