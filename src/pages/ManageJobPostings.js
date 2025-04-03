@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../utils/axiosConfig';
+import { validateJobContent } from '../utils/contentFilter';
 import '../styles/ManageJobPostings.css';
 import NotificationBanner from '../components/NotificationBanner';
 
@@ -60,6 +61,14 @@ const ManageJobPostings = () => {
 
   const handleCreateJob = async (e) => {
     e.preventDefault();
+    
+    // Validate content before submitting
+    const validation = validateJobContent(formData);
+    if (!validation.isValid) {
+      setError(validation.error);
+      return;
+    }
+    
     try {
       await axiosInstance.post('/jobs', formData);
       setMessage('Job created successfully');
@@ -78,12 +87,25 @@ const ManageJobPostings = () => {
       fetchJobs();
     } catch (error) {
       console.error('Error creating job:', error);
-      setError('Failed to create job. Please try again.');
+      // Display the specific error message from the server if available
+      if (error.response && error.response.data && error.response.data.error) {
+        setError(error.response.data.error);
+      } else {
+        setError('Failed to create job. Please try again.');
+      }
     }
   };
 
   const handleUpdateJob = async (e) => {
     e.preventDefault();
+    
+    // Validate content before submitting
+    const validation = validateJobContent(formData);
+    if (!validation.isValid) {
+      setError(validation.error);
+      return;
+    }
+    
     try {
       await axiosInstance.put(`/employer/jobs/${editingJob._id}`, formData);
       setMessage('Job updated successfully');
@@ -102,7 +124,12 @@ const ManageJobPostings = () => {
       fetchJobs();
     } catch (error) {
       console.error('Error updating job:', error);
-      setError('Failed to update job. Please try again.');
+      // Display the specific error message from the server if available
+      if (error.response && error.response.data && error.response.data.error) {
+        setError(error.response.data.error);
+      } else {
+        setError('Failed to update job. Please try again.');
+      }
     }
   };
 

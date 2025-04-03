@@ -29,6 +29,7 @@ const { profileController, upload } = require("./controllers/profileController")
 
 // Import middleware
 const { verifyToken } = require("./middleware/auth");
+const { filterJobContent, testContentFilter } = require("./middleware/contentFilter");
 
 /**
  * Express application instance
@@ -113,7 +114,7 @@ client
     /* ------------------
        Create New Job Posting
     ------------------ */
-    app.post("/jobs", verifyToken, jobsController.createJob);
+    app.post("/jobs", verifyToken, filterJobContent, jobsController.createJob);
 
     /* ------------------
       Jobs to show in the homepage
@@ -185,7 +186,7 @@ client
     /* ------------------
        Update Job Posting
     ------------------ */
-    app.put("/employer/jobs/:jobId", verifyToken, jobsController.updateJob);
+    app.put("/employer/jobs/:jobId", verifyToken, filterJobContent, jobsController.updateJob);
 
     /* ------------------
        Delete Job Posting
@@ -196,6 +197,19 @@ client
        Search Employer's Job Postings
     ------------------ */
     app.get("/employer/jobs/search", verifyToken, jobsController.searchEmployerJobs);
+
+    /* ------------------
+       Test Content Filter
+    ------------------ */
+    app.post("/test-content-filter", (req, res) => {
+      const { text } = req.body;
+      if (!text) {
+        return res.status(400).json({ error: "Text is required" });
+      }
+      
+      const results = testContentFilter(text);
+      res.status(200).json(results);
+    });
 
     /******************************************
      *         ROUTES DEFINITION END          *
