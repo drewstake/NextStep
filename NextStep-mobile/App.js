@@ -39,21 +39,51 @@ function TabNavigator() {
         },
         tabBarActiveTintColor: '#007AFF',
         tabBarInactiveTintColor: 'gray',
-        headerShown: false,
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#fff',
+        },
+        headerTitleStyle: {
+          fontSize: 20,
+          fontWeight: 'bold',
+        },
       })}
     >
-      <Tab.Screen name="BrowseJobs" component={BrowseJobsScreen} />
-      <Tab.Screen name="MyJobs" component={MyJobsScreen} />
-      <Tab.Screen name="Messages" component={MessagesScreen} />
+      <Tab.Screen 
+        name="BrowseJobs" 
+        component={BrowseJobsScreen}
+        options={{
+          title: 'Browse Jobs',
+        }}
+      />
+      <Tab.Screen 
+        name="MyJobs" 
+        component={MyJobsScreen}
+        options={{
+          title: 'My Jobs',
+        }}
+      />
+      <Tab.Screen 
+        name="Messages" 
+        component={MessagesScreen}
+        options={{
+          title: 'Messages',
+        }}
+      />
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen}
         options={{
-          headerShown: true,
           title: 'Profile',
         }}
       />
-      <Tab.Screen name="About" component={AboutScreen} />
+      <Tab.Screen 
+        name="About" 
+        component={AboutScreen}
+        options={{
+          title: 'About',
+        }}
+      />
     </Tab.Navigator>
   );
 }

@@ -79,7 +79,10 @@ export default function MessagesScreen({ navigation }) {
       styles.messageContainer,
       item.isMe ? styles.myMessage : styles.theirMessage
     ]}>
-      <Text style={styles.messageText}>{item.text}</Text>
+      <Text style={[
+        styles.messageText,
+        item.isMe ? styles.myMessageText : styles.theirMessageText
+      ]}>{item.text}</Text>
     </View>
   );
 
@@ -137,9 +140,6 @@ export default function MessagesScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Messages</Text>
-      </View>
       <FlatList
         data={DUMMY_CONTACTS}
         renderItem={renderContactItem}
@@ -154,16 +154,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  header: {
-    padding: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
   },
   listContainer: {
     padding: 15,
@@ -286,7 +276,12 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
+  },
+  myMessageText: {
     color: '#fff',
+  },
+  theirMessageText: {
+    color: '#000',
   },
   messageInputContainer: {
     flexDirection: 'row',

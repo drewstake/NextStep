@@ -46,14 +46,12 @@ export default function BrowseJobsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <FlatList
-          data={DUMMY_JOBS}
-          renderItem={renderJobItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-        />
-      </View>
+      <FlatList
+        data={DUMMY_JOBS}
+        renderItem={renderJobItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
+      />
     </View>
   );
 }
@@ -61,11 +59,7 @@ export default function BrowseJobsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 30,
+    backgroundColor: '#f5f5f5',
   },
   listContainer: {
     padding: 15,

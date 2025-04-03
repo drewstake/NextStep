@@ -77,9 +77,6 @@ export default function MyJobsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Applications</Text>
-      </View>
       <FlatList
         data={DUMMY_APPLICATIONS}
         renderItem={renderApplicationItem}
@@ -94,16 +91,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  header: {
-    padding: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
   },
   listContainer: {
     padding: 15,
