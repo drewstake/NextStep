@@ -10,6 +10,8 @@ import ProfileScreen from './screens/ProfileScreen';
 import LoginScreen from './screens/LoginScreen';
 import BrowseJobsScreen from './screens/BrowseJobsScreen';
 import JobDetailsScreen from './screens/JobDetailsScreen';
+import MyJobsScreen from './screens/MyJobsScreen';
+import MessagesScreen from './screens/MessagesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -23,6 +25,10 @@ function TabNavigator() {
 
           if (route.name === 'BrowseJobs') {
             iconName = focused ? 'briefcase' : 'briefcase-outline';
+          } else if (route.name === 'MyJobs') {
+            iconName = focused ? 'list' : 'list-outline';
+          } else if (route.name === 'Messages') {
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'About') {
@@ -36,14 +42,9 @@ function TabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen 
-        name="BrowseJobs" 
-        component={BrowseJobsScreen} 
-        options={{
-          headerShown: true,
-          title: 'Available Jobs',
-        }}
-      />
+      <Tab.Screen name="BrowseJobs" component={BrowseJobsScreen} />
+      <Tab.Screen name="MyJobs" component={MyJobsScreen} />
+      <Tab.Screen name="Messages" component={MessagesScreen} />
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen}
