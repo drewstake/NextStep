@@ -163,9 +163,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     padding: 15,
     paddingTop: 40,
+    paddingBottom: 5,
   },
   backButton: {
     padding: 8,
+    marginBottom: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
   },
@@ -174,6 +176,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     margin: 20,
     padding: 20,
+    marginTop: 5,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -184,7 +187,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   jobTitle: {
-    fontSize: 32,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 10,
