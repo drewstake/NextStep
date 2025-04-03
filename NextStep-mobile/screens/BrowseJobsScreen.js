@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const DUMMY_JOBS = [
   {
@@ -50,8 +51,15 @@ export default function BrowseJobsScreen({ navigation }) {
         source: 'BrowseJobs'
       })}
     >
-      <Text style={styles.jobTitle}>{item.title}</Text>
-      <Text style={styles.companyName}>{item.company}</Text>
+      <View style={styles.jobHeader}>
+        <View>
+          <Text style={styles.jobTitle}>{item.title}</Text>
+          <Text style={styles.companyName}>{item.company}</Text>
+        </View>
+        <TouchableOpacity style={styles.applyButton}>
+          <Text style={styles.applyButtonText}>Apply</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.jobDetails}>
         <Text style={styles.detail}>{item.location}</Text>
         <Text style={styles.detail}>{item.salary}</Text>
@@ -62,31 +70,29 @@ export default function BrowseJobsScreen({ navigation }) {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="search-outline" size={48} color="#666" />
+      <Ionicons name="search-outline" size={48} color="#fff" />
       <Text style={styles.emptyStateText}>No jobs found matching your search</Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#2A0845', '#6441A5']}
+      style={styles.container}
+    >
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search jobs..."
+          placeholder="Senior UX Designer"
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholderTextColor="#666"
+          placeholderTextColor="rgba(255, 255, 255, 0.6)"
         />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity 
-            onPress={() => setSearchQuery('')}
-            style={styles.clearButton}
-          >
-            <Ionicons name="close-circle" size={20} color="#666" />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.searchButton}>
+          <Text style={styles.searchButtonText}>Search</Text>
+        </TouchableOpacity>
       </View>
+
       <FlatList
         data={filteredJobs}
         renderItem={renderJobItem}
@@ -94,36 +100,49 @@ export default function BrowseJobsScreen({ navigation }) {
         contentContainerStyle={styles.listContainer}
         ListEmptyComponent={renderEmptyState}
       />
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    paddingTop: 30,
+  },
+  screenTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 40,
+    marginBottom: 20,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 15,
-    paddingHorizontal: 15,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  searchIcon: {
-    marginRight: 10,
+    marginHorizontal: 15,
+    marginBottom: 20,
   },
   searchInput: {
     flex: 1,
     height: 45,
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    marginRight: 10,
   },
-  clearButton: {
-    padding: 5,
+  searchButton: {
+    backgroundColor: '#FF69B4',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   listContainer: {
     padding: 15,
@@ -142,15 +161,33 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
+  jobHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+  },
   jobTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#0066cc',
     marginBottom: 5,
   },
   companyName: {
     fontSize: 16,
-    color: '#666',
+    color: '#FF69B4',
     marginBottom: 10,
+  },
+  applyButton: {
+    backgroundColor: '#FF69B4',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 5,
+  },
+  applyButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   jobDetails: {
     flexDirection: 'row',
@@ -173,7 +210,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#666',
+    color: '#fff',
     marginTop: 10,
   },
 }); 

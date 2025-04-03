@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const DUMMY_CONTACTS = [
   {
@@ -54,7 +55,7 @@ export default function MessagesScreen({ navigation }) {
       style={styles.contactItem}
       onPress={() => setSelectedContact(item)}
     >
-      <View style={styles.avatarContainer}>
+      <View style={[styles.avatarContainer, { backgroundColor: '#FF69B4' }]}>
         <Text style={styles.avatarText}>{item.avatar}</Text>
       </View>
       <View style={styles.contactInfo}>
@@ -65,7 +66,7 @@ export default function MessagesScreen({ navigation }) {
         <View style={styles.messagePreview}>
           <Text style={styles.lastMessage} numberOfLines={1}>{item.lastMessage}</Text>
           {item.unreadCount > 0 && (
-            <View style={styles.unreadBadge}>
+            <View style={[styles.unreadBadge, { backgroundColor: '#FF69B4' }]}>
               <Text style={styles.unreadCount}>{item.unreadCount}</Text>
             </View>
           )}
@@ -95,16 +96,16 @@ export default function MessagesScreen({ navigation }) {
 
   if (selectedContact) {
     return (
-      <KeyboardAvoidingView 
+      <LinearGradient
+        colors={['#2A0845', '#6441A5']}
         style={styles.chatContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.chatHeader}>
           <TouchableOpacity 
             onPress={() => setSelectedContact(null)}
             style={styles.backButton}
           >
-            <Ionicons name="arrow-back" size={24} color="#007AFF" />
+            <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <View style={styles.chatHeaderInfo}>
             <Text style={styles.chatHeaderName}>{selectedContact.name}</Text>
@@ -125,35 +126,39 @@ export default function MessagesScreen({ navigation }) {
             value={messageText}
             onChangeText={setMessageText}
             placeholder="Type a message..."
+            placeholderTextColor="#666"
             multiline
           />
           <TouchableOpacity 
             style={styles.sendButton}
             onPress={handleSendMessage}
           >
-            <Ionicons name="send" size={24} color="#007AFF" />
+            <Ionicons name="send" size={24} color="#FF69B4" />
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#2A0845', '#6441A5']}
+      style={styles.container}
+    >
       <FlatList
         data={DUMMY_CONTACTS}
         renderItem={renderContactItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
       />
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    paddingTop: 30,
   },
   listContainer: {
     padding: 15,
@@ -178,7 +183,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#007AFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 15,
@@ -200,6 +204,7 @@ const styles = StyleSheet.create({
   contactName: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#0066cc',
   },
   messageTime: {
     fontSize: 14,
@@ -217,7 +222,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   unreadBadge: {
-    backgroundColor: '#007AFF',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -232,15 +236,14 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   chatHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   backButton: {
     padding: 5,
@@ -252,10 +255,11 @@ const styles = StyleSheet.create({
   chatHeaderName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#fff',
   },
   chatHeaderStatus: {
     fontSize: 14,
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   messagesList: {
     padding: 15,
@@ -268,11 +272,11 @@ const styles = StyleSheet.create({
   },
   myMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FF69B4',
   },
   theirMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   messageText: {
     fontSize: 16,
@@ -299,6 +303,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginRight: 10,
     maxHeight: 100,
+    color: '#333',
   },
   sendButton: {
     padding: 5,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const DUMMY_APPLICATIONS = [
   {
@@ -29,11 +30,11 @@ const DUMMY_APPLICATIONS = [
 const getStatusColor = (status) => {
   switch (status) {
     case 'Applied':
-      return '#007AFF';
+      return '#FF69B4'; // Pink to match theme
     case 'Offered':
-      return '#34C759';
+      return '#34C759'; // Keep green for success
     case 'Rejected':
-      return '#FF3B30';
+      return '#F00'; // Keep red for rejection
     default:
       return '#666';
   }
@@ -54,7 +55,10 @@ const getStatusIcon = (status) => {
 
 export default function MyJobsScreen({ navigation }) {
   const renderApplicationItem = ({ item }) => (
-    <TouchableOpacity style={styles.applicationCard}>
+    <TouchableOpacity 
+      style={styles.applicationCard}
+      onPress={() => navigation.navigate('JobDetails', { job: item })}
+    >
       <View style={styles.applicationHeader}>
         <View>
           <Text style={styles.jobTitle}>{item.title}</Text>
@@ -69,28 +73,31 @@ export default function MyJobsScreen({ navigation }) {
         <Text style={styles.dateText}>Applied on {item.date}</Text>
         <TouchableOpacity style={styles.detailsButton}>
           <Text style={styles.detailsButtonText}>View Details</Text>
-          <Ionicons name="chevron-forward" size={16} color="#007AFF" />
+          <Ionicons name="chevron-forward" size={16} color="#FF69B4" />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#2A0845', '#6441A5']}
+      style={styles.container}
+    >
       <FlatList
         data={DUMMY_APPLICATIONS}
         renderItem={renderApplicationItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
       />
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    paddingTop: 30,
   },
   listContainer: {
     padding: 15,
@@ -118,11 +125,12 @@ const styles = StyleSheet.create({
   jobTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#0066cc',
     marginBottom: 5,
   },
   companyName: {
     fontSize: 16,
-    color: '#666',
+    color: '#FF69B4',
   },
   statusBadge: {
     flexDirection: 'row',
@@ -142,6 +150,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    paddingTop: 10,
   },
   dateText: {
     color: '#666',
@@ -152,8 +163,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   detailsButtonText: {
-    color: '#007AFF',
+    color: '#FF69B4',
     marginRight: 5,
     fontSize: 14,
+    fontWeight: '500',
   },
 }); 
