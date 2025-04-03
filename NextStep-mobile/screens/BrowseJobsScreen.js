@@ -30,7 +30,7 @@ const DUMMY_JOBS = [
 
 export default function BrowseJobsScreen({ navigation }) {
   const renderJobItem = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.jobCard}
       onPress={() => navigation.navigate('JobDetails', { job: item })}
     >
@@ -46,13 +46,14 @@ export default function BrowseJobsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Available Jobs</Text>
-      <FlatList
-        data={DUMMY_JOBS}
-        renderItem={renderJobItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-      />
+      <View style={styles.header}>
+        <FlatList
+          data={DUMMY_JOBS}
+          renderItem={renderJobItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
+        />
+      </View>
     </View>
   );
 }
@@ -63,10 +64,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    marginBottom: 30,
   },
   listContainer: {
     padding: 15,

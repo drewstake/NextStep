@@ -7,7 +7,7 @@ export default function LoginScreen({ navigation }) {
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return true;//emailRegex.test(email);
   };
 
   const handleLogin = () => {

@@ -151,6 +151,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    marginTop: 40,
   },
   header: {
     flexDirection: 'row',
@@ -171,10 +172,10 @@ const styles = StyleSheet.create({
   card: {
     position: 'absolute',
     width: SCREEN_WIDTH,
-    top: 70,
+    top: 370,
     backgroundColor: '#fff',
     borderRadius: 15,
-    margin: 15,
+    marginTop: 60,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: {

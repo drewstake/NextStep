@@ -36,7 +36,14 @@ function TabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="BrowseJobs" component={BrowseJobsScreen} />
+      <Tab.Screen 
+        name="BrowseJobs" 
+        component={BrowseJobsScreen} 
+        options={{
+          headerShown: true,
+          title: 'Available Jobs',
+        }}
+      />
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen}
