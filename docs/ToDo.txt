@@ -100,7 +100,7 @@ Important:
  New user animation
  Google API map.
  MailJet API
- 
+ OpenAI NLP Filter
  
  
 
