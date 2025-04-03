@@ -9,6 +9,7 @@ import AboutScreen from './screens/AboutScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import LoginScreen from './screens/LoginScreen';
 import BrowseJobsScreen from './screens/BrowseJobsScreen';
+import JobDetailsScreen from './screens/JobDetailsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -61,6 +62,11 @@ export default function App() {
         <Stack.Screen
           name="MainApp"
           component={TabNavigator}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="JobDetails" 
+          component={JobDetailsScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

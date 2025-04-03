@@ -28,9 +28,12 @@ const DUMMY_JOBS = [
   },
 ];
 
-export default function BrowseJobsScreen() {
+export default function BrowseJobsScreen({ navigation }) {
   const renderJobItem = ({ item }) => (
-    <TouchableOpacity style={styles.jobCard}>
+    <TouchableOpacity 
+      style={styles.jobCard}
+      onPress={() => navigation.navigate('JobDetails', { job: item })}
+    >
       <Text style={styles.jobTitle}>{item.title}</Text>
       <Text style={styles.companyName}>{item.company}</Text>
       <View style={styles.jobDetails}>
