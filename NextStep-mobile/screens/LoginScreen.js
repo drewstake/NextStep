@@ -4,23 +4,35 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LoginScreen({ navigation }) {
+  const [isEmailLogin, setIsEmailLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isEmailLogin, setIsEmailLogin] = useState(true);
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return true;//emailRegex.test(email);
   };
 
-  const handleLogin = () => {
-    if (isEmailLogin && !validateEmail(email)) {
+  const handleSubmit = () => {
+    if (!validateEmail(email)) {
       Alert.alert('Invalid Email', 'Please enter a valid email address');
       return;
     }
 
     if (password.length < 3) {
       Alert.alert('Invalid Password', 'Password must be at least 6 characters');
+      return;
+    }
+
+    if (!isEmailLogin && !fullName) {
+      Alert.alert('Invalid Name', 'Please enter your full name');
+      return;
+    }
+
+    if (!isEmailLogin && !phone) {
+      Alert.alert('Invalid Phone', 'Please enter your phone number');
       return;
     }
 
@@ -38,6 +50,49 @@ export default function LoginScreen({ navigation }) {
     console.log('Forgot Password');
   };
 
+  const renderSignUpFields = () => {
+    if (!isEmailLogin) {
+      return (
+        <>
+          <View style={styles.inputContainer}>
+            <Ionicons 
+              name="person-outline" 
+              size={20} 
+              color="#666" 
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              value={fullName}
+              onChangeText={setFullName}
+              autoCapitalize="words"
+              placeholderTextColor="#666"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons 
+              name="phone-portrait-outline" 
+              size={20} 
+              color="#666" 
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              placeholderTextColor="#666"
+            />
+          </View>
+        </>
+      );
+    }
+    return null;
+  };
+
   return (
     <LinearGradient
       colors={['#2A0845', '#6441A5']}
@@ -49,53 +104,51 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.signInLabel}>Sign-in to apply for jobs.</Text>
       </View>
 
-      <View style={styles.header}>
-        <Text style={styles.title}>Log In</Text>
-      </View>
-
       <View style={styles.loginOptions}>
-        <TouchableOpacity
+        <TouchableOpacity 
           style={[styles.loginOption, isEmailLogin && styles.activeLoginOption]}
           onPress={() => setIsEmailLogin(true)}
         >
           <Text style={[styles.loginOptionText, isEmailLogin && styles.activeLoginOptionText]}>
-            Email Login
+            Sign In
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        <TouchableOpacity 
           style={[styles.loginOption, !isEmailLogin && styles.activeLoginOption]}
           onPress={() => setIsEmailLogin(false)}
         >
           <Text style={[styles.loginOptionText, !isEmailLogin && styles.activeLoginOptionText]}>
-            Phone Login
+            Sign Up
           </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.form}>
+        {renderSignUpFields()}
+
         <View style={styles.inputContainer}>
-          <Ionicons
-            name={isEmailLogin ? "mail-outline" : "phone-portrait-outline"}
-            size={20}
-            color="#666"
+          <Ionicons 
+            name="mail-outline"
+            size={20} 
+            color="#666" 
             style={styles.inputIcon}
           />
           <TextInput
             style={styles.input}
-            placeholder={isEmailLogin ? "Email" : "Phone Number"}
+            placeholder="Email"
             value={email}
             onChangeText={setEmail}
-            keyboardType={isEmailLogin ? "email-address" : "phone-pad"}
+            keyboardType="email-address"
             autoCapitalize="none"
             placeholderTextColor="#666"
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Ionicons
-            name="lock-closed-outline"
-            size={20}
-            color="#666"
+          <Ionicons 
+            name="lock-closed-outline" 
+            size={20} 
+            color="#666" 
             style={styles.inputIcon}
           />
           <TextInput
@@ -108,22 +161,23 @@ export default function LoginScreen({ navigation }) {
           />
         </View>
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginButtonText}>LOGIN</Text>
+        <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
+          <Text style={styles.loginButtonText}>{isEmailLogin ? 'LOGIN' : 'SUBMIT'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
-          <Image
+          <Image 
             source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg' }}
             style={styles.googleIcon}
           />
           <Text style={styles.googleButtonText}>Sign in with Google</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword}>
-          <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-        </TouchableOpacity>
-
+        {isEmailLogin && (
+          <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword}>
+            <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </LinearGradient>
   );
@@ -151,6 +205,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     padding: 5,
     marginBottom: 30,
+    marginTop: 50,
   },
   loginOption: {
     flex: 1,
