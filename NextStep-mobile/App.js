@@ -32,10 +32,18 @@ function TabNavigator() {
         },
         tabBarActiveTintColor: '#007AFF',
         tabBarInactiveTintColor: 'gray',
+        headerShown: false,
       })}
     >
       <Tab.Screen name="BrowseJobs" component={BrowseJobsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileScreen}
+        options={{
+          headerShown: true,
+          title: 'Profile',
+        }}
+      />
       <Tab.Screen name="About" component={AboutScreen} />
     </Tab.Navigator>
   );

@@ -1,7 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }) {
+  const handleSignOut = () => {
+    navigation.replace('Login');
+  };
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity 
+          onPress={handleSignOut}
+          style={styles.signOutButton}
+        >
+          <Ionicons name="log-out-outline" size={24} color="#007AFF" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
   return (
     <View style={styles.container}>
       <View style={styles.profileHeader}>
@@ -66,5 +84,8 @@ const styles = StyleSheet.create({
   info: {
     fontSize: 16,
     marginBottom: 5,
+  },
+  signOutButton: {
+    padding: 10,
   },
 }); 
