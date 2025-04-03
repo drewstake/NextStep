@@ -93,7 +93,10 @@ Immediate:
 Important:
  Deploy the website
  Finish mobile frontend
- Revise Styling/Make logo
+ 
+
+
+Revise Styling/Make logo
  Finalize Poster
  Refine Chatbot
  Email verification 
@@ -101,6 +104,6 @@ Important:
  Google API map.
  MailJet API
  OpenAI NLP Filter
- 
+ Bad Word Filter
  
 
