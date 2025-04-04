@@ -50,7 +50,7 @@ const filterJobContent = (req, res, next) => {
       if (req.body[field] && typeof req.body[field] === 'string') {
         for (const word of inappropriateWords) {
           if (containsWord(req.body[field], word)) {
-            return res.status(400).json({ 
+            return res.status(406).json({ 
               error: `The ${field} contains inappropriate content. Please revise and try again.` 
             });
           }
@@ -70,7 +70,7 @@ const filterJobContent = (req, res, next) => {
           if (typeof item === 'string') {
             for (const word of inappropriateWords) {
               if (containsWord(item, word)) {
-                return res.status(400).json({ 
+                return res.status(406).json({ 
                   error: `The ${field} contains inappropriate content. Please revise and try again.` 
                 });
               }
@@ -89,7 +89,7 @@ const filterJobContent = (req, res, next) => {
  * @param {string} text - The text to test
  * @returns {Object} - Object with test results
  */
-const testContentFilter = (text) => {
+/* const testContentFilter = (text) => {
   const results = {
     text,
     containsInappropriate: false,
@@ -105,8 +105,7 @@ const testContentFilter = (text) => {
   
   return results;
 };
-
+ */
 module.exports = {
-  filterJobContent,
-  testContentFilter
+  filterJobContent
 }; 

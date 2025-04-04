@@ -34,7 +34,7 @@ const authController = {
       const user = await collection.findOne({
         $or: [{ email }],
       });
-
+      
       if (!user) {
         return res.status(401).json({ message: "No matching user found." });
       }
@@ -62,6 +62,8 @@ const authController = {
 
       res.status(200).json({
         token,
+        email,
+        full_name: user.full_name,
         message: "Login success",
         isEmployer: user.employerFlag,
       });

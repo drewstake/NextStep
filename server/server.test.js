@@ -434,6 +434,50 @@ describe('API Tests', () => {
             expect(response.body.error).toBe('Title, company name, and job description are required');
         });
 
+        test('POST /jobs - should handle inappropriate words in string fields', async () => {
+            const inappropriateJob = {
+                title: 'New Test Job Word',
+                companyName: 'New Test Company',
+                companyWebsite: 'https://testcompany.com',
+                salaryRange: '$90,000 - $120,000',
+                benefits: ['Health Insurance', '401k'],
+                locations: ['Remote', 'New York'],
+                schedule: 'Full-time',
+                jobDescription: 'Test job description fuck',
+                skills: ['JavaScript', 'React', 'Node.js']
+            };
+
+            const response = await request(app)
+                .post('/jobs')
+                .set('Authorization', `Bearer ${testEmployerToken}`)
+                .send(inappropriateJob);
+                expect(response.status).toBe(406);
+                
+
+        });
+
+        test('POST /jobs - should handle inappropriate words in array fields', async () => {
+            const inappropriateJob = {
+                title: 'New Test Job Word',
+                companyName: 'New Test Company',
+                companyWebsite: 'https://testcompany.com',
+                salaryRange: '$90,000 - $120,000',
+                benefits: ['Health Insurance', '401k'],
+                locations: ['Remote', 'New York', 'fuck'],
+                schedule: 'Full-time',
+                jobDescription: 'Test job description',
+                skills: ['JavaScript', 'React', 'Node.js']
+            };
+
+            const response = await request(app)
+                .post('/jobs')
+                .set('Authorization', `Bearer ${testEmployerToken}`)
+                .send(inappropriateJob);
+                expect(response.status).toBe(406);
+                
+
+        });
+
         test('POST /jobs - should handle non-employer users', async () => {
             const newJob = {
                 title: 'New Test Job',
@@ -460,7 +504,7 @@ describe('API Tests', () => {
                 .set('Authorization', `Bearer ${testUserToken}`)
                 .send({
                     _id: testJobId,
-                    swipeMode: 1 // Apply
+                    swipeMode: 1, // Apply
                 });
 
             expect(response.status).toBe(200);

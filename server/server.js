@@ -19,6 +19,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const { OAuth2Client } = require("google-auth-library");
+const { sendEmail } = require('./middleware/mailer');
 
 // Import controllers
 const authController = require("./controllers/authController");
@@ -39,14 +40,15 @@ const app = express();
 
 // Log key environment variables (excluding sensitive data)
 console.log("Environment check:", {
-  port: process.env.PORT,
-  twilioConfigured:
-    !!process.env.TWILIO_ACCOUNT_SID &&
-    !!process.env.TWILIO_AUTH_TOKEN &&
-    !!process.env.TWILIO_PHONE_NUMBER,
-  mongoConfigured: !!process.env.MONGODB_URI,
-  googleConfigured: !!process.env.GOOGLE_CLIENT_ID,
-  env: process.env.NODE_ENV,
+   port: process.env.PORT,
+   twilioConfigured:
+      !!process.env.TWILIO_ACCOUNT_SID &&
+      !!process.env.TWILIO_AUTH_TOKEN &&
+      !!process.env.TWILIO_PHONE_NUMBER,
+   mongoConfigured: !!process.env.MONGODB_URI,
+   googleConfigured: !!process.env.GOOGLE_CLIENT_ID,
+   env: process.env.NODE_ENV || 'Production.Env',
+   mail_key: !!process.env.MJ_API_KEY 
 });
 
 // Initialize Google OAuth client
@@ -66,165 +68,152 @@ const PORT = process.env.PORT || 4000;
  * Main entry point for the API server
  */
 client
-  .connect()
-  .then(() => {
-    const db = client.db(dbName);
-    app.locals.db = db; // Make db available to all routes
+   .connect()
+   .then(() => {
+      const db = client.db(dbName);
+      app.locals.db = db; // Make db available to all routes
 
-    /******************************************
-     *        ROUTES DEFINITION START         *
-     ******************************************/
+      /******************************************
+       *        ROUTES DEFINITION START         *
+       ******************************************/
 
-    /* ------------------
-       Tracks Apply(right-swipe), Skip, and Ignore Jobs
-       mode: 1 for apply, 2 for skip, 3 for ignore
-    ------------------ */
-    // define constants for the swipe modes
-    const APPLY = 1;
-    const IGNORE = 2;
+      /* ------------------
+         Tracks Apply(right-swipe), Skip, and Ignore Jobs
+         mode: 1 for apply, 2 for skip, 3 for ignore
+      ------------------ */
+      // define constants for the swipe modes
+      const APPLY = 1;
+      const IGNORE = 2;
 
-    app.post("/jobsTracker", verifyToken, applicationsController.trackApplication);
+      app.post("/jobsTracker", verifyToken, applicationsController.trackApplication);
 
-    /* ------------------
-       Sign In
-       (Email+Password or Phone+Verification)
-    ------------------ */
-    app.post("/signin", authController.signin);
+      /* ------------------
+         Sign In
+         (Email+Password or Phone+Verification)
+      ------------------ */
+      app.post("/signin", authController.signin);
 
-    /* ------------------
-       Sign Up (Phone verification optional)
-    ------------------ */
-    app.post("/signup", authController.signup);
+      /* ------------------
+         Sign Up (Phone verification optional)
+      ------------------ */
+      app.post("/signup", authController.signup);
 
-    /* ------------------
-       Get Applications (for logged-in user)
-    ------------------ */
-    app.get("/applications", verifyToken, applicationsController.getUserApplications);
+      /* ------------------
+         Get Applications (for logged-in user)
+      ------------------ */
+      app.get("/applications", verifyToken, applicationsController.getUserApplications);
 
-    /* ------------------
-       Get Single Job by ID
-    ------------------ */
-    app.get("/jobs/:jobId", jobsController.getJobById);
+      /* ------------------
+         Get Single Job by ID
+      ------------------ */
+      app.get("/jobs/:jobId", jobsController.getJobById);
 
-    /* ------------------
-       Browse Jobs
-    ------------------ */
-    app.get("/jobs", jobsController.getAllJobs);
+      /* ------------------
+         Browse Jobs
+      ------------------ */
+      app.get("/jobs", jobsController.getAllJobs);
 
-    /* ------------------
-       Create New Job Posting
-    ------------------ */
-    app.post("/jobs", verifyToken, filterJobContent, jobsController.createJob);
+      /* ------------------
+         Create New Job Posting
+      ------------------ */
+      app.post("/jobs", verifyToken, filterJobContent, jobsController.createJob);
 
-    /* ------------------
-      Jobs to show in the homepage
-    ------------------ */
-    app.get("/retrieveJobsForHomepage", jobsController.getHomepageJobs);
+      /* ------------------
+        Jobs to show in the homepage
+      ------------------ */
+      app.get("/retrieveJobsForHomepage", jobsController.getHomepageJobs);
 
-    /* ------------------
-       Get Profile (for logged-in user)
-    ------------------ */
-    app.get("/profile", verifyToken, profileController.getProfile);
+      /* ------------------
+         Get Profile (for logged-in user)
+      ------------------ */
+      app.get("/profile", verifyToken, profileController.getProfile);
 
-    /* ------------------
-       Update Profile (for logged-in user)
-    ------------------ */
-    app.post("/updateprofile", verifyToken, upload.fields([{ name: "photo" }, { name: "resume" }]), profileController.updateProfile);
+      /* ------------------
+         Update Profile (for logged-in user)
+      ------------------ */
+      app.post("/updateprofile", verifyToken, upload.fields([{ name: "photo" }, { name: "resume" }]), profileController.updateProfile);
 
-    /* ------------------
-       Logout
-    ------------------ */
-    app.get("/logout", authController.logout);
+      /* ------------------
+         Logout
+      ------------------ */
+      app.get("/logout", authController.logout);
 
-    /* ------------------
-       Google OAuth
-    ------------------ */
-    app.post("/auth/google", authController.googleAuth);
+      /* ------------------
+         Google OAuth
+      ------------------ */
+      app.post("/auth/google", authController.googleAuth);
 
-    /* ------------------
-       Get All Users (for messenger)
-    ------------------ */
-    app.get("/users", verifyToken, profileController.getAllUsers);
+      /* ------------------
+         Get All Users (for messenger)
+      ------------------ */
+      app.get("/users", verifyToken, profileController.getAllUsers);
 
-    /* ------------------
-       Get Messages
-    ------------------ */
-    app.get("/messages", verifyToken, messagesController.getMessages);
+      /* ------------------
+         Get Messages
+      ------------------ */
+      app.get("/messages", verifyToken, messagesController.getMessages);
 
-    /* ------------------
-       Mark Messages as Read
-    ------------------ */
-    app.put("/messages/read/:contactId", verifyToken, messagesController.markMessagesAsRead);
+      /* ------------------
+         Mark Messages as Read
+      ------------------ */
+      app.put("/messages/read/:contactId", verifyToken, messagesController.markMessagesAsRead);
 
-    /* ------------------
-       Send Message
-    ------------------ */
-    app.post("/messages", verifyToken, messagesController.sendMessage);
+      /* ------------------
+         Send Message
+      ------------------ */
+      app.post("/messages", verifyToken, messagesController.sendMessage);
 
-    /* ------------------
-       Get Recent Contacts
-    ------------------ */
-    app.get("/myRecentContacts", verifyToken, messagesController.getRecentContacts);
+      /* ------------------
+         Get Recent Contacts
+      ------------------ */
+      app.get("/myRecentContacts", verifyToken, messagesController.getRecentContacts);
 
-    /* ------------------
-       Get Employer's Applications with Details
-    ------------------ */
-    app.get("/employer/applications", verifyToken, applicationsController.getEmployerApplications);
+      /* ------------------
+         Get Employer's Applications with Details
+      ------------------ */
+      app.get("/employer/applications", verifyToken, applicationsController.getEmployerApplications);
 
-    /* ------------------
-       Update Application Status
-    ------------------ */
-    app.put("/employer/applications/:applicationId", verifyToken, applicationsController.updateApplicationStatus);
+      /* ------------------
+         Update Application Status
+      ------------------ */
+      app.put("/employer/applications/:applicationId", verifyToken, applicationsController.updateApplicationStatus);
 
-    /* ------------------
-       Get Application Details
-    ------------------ */
-    app.get("/employer/applications/:applicationId", verifyToken, applicationsController.getApplicationDetails);
+      /* ------------------
+         Get Application Details
+      ------------------ */
+      app.get("/employer/applications/:applicationId", verifyToken, applicationsController.getApplicationDetails);
 
-    app.get("/userProfile/:userId", profileController.getUserProfile);
+      app.get("/userProfile/:userId", profileController.getUserProfile);
 
-    /* ------------------
-       Update Job Posting
-    ------------------ */
-    app.put("/employer/jobs/:jobId", verifyToken, filterJobContent, jobsController.updateJob);
+      /* ------------------
+         Update Job Posting
+      ------------------ */
+      app.put("/employer/jobs/:jobId", verifyToken, filterJobContent, jobsController.updateJob);
 
-    /* ------------------
-       Delete Job Posting
-    ------------------ */
-    app.delete("/employer/jobs/:jobId", verifyToken, jobsController.deleteJob);
+      /* ------------------
+         Delete Job Posting
+      ------------------ */
+      app.delete("/employer/jobs/:jobId", verifyToken, jobsController.deleteJob);
 
-    /* ------------------
-       Search Employer's Job Postings
-    ------------------ */
-    app.get("/employer/jobs/search", verifyToken, jobsController.searchEmployerJobs);
+      /* ------------------
+         Search Employer's Job Postings
+      ------------------ */
+      app.get("/employer/jobs/search", verifyToken, jobsController.searchEmployerJobs);
 
-    /* ------------------
-       Test Content Filter
-    ------------------ */
-    app.post("/test-content-filter", (req, res) => {
-      const { text } = req.body;
-      if (!text) {
-        return res.status(400).json({ error: "Text is required" });
+      /******************************************
+       *         ROUTES DEFINITION END          *
+       ******************************************/
+
+      // Start the server only if not in test environment
+      if (process.env.NODE_ENV !== 'test') {
+         app.listen(PORT, (err) => {
+            if (err) console.log("Error starting server:", err);
+            console.log(`Server listening on PORT ${PORT}`);
+         });
       }
-      
-      const results = testContentFilter(text);
-      res.status(200).json(results);
-    });
-
-    /******************************************
-     *         ROUTES DEFINITION END          *
-     ******************************************/
-
-    // Start the server only if not in test environment
-    if (process.env.NODE_ENV !== 'test') {
-      app.listen(PORT, (err) => {
-        if (err) console.log("Error starting server:", err);
-        console.log(`Server listening on PORT ${PORT}`);
-      });
-    }
-  })
-  .catch((error) => {
-    console.error("Error connecting to MongoDB:", error);
-  });
+   })
+   .catch((error) => {
+      console.error("Error connecting to MongoDB:", error);
+   });
 
 module.exports = app;

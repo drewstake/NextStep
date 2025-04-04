@@ -12,7 +12,7 @@ const APPLY = 1;
 const BrowseJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const { token } = useContext(TokenContext);
+  const { token, name, email } = useContext(TokenContext);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
 
@@ -44,7 +44,12 @@ const BrowseJobs = () => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:4000/jobsTracker', { _id: jobId, swipeMode: APPLY }, {
+      const response = await axios.post('http://localhost:4000/jobsTracker', { 
+        _id: jobId, 
+        email,
+        name,
+        swipeMode: APPLY 
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log(`${response.status} ${response.statusText}\n`);

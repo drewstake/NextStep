@@ -1,4 +1,5 @@
 const { ObjectId } = require("mongodb");
+const { sendEmail } = require('../middleware/mailer');
 
 const APPLY = 1;
 const IGNORE = 2;
@@ -27,7 +28,7 @@ const applicationsController = {
     try {
       const applicationsCollection = req.app.locals.db.collection("applications");
       const jobsCollection = req.app.locals.db.collection("Jobs");
-      const { _id, swipeMode } = req.body;
+      const { _id, swipeMode, email, name } = req.body;
 
       // First verify if the job exists
       const job = await jobsCollection.findOne({
@@ -41,6 +42,8 @@ const applicationsController = {
       const applicationInfo = {
         job_id: ObjectId.createFromHexString(_id),
         user_id: ObjectId.createFromHexString(req.user.id),
+        name,
+        email,
         date_applied: new Date(),
         status: swipeMode === APPLY ? "Pending" :
           swipeMode === IGNORE ? "Ignored" : "Unknown",
@@ -229,13 +232,13 @@ const applicationsController = {
       const { applicationId } = req.params;
       const { status, notes } = req.body;
 
-      const validStatuses = ["Pending", "Reviewed", "Interviewing", "Offered", "Rejected"];
+      const validStatuses = ["Pending", "Interviewing", "Offered", "Rejected"];
       if (!validStatuses.includes(status)) {
         return res.status(400).json({ error: "Invalid status value" });
       }
 
       const applicationsCollection = req.app.locals.db.collection("applications");
-      
+
       const application = await applicationsCollection.aggregate([
         {
           $match: {
@@ -266,8 +269,8 @@ const applicationsController = {
 
       const result = await applicationsCollection.updateOne(
         { _id: ObjectId.createFromHexString(applicationId) },
-        { 
-          $set: { 
+        {
+          $set: {
             status,
             updatedAt: new Date()
           }
@@ -276,6 +279,134 @@ const applicationsController = {
 
       if (result.modifiedCount === 0) {
         return res.status(404).json({ error: "Application not found" });
+      }
+
+      const appl_email = application[0].email;
+      const appl_name = application[0].name;
+      const company_name = application[0].jobDetails.companyName;
+      const jobTitle = application[0].jobDetails.title;
+      const senderEmail = "bzm436@psu.edu";
+      if (status === 'Offered') {
+        sendEmail(
+          senderEmail, // sender email
+          company_name,      // From who
+          appl_email, // applicant email
+          appl_name,           // applicant name
+          "Next Step Offer",    // subject
+          `
+            <html>
+                <body>
+                    <h2>Job Offer Letter</h2>
+                    <p>Dear ${appl_name},</p>
+                    <p>We are pleased to inform you that you have been selected for the position of <strong>Software Developer</strong> at our company. After reviewing your qualifications and performance during the interview, we are confident that you will be a valuable addition to our team.</p>
+                    
+                    <p><strong>Position:</strong> ${jobTitle}</p>
+                    
+                    <p>We believe your experience and skills will make a significant impact in our company, and we are excited to have you on board. Please review the attached offer details and respond with your acceptance by <strong>April 20, 2025</strong>.</p>
+                    
+                    <p>If you have any questions, feel free to reach out to our HR department at <a href="mailto:hr@example.com">hr@example.com</a>.</p>
+                    
+                    <p>Looking forward to your positive response!</p>
+                    
+                    <p>Sincerely,</p>
+                    <p><br>HR Manager<br>${company_name}</p>
+                </body>
+            </html>
+            `
+        );
+      }
+      //interviewing, pending, rejected, 
+      if (status === 'Rejected') {
+        sendEmail(
+          senderEmail, // sender email
+          company_name,      // From who
+          appl_email, // applicant email
+          appl_name,           // applicant name
+          "Next Step Job Application Update",    // subject
+          `
+            <html>
+                <body>
+                  <html>
+                      <body>
+                          <h2>Job Application Status</h2>
+                          <p>Dear ${appl_name},</p>
+                          
+                          <p>Thank you for your interest in the position of <strong>${jobTitle}</strong> at ${company_name}. We truly appreciate the time and effort you invested in the interview process. After careful consideration, we regret to inform you that we will not be moving forward with your application for this role.</p>
+
+                          <p>While your qualifications and experience are impressive, we have decided to proceed with another candidate whose skills more closely align with the current needs of the position. This decision was not an easy one, as we had a number of strong applicants.</p>
+
+                          <p>We will keep your resume on file for future opportunities that may better suit your background, and we encourage you to apply for any other roles with us that you feel may be a good fit.</p>
+
+                          <p>If you would like feedback on your interview or have any questions, feel free to reach out to us at <a href="mailto:hr@example.com">hr@example.com</a>.</p>
+
+                          <p>Thank you again for your time and for considering ${company_name}. We wish you the best of luck with your job search and future career endeavors.</p>
+
+                          <p>Sincerely,</p>
+                          <p><br>HR Manager<br>${company_name}</p>
+                      </body>
+                  </html>
+                </body>
+            </html>
+            `
+        );
+      }
+
+      if (status === 'Pending') {
+        sendEmail(
+          senderEmail, // sender email
+          company_name,      // From who
+          appl_email,        // applicant email
+          appl_name,         // applicant name
+          "Next Step Job Application Received", // subject
+          `
+            <html>
+                <body>
+                    <h2>Job Application Status</h2>
+                    <p>Dear ${appl_name},</p>
+    
+                    <p>Thank you for your application for the position of <strong>${jobTitle}</strong> at ${company_name}. We are currently reviewing all the applications and appreciate your patience during this process.</p>
+    
+                    <p>Please note that we will be in touch with you once we've completed our initial review. If we feel that your qualifications match the position, we will contact you for further steps.</p>
+    
+                    <p>If you have any questions or need more information, please feel free to reach out to us at <a href="mailto:hr@example.com">hr@example.com</a>.</p>
+    
+                    <p>Thank you again for considering ${company_name}. We will be in touch soon.</p>
+    
+                    <p>Sincerely,</p>
+                    <p><br>HR Manager<br>${company_name}</p>
+                </body>
+            </html>
+            `
+        );
+      }
+
+      if (status === 'Interviewing') {
+        sendEmail(
+          senderEmail, // sender email
+          company_name,      // From who
+          appl_email,        // applicant email
+          appl_name,         // applicant name
+          "Next Step - Interview Scheduling", // subject
+          `
+          <html>
+              <body>
+                  <h2>Job Application - Interview Invitation</h2>
+                  <p>Dear ${appl_name},</p>
+  
+                  <p>Thank you for your interest in the position of <strong>${jobTitle}</strong> at ${company_name}. We have reviewed your application, and we would like to move forward with scheduling an interview with you.</p>
+  
+                  <p>Please contact us at your earliest convenience to arrange a suitable time for the interview. You can reach our HR department directly at <a href="mailto:hr@example.com">hr@example.com</a> or simply reply to this email with your available dates and times.</p>
+  
+                  <p>We look forward to discussing your qualifications further and getting to know you better during the interview.</p>
+  
+                  <p>If you have any questions or need further information, don't hesitate to ask. We are excited to speak with you soon!</p>
+  
+                  <p>Sincerely,</p>
+                  <p><br>HR Manager<br>${company_name}</p>
+              </body>
+          </html>
+          `
+        );
       }
 
       res.status(200).json({ message: "Application status updated successfully" });

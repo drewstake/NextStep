@@ -36,7 +36,7 @@ const Login = () => {
   // Context & Navigation
   // ======================
   const navigate = useNavigate();
-  const { token, setToken, employerFlag, setEmployerFlag } =
+  const { token, setToken, employerFlag, setEmployerFlag, setEmail, setName } =
     useContext(TokenContext);
 
   // If a token already exists, redirect to profile
@@ -85,6 +85,8 @@ const Login = () => {
       const response = await axios.post("http://localhost:4000/signin", loginData);
       setToken(response.data.token);
       setEmployerFlag(response.data.isEmployer);
+      setEmail(response.data.email);
+      setName(response.data.full_name);
     } catch (error) {
       console.error("Login error:", error);
       

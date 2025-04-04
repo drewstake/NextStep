@@ -6,6 +6,8 @@ export const TokenContext = createContext();
 export const TokenProvider = ({ children }) => {
   console.log("Token init!!");
   const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [employerFlag, setEmployerFlag] = useState(() => localStorage.getItem("employerFlag") === "true");
   const [profileUpdateTrigger, setProfileUpdateTrigger] = useState(0);
 
@@ -19,7 +21,9 @@ export const TokenProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem("employerFlag", employerFlag);
-  }, [employerFlag]);
+    localStorage.setItem("email", email);
+    localStorage.setItem("name", name);
+  }, [employerFlag, name, email]);
 
   const triggerProfileUpdate = () => {
     setProfileUpdateTrigger(prev => prev + 1);
@@ -32,6 +36,10 @@ export const TokenProvider = ({ children }) => {
         setToken, 
         employerFlag, 
         setEmployerFlag,
+        name,
+        email,
+        setName,
+        setEmail,
         profileUpdateTrigger,
         triggerProfileUpdate 
       }}

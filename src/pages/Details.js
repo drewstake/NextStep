@@ -13,7 +13,7 @@ const Details = () => {
   const [job, setJob] = useState(null);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
-  const { token } = useContext(TokenContext);
+  const { token, email, name } = useContext(TokenContext);
 
   const handleBackToJobs = async () => {
     if (returnTo === "jobs") {
@@ -27,6 +27,8 @@ const Details = () => {
     try {
       await axios.post('http://localhost:4000/jobsTracker', {
         _id: job._id,
+        name,
+        email,
         swipeMode: 1 // 1 for apply
       }, {
         headers: {

@@ -14,7 +14,7 @@ const EmployerApplicationTracker = () => {
   const [editingId, setEditingId] = useState(null);
   const editingRowRef = useRef(null);
 
-  const statusOptions = ["Pending", "Reviewed", "Interviewing", "Offered", "Rejected"];
+  const statusOptions = ["Pending", "Interviewing", "Offered", "Rejected"];
 
   // Fetch applications on component mount
   useEffect(() => {

@@ -21,7 +21,7 @@ const Swipe = () => {
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState(null); // 'horizontal' or 'vertical'
-  const { token, setToken } = useContext(TokenContext);
+  const { token, setToken, email, name } = useContext(TokenContext);
   //  const [searchQuery, setSearchQuery] = useState('software');
   const [jobs, setJobs] = useState([]);
   const [error, setError] = useState(null);
@@ -48,7 +48,11 @@ const Swipe = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:4000/jobsTracker', { _id: jobId, swipeMode }, {
+      await axios.post('http://localhost:4000/jobsTracker', { 
+        _id: jobId, 
+        email,
+        name,
+        swipeMode }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
