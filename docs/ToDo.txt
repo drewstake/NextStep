@@ -92,7 +92,18 @@ Immediate:
    Job posting and tracking
 Important:
  Deploy the website
- Finish mobile
+ Finish mobile frontend
  
+
+
+Revise Styling/Make logo
+ Finalize Poster
+ Refine Chatbot
+ Email verification 
+ New user animation
+ Google API map.
+ MailJet API
+ OpenAI NLP Filter
+ Bad Word Filter
  
 
