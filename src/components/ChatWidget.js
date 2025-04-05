@@ -94,7 +94,7 @@ const ChatWidget = () => {
   };
 
   return (
-    <div className="chat-widget">
+    <div className={`${isMinimized ? 'chat-widget-hide' : 'chat-widget'}`}>
       <div className="chat-widget-header" onClick={toggleMinimize}>
         <span className="chat-title">Chat</span>
       </div>

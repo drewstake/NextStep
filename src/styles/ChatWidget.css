@@ -1,5 +1,17 @@
 /* src/styles/ChatWidget.css */
 
+.chat-widget-hide{
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 90px; /* Default expanded horizontally */
+  font-family: 'Poppins', sans-serif;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
 .chat-widget {
     position: fixed;
     bottom: 20px;
@@ -10,7 +22,6 @@
     overflow: hidden;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     z-index: 1000;
-    transition: all 0.3s ease;
   }
   
   .chat-widget-header {
