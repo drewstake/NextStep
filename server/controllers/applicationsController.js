@@ -226,7 +226,7 @@ const applicationsController = {
   updateApplicationStatus: async (req, res) => {
     try {
       if (!req.user.isEmployer) {
-        return res.status(403).json({ error: "Only employers can update applications" });
+        return res.status(403).json({ error: "Only employers can update application status" });
       }
 
       const { applicationId } = req.params;
@@ -234,7 +234,7 @@ const applicationsController = {
 
       const validStatuses = ["Pending", "Interviewing", "Offered", "Rejected"];
       if (!validStatuses.includes(status)) {
-        return res.status(400).json({ error: "Invalid status value" });
+        return res.status(400).json({ error: "Invalid status. Must be one of: pending, interviewing, accepted, rejected" });
       }
 
       const applicationsCollection = req.app.locals.db.collection("applications");

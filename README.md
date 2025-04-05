@@ -76,9 +76,8 @@ npm run test:coverage
 cd ../src
 npm install
 
-# 5 Regenerate jsdocs (currently available only for server-side API code)
-cd server
-# Notice: this is a global install. Hence, must be installed separately.
+# 5 Regenerate jsdocs (currently available only for server-side API code but must be run from the NextStep root folder where the README.md file is located)
+# Notice: JSdoc is a global install. Hence, must be installed separately.
 npm install -g jsdoc
 jsdoc -c jsdoc.json
 ```

@@ -566,6 +566,77 @@ describe('API Tests', () => {
             expect(response.status).toBe(200);
             expect(Array.isArray(response.body)).toBe(true);
         });
+
+
+        test('PUT /employer/applications/:applicationId - should handle invalid status', async () => {
+            // First create an application
+            const applicationResponse = await request(app)
+                .post('/jobsTracker')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    _id: testJobId,
+                    swipeMode: 1 // Apply
+                });
+
+            const applicationId = applicationResponse.body.application_id;
+
+            // Try to update with invalid status
+            const response = await request(app)
+                .put(`/employer/applications/${applicationId}`)
+                .set('Authorization', `Bearer ${testEmployerToken}`)
+                .send({
+                    status: 'invalid_status'
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('Invalid status. Must be one of: pending, interviewing, accepted, rejected');
+        });
+
+        test('PUT /employer/applications/:applicationId - should handle unauthorized access', async () => {
+            // First create an application
+            const applicationResponse = await request(app)
+                .post('/jobsTracker')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    _id: testJobId,
+                    swipeMode: 1 // Apply
+                });
+
+            const applicationId = applicationResponse.body.application_id;
+
+            // Try to update with non-employer user
+            const response = await request(app)
+                .put(`/employer/applications/${applicationId}`)
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    status: 'interview'
+                });
+
+            expect(response.status).toBe(403);
+            expect(response.body.error).toBe('Only employers can update application status');
+        });
+
+        test('PUT /employer/applications/:applicationId - should handle missing status field', async () => {
+            // First create an application
+            const applicationResponse = await request(app)
+                .post('/jobsTracker')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send({
+                    _id: testJobId,
+                    swipeMode: 1 // Apply
+                });
+
+            const applicationId = applicationResponse.body.application_id;
+
+            // Try to update without status field
+            const response = await request(app)
+                .put(`/employer/applications/${applicationId}`)
+                .set('Authorization', `Bearer ${testEmployerToken}`)
+                .send({});
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('Invalid status. Must be one of: pending, interviewing, accepted, rejected');
+        });
     });
 
     // Profile Tests
