@@ -30,7 +30,7 @@ const { profileController, upload } = require("./controllers/profileController")
 
 // Import middleware
 const { verifyToken } = require("./middleware/auth");
-const { filterJobContent, testContentFilter } = require("./middleware/contentFilter");
+const { filterJobContent } = require("./middleware/contentFilter");
 
 /**
  * Express application instance
@@ -48,7 +48,9 @@ console.log("Environment check:", {
    mongoConfigured: !!process.env.MONGODB_URI,
    googleConfigured: !!process.env.GOOGLE_CLIENT_ID,
    env: process.env.NODE_ENV || 'Production.Env',
-   mail_key: !!process.env.MJ_API_KEY 
+   mail_key: !!process.env.MJ_API_KEY && 
+   !!process.env.MJ_PRIVATE_KEY, 
+   bad_words_api_key: !!process.env.BAD_WORDS_API_KEY
 });
 
 // Initialize Google OAuth client

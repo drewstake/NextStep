@@ -17,8 +17,35 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 require('dotenv').config();
+const { sendEmail } = require('./middleware/mailer');
 
 const app = require('./server');
+
+// Mock the axios module
+jest.mock('axios', () => ({
+  default: jest.fn((config) => {
+    // Mock implementation for content filter API
+    if (config.url.includes('bad_words')) {
+      console.log('Mock API received data:', config.data);
+      // Check if the data contains any test inappropriate words
+      const hasInappropriateContent = config.data.toLowerCase().includes('bitch');
+      console.log('Has inappropriate content:', hasInappropriateContent);
+      return Promise.resolve({
+        data: {
+          bad_words_total: hasInappropriateContent ? 1 : 0,
+          bad_words_list: hasInappropriateContent ? [{
+            word: 'bitch',
+            deviations: 0,
+            start: config.data.toLowerCase().indexOf('bitch'),
+            end: config.data.toLowerCase().indexOf('bitch') + 5,
+            info: 2
+          }] : []
+        }
+      });
+    }
+    return Promise.resolve({ data: {} });
+  })
+}));
 
 /**
  * Test user data for authentication tests
@@ -443,7 +470,7 @@ describe('API Tests', () => {
                 benefits: ['Health Insurance', '401k'],
                 locations: ['Remote', 'New York'],
                 schedule: 'Full-time',
-                jobDescription: 'Test job description fuck',
+                jobDescription: 'Test job description bitch',
                 skills: ['JavaScript', 'React', 'Node.js']
             };
 
@@ -463,7 +490,7 @@ describe('API Tests', () => {
                 companyWebsite: 'https://testcompany.com',
                 salaryRange: '$90,000 - $120,000',
                 benefits: ['Health Insurance', '401k'],
-                locations: ['Remote', 'New York', 'fuck'],
+                locations: ['Remote', 'New York', 'bitch'],
                 schedule: 'Full-time',
                 jobDescription: 'Test job description',
                 skills: ['JavaScript', 'React', 'Node.js']

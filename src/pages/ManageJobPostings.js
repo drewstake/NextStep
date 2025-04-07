@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../utils/axiosConfig';
-import { validateJobContent } from '../utils/contentFilter';
 import '../styles/ManageJobPostings.css';
 import NotificationBanner from '../components/NotificationBanner';
 
@@ -62,12 +61,6 @@ const ManageJobPostings = () => {
   const handleCreateJob = async (e) => {
     e.preventDefault();
     
-    // Validate content before submitting
-    const validation = validateJobContent(formData);
-    if (!validation.isValid) {
-      setError(validation.error);
-      return;
-    }
     
     try {
       await axiosInstance.post('/jobs', formData);
@@ -98,14 +91,7 @@ const ManageJobPostings = () => {
 
   const handleUpdateJob = async (e) => {
     e.preventDefault();
-    
-    // Validate content before submitting
-    const validation = validateJobContent(formData);
-    if (!validation.isValid) {
-      setError(validation.error);
-      return;
-    }
-    
+        
     try {
       await axiosInstance.put(`/employer/jobs/${editingJob._id}`, formData);
       setMessage('Job updated successfully');
