@@ -221,7 +221,7 @@ describe('API Tests', () => {
                 });
 
             expect(response.status).toBe(201);
-            expect(response.body.message).toBe('User created successfully');
+            expect(response.body.message).toBe('User created successfully. Please check your email to verify your account.');
         });
 
         test('POST /signup - should handle duplicate email', async () => {
@@ -238,7 +238,7 @@ describe('API Tests', () => {
             expect(response.body.error).toBe('Email already registered');
         });
 
-        test('POST /signin - should authenticate user', async () => {
+        test('POST /signin - email verification pending', async () => {
             const response = await request(app)
                 .post('/signin')
                 .send({
@@ -246,9 +246,8 @@ describe('API Tests', () => {
                     password: testUser.password
                 });
 
-            expect(response.status).toBe(200);
-            expect(response.body.token).toBeDefined();
-            expect(response.body.isEmployer).toBe(false);
+            expect(response.status).toBe(401);
+            expect(response.body.message).toBe('Email not verified. Please check your email for a verification link.');
         });
 
         test('POST /signin - should handle invalid credentials', async () => {

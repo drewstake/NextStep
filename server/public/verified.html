@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - NextStep</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .home-container {
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .home-branding {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 40vh;
+            text-align: center;
+        }
+
+        .home-branding__title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+            background: linear-gradient(90deg, #fff, #ff7eb3);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .home-branding__subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin: 10px 0 0;
+            letter-spacing: 1px;
+        }
+
+        .verification-message {
+            font-size: 1.5rem;
+            margin: 30px 0;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .login-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(90deg, #ff7eb3, #7afcff);
+            color: #121212;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .login-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .error-message {
+            color: #ff7eb3;
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="home-container">
+        <div class="home-branding">
+            <h1 class="home-branding__title">NextStep</h1>
+            <p class="home-branding__subtitle">Your next career move, simplified.</p>
+            
+            <div id="verification-content">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const verificationContent = document.getElementById('verification-content');
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+            
+            if (success === 'true') {
+                verificationContent.innerHTML = `
+                    <div class="verification-message">
+                        <h2>Email Verified Successfully!</h2>
+                        <p>Your email has been verified. You can now log in to your NextStep account.</p>
+                        <a href="http://localhost:3000/login" class="login-link">Go to Login</a>
+                    </div>
+                `;
+            } else {
+                // Check if there's a token in the URL
+                const token = urlParams.get('token');
+                if (token) {
+                    // Redirect to the verification endpoint
+                    window.location.href = `/verify-email?token=${token}`;
+                } else {
+                    verificationContent.innerHTML = `
+                        <div class="error-message">
+                            <p>Invalid verification link. Please try again or contact support.</p>
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

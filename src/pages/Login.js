@@ -117,7 +117,7 @@ const Login = () => {
 
     try {
       await axios.post("http://localhost:4000/signup", signupData);
-      setMessage("Sign up successful! Please log in.");
+      setMessage("Account created. Please check your email for verification instructions.");
       navigate("/login");
     } catch (error) {
       if (error.response && error.response.status === 409) {

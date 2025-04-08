@@ -20,6 +20,8 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const { OAuth2Client } = require("google-auth-library");
 const { sendEmail } = require('./middleware/mailer');
+const path = require('path');
+const fs = require('fs');
 
 // Import controllers
 const authController = require("./controllers/authController");
@@ -50,7 +52,9 @@ console.log("Environment check:", {
    env: process.env.NODE_ENV || 'Production.Env',
    mail_key: !!process.env.MJ_API_KEY && 
    !!process.env.MJ_PRIVATE_KEY, 
-   bad_words_api_key: !!process.env.BAD_WORDS_API_KEY
+   bad_words_api_key: !!process.env.BAD_WORDS_API_KEY,
+   email_from: !!process.env.EMAIL_FROM,
+   server_domain: process.env.SERVER_DOMAIN,
 });
 
 // Initialize Google OAuth client
@@ -59,6 +63,9 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Middleware
 app.use(express.json());
 app.use(cors());
+
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB Connection
 const uri = process.env.MONGODB_URI;           // e.g. "mongodb+srv://..."
@@ -99,6 +106,61 @@ client
          Sign Up (Phone verification optional)
       ------------------ */
       app.post("/signup", authController.signup);
+
+      /* ------------------
+         Email Verification
+      ------------------ */
+      app.get("/verified", (req, res) => {
+        // Serve the verification page
+        res.sendFile(path.join(__dirname, 'public', 'verified.html'));
+      });
+
+      app.get("/verify-email", async (req, res) => {
+        try {
+          const { token } = req.query;
+          
+          if (!token) {
+            return res.status(400).json({ error: "Verification token is required" });
+          }
+          
+          const collection = req.app.locals.db.collection("users");
+          
+          // Find user with this verification token
+          const user = await collection.findOne({ verificationToken: token });
+          
+          if (!user) {
+            return res.status(400).json({ error: "Invalid verification token" });
+          }
+          
+          // Check if token has expired
+          if (user.verificationExpires < new Date()) {
+            return res.status(400).json({ error: "Verification token has expired" });
+          }
+          
+          // Update user to mark email as verified
+          await collection.updateOne(
+            { _id: user._id },
+            { 
+              $set: { 
+                emailVerified: true,
+                verificationToken: null,
+                verificationExpires: null
+              } 
+            }
+          );
+          
+          // Redirect to the verification success page
+          res.redirect('/verified?success=true');
+        } catch (error) {
+          console.error("Email verification error:", error);
+          res.status(500).json({ error: "Failed to verify email" });
+        }
+      });
+
+      /* ------------------
+         Resend Verification Email
+      ------------------ */
+      app.post("/resend-verification", authController.resendVerification);
 
       /* ------------------
          Get Applications (for logged-in user)
