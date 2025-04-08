@@ -1,7 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground, Image, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import api from '../api/config';
+
+// Create a cross-platform alert function
+const showAlert = (title, message, isVerificationError = false) => {
+  if (Platform.OS === 'web') {
+    // Use browser's native alert for web
+    window.alert(`${title}\n${message}`);
+  } else {
+    // Use React Native Alert for mobile platforms
+    Alert.alert(
+      title,
+      message,
+      isVerificationError 
+        ? [
+            {
+              text: 'Resend Email',
+              onPress: () => handleResendVerification(email),
+            },
+            {
+              text: 'OK',
+              style: 'cancel',
+            },
+          ]
+        : [{ text: 'OK' }]
+    );
+  }
+};
 
 export default function LoginScreen({ navigation }) {
   const [isEmailLogin, setIsEmailLogin] = useState(true);
@@ -9,40 +36,125 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return true;//emailRegex.test(email);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // Validate inputs first
     if (!validateEmail(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address');
+      showAlert('Invalid Email', 'Please enter a valid email address');
       return;
     }
 
     if (password.length < 3) {
-      Alert.alert('Invalid Password', 'Password must be at least 6 characters');
+      showAlert('Invalid Password', 'Password must be at least 6 characters');
       return;
     }
 
     if (!isEmailLogin && !fullName) {
-      Alert.alert('Invalid Name', 'Please enter your full name');
+      showAlert('Invalid Name', 'Please enter your full name');
       return;
     }
 
     if (!isEmailLogin && !phone) {
-      Alert.alert('Invalid Phone', 'Please enter your phone number');
+      showAlert('Invalid Phone', 'Please enter your phone number');
       return;
     }
 
-    // If validation passes, navigate to MainApp
-    navigation.replace('MainApp');
+    setIsLoading(true);
+
+    try {
+      if (isEmailLogin) {
+        // Handle Sign In
+        const response = await api.post('/signin', {
+          email,
+          password
+        });
+
+        // Store the token securely (you might want to use AsyncStorage or a secure storage solution)
+        const { token, full_name, isEmployer } = response.data;
+        
+        // TODO: Store token securely
+        // await AsyncStorage.setItem('userToken', token);
+        
+        // Navigate to MainApp
+        navigation.replace('MainApp');
+      } else {
+        // Handle Sign Up
+        const response = await api.post('/signup', {
+          full_name: fullName,
+          email,
+          password,
+          phone,
+          employerFlag: false // Set to false for job seekers by default
+        });
+
+        showAlert('Success', response.data.message);
+        setIsEmailLogin(true); // Switch to login view after successful registration
+      }
+    } catch (error) {
+      let errorMessage = 'An error occurred. Please try again.';
+      
+      if (error.response) {
+        // Server responded with an error
+        const { status, data } = error.response;
+
+        if (status === 401) {
+          // Handle unauthorized errors
+          if (data.emailNotVerified) {
+            // Special case for unverified email
+            showAlert('Email Not Verified', data.message, true);
+            // Optionally, you could add a button to resend verification email
+            // or navigate to a verification screen
+            return;
+          }
+          // Handle other 401 errors (invalid credentials)
+          errorMessage = data.message || 'Invalid email or password';
+        } else if (status === 400) {
+          // Handle bad request errors
+          errorMessage = data.message || 'Please check your input and try again';
+        } else if (status === 429) {
+          // Handle rate limiting
+          errorMessage = data.message || 'Too many attempts. Please try again later';
+        } else if (status >= 500) {
+          // Handle server errors
+          errorMessage = 'Server error. Please try again later';
+        } else {
+          // Handle other status codes
+          errorMessage = data.message || errorMessage;
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = 'Unable to reach the server. Please check your internet connection';
+      }
+      
+      showAlert('Error', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleSignIn = () => {
-    // Implement Google Sign In
-    console.log('Google Sign In');
+  const handleGoogleSignIn = async () => {
+    try {
+      // Implement Google Sign In logic here
+      // After getting Google token:
+      const googleToken = 'YOUR_GOOGLE_TOKEN';
+      const response = await api.post('/auth/google', {
+        token: googleToken
+      });
+
+      // Handle successful Google sign in
+      const { token, isEmployer } = response.data;
+      // TODO: Store token securely
+      navigation.replace('MainApp');
+    } catch (error) {
+      showAlert('Error', 'Google sign in failed. Please try again.');
+    }
   };
 
   const handleForgotPassword = () => {
@@ -91,6 +203,28 @@ export default function LoginScreen({ navigation }) {
       );
     }
     return null;
+  };
+
+  // Add loading indicator to the login button
+  const renderButtonContent = () => {
+    if (isLoading) {
+      return <ActivityIndicator color="#fff" />;
+    }
+    return <Text style={styles.loginButtonText}>{isEmailLogin ? 'LOGIN' : 'SUBMIT'}</Text>;
+  };
+
+  // Add a function to handle email verification resend
+  const handleResendVerification = async (email) => {
+    try {
+      setIsResending(true);
+      await api.post('/resend-verification', { email });
+      showAlert('Success', 'Verification email has been resent. Please check your inbox.');
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to resend verification email';
+      showAlert('Error', errorMessage);
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
@@ -161,8 +295,12 @@ export default function LoginScreen({ navigation }) {
           />
         </View>
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
-          <Text style={styles.loginButtonText}>{isEmailLogin ? 'LOGIN' : 'SUBMIT'}</Text>
+        <TouchableOpacity 
+          style={styles.loginButton} 
+          onPress={handleSubmit}
+          disabled={isLoading}
+        >
+          {renderButtonContent()}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
