@@ -1,47 +1,138 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../api/config';
 
-const DUMMY_JOBS = [
-  {
-    id: '1',
-    title: 'Senior Software Engineer',
-    company: 'Tech Corp',
-    location: 'New York, NY',
-    salary: '$120,000 - $150,000',
-    type: 'Full-time',
-  },
-  {
-    id: '2',
-    title: 'Product Manager',
-    company: 'Innovation Labs',
-    location: 'Remote',
-    salary: '$100,000 - $130,000',
-    type: 'Full-time',
-  },
-  {
-    id: '3',
-    title: 'UX Designer',
-    company: 'Design Studio',
-    location: 'San Francisco, CA',
-    salary: '$90,000 - $120,000',
-    type: 'Full-time',
-  },
-];
+// Create a cross-platform alert function
+const showAlert = (title, message) => {
+  if (Platform.OS === 'web') {
+    window.alert(`${title}\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+};
 
 export default function BrowseJobsScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [jobs, setJobs] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEmployer, setIsEmployer] = useState(false);
+  const [error, setError] = useState(null);
 
-  const filteredJobs = DUMMY_JOBS.filter(job => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      job.title.toLowerCase().includes(searchLower) ||
-      job.company.toLowerCase().includes(searchLower) ||
-      job.location.toLowerCase().includes(searchLower) ||
-      job.type.toLowerCase().includes(searchLower)
-    );
-  });
+  // Fetch jobs from API
+  const fetchJobs = async (searchTerm = '') => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Get the auth token from storage
+      const token = await AsyncStorage.getItem('userToken');
+      
+      if (!token) {
+        showAlert('Authentication Error', 'Please log in again');
+        navigation.replace('Login');
+        return;
+      }
+      
+      // Set the authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // Make the API call with search query if provided
+      const response = await api.get(`/jobs${searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : ''}`);
+      
+      // Check if user is an employer
+      const userProfile = await api.get('/profile');
+      
+      if (userProfile.data.isEmployer) {
+        setIsEmployer(true);
+        showAlert('Access Denied', 'Employer accounts cannot browse jobs. Please use the employer dashboard instead.');
+        navigation.replace('EmployerDashboard');
+        return;
+      }
+      
+      setJobs(response.data);
+      setFilteredJobs(response.data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      
+      if (error.response) {
+        // Server responded with an error
+        const { status, data } = error.response;
+        
+        if (status === 401) {
+          // Unauthorized - token expired or invalid
+          showAlert('Session Expired', 'Please log in again');
+          navigation.replace('Login');
+        } else if (status === 403) {
+          // Forbidden - user doesn't have permission
+          showAlert('Access Denied', 'You do not have permission to view jobs');
+        } else {
+          // Other server errors
+          setError(data.error || 'Failed to load jobs. Please try again later.');
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        setError('Network error. Please check your internet connection.');
+      } else {
+        // Something else happened
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  // Handle search
+  const handleSearch = () => {
+    fetchJobs(searchQuery);
+  };
+
+  // Handle job application
+  const handleApply = async (jobId) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      
+      if (!token) {
+        showAlert('Authentication Error', 'Please log in again');
+        navigation.replace('Login');
+        return;
+      }
+      
+      // Set the authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // Track job application (mode 1 for apply)
+      await api.post('/jobsTracker', {
+        jobId,
+        mode: 1
+      });
+      
+      showAlert('Success', 'Application submitted successfully!');
+    } catch (error) {
+      console.error('Error applying for job:', error);
+      
+      if (error.response) {
+        const { status, data } = error.response;
+        
+        if (status === 401) {
+          showAlert('Session Expired', 'Please log in again');
+          navigation.replace('Login');
+        } else {
+          showAlert('Error', data.error || 'Failed to submit application. Please try again.');
+        }
+      } else {
+        showAlert('Error', 'Network error. Please check your internet connection.');
+      }
+    }
+  };
 
   const renderJobItem = ({ item }) => (
     <TouchableOpacity
@@ -54,16 +145,19 @@ export default function BrowseJobsScreen({ navigation }) {
       <View style={styles.jobHeader}>
         <View>
           <Text style={styles.jobTitle}>{item.title}</Text>
-          <Text style={styles.companyName}>{item.company}</Text>
+          <Text style={styles.companyName}>{item.companyName}</Text>
         </View>
-        <TouchableOpacity style={styles.applyButton}>
+        <TouchableOpacity 
+          style={styles.applyButton}
+          onPress={() => handleApply(item._id)}
+        >
           <Text style={styles.applyButtonText}>Apply</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.jobDetails}>
-        <Text style={styles.detail}>{item.location}</Text>
-        <Text style={styles.detail}>{item.salary}</Text>
-        <Text style={styles.detail}>{item.type}</Text>
+        <Text style={styles.detail}>{item.locations?.[0] || 'Location not specified'}</Text>
+        <Text style={styles.detail}>{item.salaryRange || 'Salary not specified'}</Text>
+        <Text style={styles.detail}>{item.schedule || 'Schedule not specified'}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -71,7 +165,9 @@ export default function BrowseJobsScreen({ navigation }) {
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <Ionicons name="search-outline" size={48} color="#fff" />
-      <Text style={styles.emptyStateText}>No jobs found matching your search</Text>
+      <Text style={styles.emptyStateText}>
+        {error ? error : 'No jobs found matching your search'}
+      </Text>
     </View>
   );
 
@@ -83,23 +179,34 @@ export default function BrowseJobsScreen({ navigation }) {
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Senior UX Designer"
+          placeholder="Search jobs..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholderTextColor="rgba(255, 255, 255, 0.6)"
+          onSubmitEditing={handleSearch}
         />
-        <TouchableOpacity style={styles.searchButton}>
+        <TouchableOpacity 
+          style={styles.searchButton}
+          onPress={handleSearch}
+        >
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={filteredJobs}
-        renderItem={renderJobItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={renderEmptyState}
-      />
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF69B4" />
+          <Text style={styles.loadingText}>Loading jobs...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredJobs}
+          renderItem={renderJobItem}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.listContainer}
+          ListEmptyComponent={renderEmptyState}
+        />
+      )}
     </LinearGradient>
   );
 }
@@ -212,5 +319,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     marginTop: 10,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#fff',
+    marginTop: 10,
+    fontSize: 16,
   },
 }); 

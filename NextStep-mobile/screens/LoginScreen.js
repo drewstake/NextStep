@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackgr
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Create a cross-platform alert function
 const showAlert = (title, message, isVerificationError = false) => {
@@ -80,7 +81,7 @@ export default function LoginScreen({ navigation }) {
         const { token, full_name, isEmployer } = response.data;
         
         // TODO: Store token securely
-        // await AsyncStorage.setItem('userToken', token);
+        await AsyncStorage.setItem('userToken', token);
         
         // Navigate to MainApp
         navigation.replace('MainApp');
