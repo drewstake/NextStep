@@ -1,15 +1,84 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, Animated, PanResponder, Alert, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Dimensions, Animated, PanResponder, Alert, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../api/config';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH;
 
+// Create a cross-platform alert function
+const showAlert = (title, message) => {
+  if (Platform.OS === 'web') {
+    window.alert(`${title}\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+};
+
 export default function JobDetailsScreen({ route, navigation }) {
-  const { job } = route.params;
+  const { jobId, source } = route.params;
+  const [job, setJob] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const position = new Animated.ValueXY();
+
+  // Fetch job details from API
+  useEffect(() => {
+    const fetchJobDetails = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Get the auth token from storage
+        const token = await AsyncStorage.getItem('userToken');
+        
+        if (!token) {
+          showAlert('Authentication Error', 'Please log in again');
+          navigation.replace('Login');
+          return;
+        }
+        
+        // Set the authorization header
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        // Make the API call to get job details
+        const response = await api.get(`/jobs/${jobId}`);
+        setJob(response.data);
+      } catch (error) {
+        console.error('Error fetching job details:', error);
+        
+        if (error.response) {
+          // Server responded with an error
+          const { status, data } = error.response;
+          
+          if (status === 401) {
+            // Unauthorized - token expired or invalid
+            showAlert('Session Expired', 'Please log in again');
+            navigation.replace('Login');
+          } else if (status === 404) {
+            // Job not found
+            setError('Job not found. It may have been removed or is no longer available.');
+          } else {
+            // Other server errors
+            setError(data.error || 'Failed to load job details. Please try again later.');
+          }
+        } else if (error.request) {
+          // Request was made but no response received
+          setError('Network error. Please check your internet connection.');
+        } else {
+          // Something else happened
+          setError('An unexpected error occurred. Please try again.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJobDetails();
+  }, [jobId, navigation]);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -45,10 +114,11 @@ export default function JobDetailsScreen({ route, navigation }) {
   };
 
   const onSwipeComplete = (direction) => {
-    const item = job;
-    direction === 'right' ? handleApply(item) : 
-    direction === 'left' ? handleReject(item) : 
-    handleIgnore(item);
+    if (!job) return;
+    
+    direction === 'right' ? handleApply(job) : 
+    direction === 'left' ? handleReject(job) : 
+    handleIgnore(job);
 
     position.setValue({ x: 0, y: 0 });
     setCurrentIndex(currentIndex + 1);
@@ -61,16 +131,94 @@ export default function JobDetailsScreen({ route, navigation }) {
     }).start();
   };
 
-  const handleApply = (job) => {
-    Alert.alert('Applied!', `You have applied for ${job.title} at ${job.company}`);
+  const handleApply = async (job) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      
+      if (!token) {
+        showAlert('Authentication Error', 'Please log in again');
+        navigation.replace('Login');
+        return;
+      }
+      
+      // Set the authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // Track job application (mode 1 for apply)
+      await api.post('/jobsTracker', {
+        jobId: job._id,
+        mode: 1
+      });
+      
+      showAlert('Applied!', `You have applied for ${job.title} at ${job.companyName}`);
+    } catch (error) {
+      console.error('Error applying for job:', error);
+      
+      if (error.response) {
+        const { status, data } = error.response;
+        
+        if (status === 401) {
+          showAlert('Session Expired', 'Please log in again');
+          navigation.replace('Login');
+        } else {
+          showAlert('Error', data.error || 'Failed to submit application. Please try again.');
+        }
+      } else {
+        showAlert('Error', 'Network error. Please check your internet connection.');
+      }
+    }
   };
 
-  const handleReject = (job) => {
-    Alert.alert('Rejected', `You have rejected ${job.title} at ${job.company}`);
+  const handleReject = async (job) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      
+      if (!token) {
+        showAlert('Authentication Error', 'Please log in again');
+        navigation.replace('Login');
+        return;
+      }
+      
+      // Set the authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // Track job rejection (mode 2 for skip)
+      await api.post('/jobsTracker', {
+        jobId: job._id,
+        mode: 2
+      });
+      
+      showAlert('Rejected', `You have rejected ${job.title} at ${job.companyName}`);
+    } catch (error) {
+      console.error('Error rejecting job:', error);
+      showAlert('Error', 'Failed to record your rejection. Please try again.');
+    }
   };
 
-  const handleIgnore = (job) => {
-    Alert.alert('Ignored', `You have ignored ${job.title} at ${job.company}`);
+  const handleIgnore = async (job) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      
+      if (!token) {
+        showAlert('Authentication Error', 'Please log in again');
+        navigation.replace('Login');
+        return;
+      }
+      
+      // Set the authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // Track job ignore (mode 3 for ignore)
+      await api.post('/jobsTracker', {
+        jobId: job._id,
+        mode: 3
+      });
+      
+      showAlert('Ignored', `You have ignored ${job.title} at ${job.companyName}`);
+    } catch (error) {
+      console.error('Error ignoring job:', error);
+      showAlert('Error', 'Failed to record your action. Please try again.');
+    }
   };
 
   const getCardStyle = () => {
@@ -85,6 +233,59 @@ export default function JobDetailsScreen({ route, navigation }) {
     };
   };
 
+  // Render loading state
+  if (isLoading) {
+    return (
+      <LinearGradient
+        colors={['#2A0845', '#6441A5']}
+        style={styles.container}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="close" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF69B4" />
+          <Text style={styles.loadingText}>Loading job details...</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  // Render error state
+  if (error) {
+    return (
+      <LinearGradient
+        colors={['#2A0845', '#6441A5']}
+        style={styles.container}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="close" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color="#FF69B4" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.retryButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  // Render job details
   return (
     <LinearGradient
       colors={['#2A0845', '#6441A5']}
@@ -104,49 +305,56 @@ export default function JobDetailsScreen({ route, navigation }) {
         {...panResponder.panHandlers}
       >
         <Text style={styles.jobTitle}>{job.title}</Text>
-        <Text style={styles.companyName}>{job.company}</Text>
-        <Text style={styles.location}>{job.location}</Text>
+        <Text style={styles.companyName}>{job.companyName}</Text>
+        <Text style={styles.location}>{job.locations?.[0] || 'Location not specified'}</Text>
         
         <View style={styles.salaryContainer}>
           <Text style={styles.salaryLabel}>Salary Range</Text>
-          <Text style={styles.salaryAmount}>{job.salary}</Text>
+          <Text style={styles.salaryAmount}>{job.salaryRange || 'Not specified'}</Text>
         </View>
 
         <View style={styles.scheduleContainer}>
           <Text style={styles.scheduleLabel}>Schedule</Text>
-          <Text style={styles.scheduleType}>{job.type}</Text>
+          <Text style={styles.scheduleType}>{job.schedule || 'Not specified'}</Text>
         </View>
 
-        <View style={styles.benefitsContainer}>
-          <Text style={styles.benefitsLabel}>Benefits</Text>
-          <Text style={styles.benefitsList}>
-            Home Office Setup, Stock Options, Vision Insurance, Remote Work,{'\n'}
-            Annual Bonus, Gym Membership, Flexible Hours, Team Events
-          </Text>
-        </View>
+        {job.benefits && job.benefits.length > 0 && (
+          <View style={styles.benefitsContainer}>
+            <Text style={styles.benefitsLabel}>Benefits</Text>
+            <Text style={styles.benefitsList}>
+              {job.benefits.join(', ')}
+            </Text>
+          </View>
+        )}
 
         <View style={styles.summaryContainer}>
           <Text style={styles.summaryLabel}>Job Summary</Text>
           <Text style={styles.summaryText}>
-            Join {job.company}'s engineering team as a {job.title} and help us shape the
-            future of technology. You'll work on challenging problems, contribute to our architecture
-            decisions, and help us maintain high code quality standards.
+            {job.jobDescription || 'No description available.'}
           </Text>
         </View>
 
-        <View style={styles.skillsContainer}>
-          <Text style={styles.skillsLabel}>Required Skills</Text>
-          <Text style={styles.skillsList}>
-            Security, Confluence, Machine Learning, React, Scrum, CI/CD, AWS, GCP, Git
-          </Text>
-        </View>
+        {job.skills && job.skills.length > 0 && (
+          <View style={styles.skillsContainer}>
+            <Text style={styles.skillsLabel}>Required Skills</Text>
+            <Text style={styles.skillsList}>
+              {job.skills.join(', ')}
+            </Text>
+          </View>
+        )}
       </Animated.View>
 
       <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.backToJobsButton}>
+        <TouchableOpacity 
+          style={styles.backToJobsButton}
+          onPress={() => navigation.goBack()}
+        >
           <Text style={styles.backToJobsText}>Back to Jobs</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.applyNowButton}>
+        <TouchableOpacity 
+          style={styles.applyNowButton}
+          onPress={() => handleApply(job)}
+        >
           <Text style={styles.applyNowText}>Apply Now</Text>
         </TouchableOpacity>
       </View>
@@ -299,6 +507,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   applyNowText: {
+    color: '#2A0845',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#fff',
+    marginTop: 10,
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#FFB6C1',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+  },
+  retryButtonText: {
     color: '#2A0845',
     fontSize: 16,
     fontWeight: '600',

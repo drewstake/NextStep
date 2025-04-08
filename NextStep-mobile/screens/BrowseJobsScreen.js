@@ -138,7 +138,7 @@ export default function BrowseJobsScreen({ navigation }) {
     <TouchableOpacity
       style={styles.jobCard}
       onPress={() => navigation.navigate('JobDetails', { 
-        job: item,
+        jobId: item._id,
         source: 'BrowseJobs'
       })}
     >
