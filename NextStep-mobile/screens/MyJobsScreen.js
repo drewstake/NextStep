@@ -1,41 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const DUMMY_APPLICATIONS = [
-  {
-    id: '1',
-    title: 'Senior Software Engineer',
-    company: 'Tech Corp',
-    status: 'Applied',
-    date: '2024-03-15',
-    salary: '$120,000 - $150,000',
-    type: 'Full-time',
-    location: 'New York, NY',
-
-  },
-  {
-    id: '2',
-    title: 'Product Manager',
-    company: 'Innovation Labs',
-    status: 'Offered',
-    date: '2024-03-10',
-    salary: '$100,000 - $130,000',
-    type: 'Full-time',
-    location: 'Remote',
-  },
-  {
-    id: '3',
-    title: 'UX Designer',
-    company: 'Design Studio',
-    status: 'Rejected',
-    date: '2024-03-05',
-    salary: '$80,000 - $100,000',
-    type: 'Part-time',
-    location: 'San Francisco, CA',
-  },
-];
+import { getUserApplications } from '../api/services';
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -64,42 +31,124 @@ const getStatusIcon = (status) => {
 };
 
 export default function MyJobsScreen({ navigation }) {
-  const renderApplicationItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.applicationCard}
-      onPress={() => navigation.navigate('JobDetails', { job: item })}
-    >
-      <View style={styles.applicationHeader}>
-        <View>
-          <Text style={styles.jobTitle}>{item.title}</Text>
-          <Text style={styles.companyName}>{item.company}</Text>
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
+      const data = await getUserApplications();
+      setApplications(data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching applications:', err);
+      setError('Failed to load your applications. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderApplicationItem = ({ item }) => {
+    // Format the date properly
+    const formatDate = (dateString) => {
+      if (!dateString) return 'Date not available';
+      
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          console.log('Invalid date string:', dateString);
+          return 'Date not available';
+        }
+        return date.toLocaleDateString();
+      } catch (error) {
+        console.error('Error formatting date:', error);
+        return 'Date not available';
+      }
+    };
+
+    return (
+      <TouchableOpacity 
+        style={styles.applicationCard}
+        onPress={() => navigation.navigate('JobDetails', { 
+          job: item.jobDetails,
+          jobId: item.job_id || item.jobDetails._id 
+        })}
+      >
+        <View style={styles.applicationHeader}>
+          <View>
+            <Text style={styles.jobTitle}>{item.jobDetails.title}</Text>
+            <Text style={styles.companyName}>{item.jobDetails.companyName}</Text>
+          </View>
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+            <Ionicons name={getStatusIcon(item.status)} size={16} color="#fff" />
+            <Text style={styles.statusText}>{item.status}</Text>
+          </View>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Ionicons name={getStatusIcon(item.status)} size={16} color="#fff" />
-          <Text style={styles.statusText}>{item.status}</Text>
+        <View style={styles.applicationFooter}>
+          <Text style={styles.dateText}>Applied on {formatDate(item.date_applied)}</Text>
+          <TouchableOpacity style={styles.detailsButton}>
+            <Text style={styles.detailsButtonText}>View Details</Text>
+            <Ionicons name="chevron-forward" size={16} color="#FF69B4" />
+          </TouchableOpacity>
         </View>
-      </View>
-      <View style={styles.applicationFooter}>
-        <Text style={styles.dateText}>Applied on {item.date}</Text>
-        <TouchableOpacity style={styles.detailsButton}>
-          <Text style={styles.detailsButtonText}>View Details</Text>
-          <Ionicons name="chevron-forward" size={16} color="#FF69B4" />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
+
+  if (loading) {
+    return (
+      <LinearGradient
+        colors={['#2A0845', '#6441A5']}
+        style={styles.container}
+      >
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#FF69B4" />
+          <Text style={styles.loadingText}>Loading your applications...</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  if (error) {
+    return (
+      <LinearGradient
+        colors={['#2A0845', '#6441A5']}
+        style={styles.container}
+      >
+        <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={50} color="#FF69B4" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchApplications}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    );
+  }
 
   return (
     <LinearGradient
       colors={['#2A0845', '#6441A5']}
       style={styles.container}
     >
-      <FlatList
-        data={DUMMY_APPLICATIONS}
-        renderItem={renderApplicationItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-      />
+      {applications.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Ionicons name="document-text-outline" size={50} color="#FF69B4" />
+          <Text style={styles.emptyText}>You haven't applied to any jobs yet</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={applications}
+          renderItem={renderApplicationItem}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.listContainer}
+        />
+      )}
     </LinearGradient>
   );
 }
@@ -111,6 +160,40 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 15,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    color: '#fff',
+    marginTop: 10,
+    fontSize: 16,
+  },
+  errorText: {
+    color: '#fff',
+    marginTop: 10,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  emptyText: {
+    color: '#fff',
+    marginTop: 10,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: '#FF69B4',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   applicationCard: {
     backgroundColor: '#fff',
