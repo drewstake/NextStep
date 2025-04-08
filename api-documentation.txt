@@ -1,0 +1,33 @@
+# NextStep API Documentation
+
+| Endpoint | Method | Description | Request Payload | Response | Called From |
+|----------|---------|-------------|-----------------|-----------|-------------|
+| `/signin` | POST | User authentication | ```json { "email": "string", "password": "string" }``` or ```json { "phone": "string", "verificationCode": "string" }``` | ```json { "token": "string", "email": "string", "full_name": "string", "message": "string", "isEmployer": boolean }``` | Login Screen |
+| `/signup` | POST | User registration | ```json { "full_name": "string", "email": "string", "password": "string", "employerFlag": boolean, "phone": "string?", "verificationCode": "string?" }``` | ```json { "message": "string" }``` | Registration Screen |
+| `/auth/google` | POST | Google OAuth login | ```json { "token": "string" }``` | ```json { "token": "string", "message": "string", "isEmployer": boolean }``` | Login Screen |
+| `/jobs` | GET | Get all jobs with search | Query params: `?q=searchterm` | ```json [ { "title": "string", "companyName": "string", ... } ]``` | Job Search Screen |
+| `/jobs/:jobId` | GET | Get single job details | URL param: jobId | ```json { "title": "string", "companyName": "string", ... }``` | Job Details Screen |
+| `/jobs` | POST | Create job posting | ```json { "title": "string", "companyName": "string", "companyWebsite": "string?", "salaryRange": "string?", "benefits": ["string"], "locations": ["string"], "schedule": "string?", "jobDescription": "string", "skills": ["string"] }``` | ```json { "message": "string", "jobId": "string" }``` | Employer Dashboard |
+| `/employer/jobs/:jobId` | PUT | Update job posting | Same as create job payload | ```json { "message": "string" }``` | Employer Dashboard |
+| `/employer/jobs/:jobId` | DELETE | Delete job posting | URL param: jobId | ```json { "message": "string" }``` | Employer Dashboard |
+| `/jobsTracker` | POST | Track job application | ```json { "jobId": "string", "mode": number }``` | ```json { "message": "string" }``` | Job Swipe Screen |
+| `/applications` | GET | Get user applications | None (requires auth token) | ```json [ { "jobId": "string", "status": "string", ... } ]``` | Applications Screen |
+| `/profile` | GET | Get user profile | None (requires auth token) | ```json { "full_name": "string", "email": "string", ... }``` | Profile Screen |
+| `/updateprofile` | POST | Update user profile | Multipart form data with fields and files | ```json { "message": "string" }``` | Profile Edit Screen |
+| `/messages` | GET | Get user messages | None (requires auth token) | ```json [ { "sender": "string", "content": "string", ... } ]``` | Messages Screen |
+| `/messages` | POST | Send message | ```json { "recipientId": "string", "content": "string" }``` | ```json { "message": "string" }``` | Messages Screen |
+| `/messages/read/:contactId` | PUT | Mark messages as read | URL param: contactId | ```json { "message": "string" }``` | Messages Screen |
+| `/myRecentContacts` | GET | Get recent message contacts | None (requires auth token) | ```json [ { "userId": "string", "name": "string", ... } ]``` | Messages Screen |
+| `/employer/applications` | GET | Get employer's received applications | None (requires auth token) | ```json [ { "applicationId": "string", "applicant": {...}, "job": {...} } ]``` | Employer Dashboard |
+| `/employer/applications/:applicationId` | PUT | Update application status | ```json { "status": "string" }``` | ```json { "message": "string" }``` | Employer Dashboard |
+| `/verify-email` | GET | Verify email address | Query param: `?token=verificationtoken` | Redirects to verification page | Email Link |
+| `/resend-verification` | POST | Resend verification email | ```json { "email": "string" }``` | ```json { "message": "string" }``` | Login Screen |
+
+## Important Notes:
+
+1. All endpoints except `/signin`, `/signup`, `/auth/google`, and `/verify-email` require a valid JWT token in the Authorization header
+2. File uploads (like in `/updateprofile`) use multipart/form-data format
+3. Error responses generally follow the format: ```json { "error": "string" }```
+4. The `mode` parameter in `/jobsTracker` uses: 1 for apply, 2 for skip, 3 for ignore
+5. All dates in responses are in ISO 8601 format
+6. Object IDs are represented as strings in MongoDB's ObjectId format 
