@@ -99,7 +99,7 @@ export default function LoginScreen({ navigation }) {
         setIsEmailLogin(true); // Switch to login view after successful registration
       }
     } catch (error) {
-      let errorMessage = 'An error occurred. Please try again.';
+      let errorMessage = 'An error occurred. Make sure the API server is up, and try again.';
       
       if (error.response) {
         // Server responded with an error
@@ -124,7 +124,7 @@ export default function LoginScreen({ navigation }) {
           errorMessage = data.message || 'Too many attempts. Please try again later';
         } else if (status >= 500) {
           // Handle server errors
-          errorMessage = 'Server error. Please try again later';
+          errorMessage = 'Server error. Check server logs for more details. Please try again later';
         } else {
           // Handle other status codes
           errorMessage = data.message || errorMessage;
