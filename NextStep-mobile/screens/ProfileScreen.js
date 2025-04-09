@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Platform, ActivityIndicator, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/config';
@@ -100,80 +100,86 @@ export default function ProfileScreen({ navigation }) {
       colors={['#2A0845', '#6441A5']}
       style={styles.container}
     >
-      <View style={styles.profileHeader}>
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>
-            {profile.full_name.split(' ').map(n => n[0]).join('')}
-          </Text>
-        </View>
-        <TextInput
-          style={styles.nameInput}
-          value={profile.full_name}
-          onChangeText={(text) => setProfile({ ...profile, full_name: text })}
-          placeholder="Full Name"
-          placeholderTextColor="rgba(255, 255, 255, 0.6)"
-        />
-        <TextInput
-          style={styles.titleInput}
-          value={profile.title}
-          onChangeText={(text) => setProfile({ ...profile, title: text })}
-          placeholder="Job Title"
-          placeholderTextColor="rgba(255, 255, 255, 0.6)"
-        />
-      </View>
-      
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Contact Information</Text>
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Ionicons name="mail-outline" size={20} color="#FF69B4" style={styles.infoIcon} />
-            <TextInput
-              style={styles.input}
-              value={profile.email}
-              onChangeText={(text) => setProfile({ ...profile, email: text })}
-              placeholder="Email"
-              placeholderTextColor="#666"
-              keyboardType="email-address"
-            />
-          </View>
-          <View style={styles.infoRow}>
-            <Ionicons name="call-outline" size={20} color="#FF69B4" style={styles.infoIcon} />
-            <TextInput
-              style={styles.input}
-              value={profile.phone}
-              onChangeText={(text) => setProfile({ ...profile, phone: text })}
-              placeholder="Phone Number"
-              placeholderTextColor="#666"
-              keyboardType="phone-pad"
-            />
-          </View>
-          <View style={styles.infoRow}>
-            <Ionicons name="location-outline" size={20} color="#FF69B4" style={styles.infoIcon} />
-            <TextInput
-              style={styles.input}
-              value={profile.location}
-              onChangeText={(text) => setProfile({ ...profile, location: text })}
-              placeholder="Location"
-              placeholderTextColor="#666"
-            />
-          </View>
-        </View>
-      </View>
-
-      <TouchableOpacity 
-        style={styles.saveButton}
-        onPress={handleSave}
-        disabled={isSaving}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        {isSaving ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <>
-            <Ionicons name="save-outline" size={24} color="#fff" style={styles.saveIcon} />
-            <Text style={styles.saveButtonText}>Save Changes</Text>
-          </>
-        )}
-      </TouchableOpacity>
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarContainer}>
+            <Text style={styles.avatarText}>
+              {profile.full_name.split(' ').map(n => n[0]).join('')}
+            </Text>
+          </View>
+          <TextInput
+            style={styles.nameInput}
+            value={profile.full_name}
+            onChangeText={(text) => setProfile({ ...profile, full_name: text })}
+            placeholder="Full Name"
+            placeholderTextColor="rgba(255, 255, 255, 0.6)"
+          />
+          <TextInput
+            style={styles.titleInput}
+            value={profile.title}
+            onChangeText={(text) => setProfile({ ...profile, title: text })}
+            placeholder="Job Title"
+            placeholderTextColor="rgba(255, 255, 255, 0.6)"
+          />
+        </View>
+        
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Contact Information</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={profile.email}
+                onChangeText={(text) => setProfile({ ...profile, email: text })}
+                placeholder="Email"
+                placeholderTextColor="#666"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <Ionicons name="call-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={profile.phone}
+                onChangeText={(text) => setProfile({ ...profile, phone: text })}
+                placeholder="Phone Number"
+                placeholderTextColor="#666"
+                keyboardType="phone-pad"
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <Ionicons name="location-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={profile.location}
+                onChangeText={(text) => setProfile({ ...profile, location: text })}
+                placeholder="Location"
+                placeholderTextColor="#666"
+              />
+            </View>
+          </View>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.saveButton}
+          onPress={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Ionicons name="save-outline" size={24} color="#fff" style={styles.saveIcon} />
+              <Text style={styles.saveButtonText}>Save Changes</Text>
+            </>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
     </LinearGradient>
   );
 }
@@ -181,7 +187,10 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: 40, // Add extra padding at the bottom for better scrolling
   },
   centerContent: {
     justifyContent: 'center',
@@ -250,19 +259,24 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-  infoRow: {
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
     marginBottom: 15,
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
-  infoIcon: {
-    marginRight: 15,
+  inputIcon: {
+    marginRight: 10,
   },
   input: {
     flex: 1,
+    padding: 15,
     fontSize: 16,
     color: '#333',
-    padding: 0,
   },
   headerButton: {
     padding: 10,
