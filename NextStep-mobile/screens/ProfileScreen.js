@@ -1,11 +1,77 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import api from '../api/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Create a cross-platform alert function
+const showAlert = (title, message) => {
+  if (Platform.OS === 'web') {
+    window.alert(`${title}\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+};
 
 export default function ProfileScreen({ navigation }) {
+  const [profile, setProfile] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    location: '',
+    title: ''
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        showAlert('Authentication Error', 'Please log in again');
+        navigation.replace('Login');
+        return;
+      }
+
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const response = await api.get('/profile');
+      setProfile(response.data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      showAlert('Error', 'Failed to load profile data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSignOut = () => {
     navigation.replace('Login');
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        showAlert('Authentication Error', 'Please log in again');
+        navigation.replace('Login');
+        return;
+      }
+
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      await api.post('/updateprofile', profile);
+      showAlert('Success', 'Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      showAlert('Error', 'Failed to update profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   React.useLayoutEffect(() => {
@@ -13,13 +79,21 @@ export default function ProfileScreen({ navigation }) {
       headerRight: () => (
         <TouchableOpacity 
           onPress={handleSignOut}
-          style={styles.signOutButton}
+          style={styles.headerButton}
         >
           <Ionicons name="log-out-outline" size={24} color="#FF69B4" />
         </TouchableOpacity>
       ),
     });
   }, [navigation]);
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#FF69B4" />
+      </View>
+    );
+  }
 
   return (
     <LinearGradient
@@ -28,10 +102,24 @@ export default function ProfileScreen({ navigation }) {
     >
       <View style={styles.profileHeader}>
         <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>JD</Text>
+          <Text style={styles.avatarText}>
+            {profile.full_name.split(' ').map(n => n[0]).join('')}
+          </Text>
         </View>
-        <Text style={styles.name}>John Doe</Text>
-        <Text style={styles.title}>Software Engineer</Text>
+        <TextInput
+          style={styles.nameInput}
+          value={profile.full_name}
+          onChangeText={(text) => setProfile({ ...profile, full_name: text })}
+          placeholder="Full Name"
+          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+        />
+        <TextInput
+          style={styles.titleInput}
+          value={profile.title}
+          onChangeText={(text) => setProfile({ ...profile, title: text })}
+          placeholder="Job Title"
+          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+        />
       </View>
       
       <View style={styles.section}>
@@ -39,18 +127,53 @@ export default function ProfileScreen({ navigation }) {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Ionicons name="mail-outline" size={20} color="#FF69B4" style={styles.infoIcon} />
-            <Text style={styles.info}>john.doe@example.com</Text>
+            <TextInput
+              style={styles.input}
+              value={profile.email}
+              onChangeText={(text) => setProfile({ ...profile, email: text })}
+              placeholder="Email"
+              placeholderTextColor="#666"
+              keyboardType="email-address"
+            />
           </View>
           <View style={styles.infoRow}>
             <Ionicons name="call-outline" size={20} color="#FF69B4" style={styles.infoIcon} />
-            <Text style={styles.info}>(555) 123-4567</Text>
+            <TextInput
+              style={styles.input}
+              value={profile.phone}
+              onChangeText={(text) => setProfile({ ...profile, phone: text })}
+              placeholder="Phone Number"
+              placeholderTextColor="#666"
+              keyboardType="phone-pad"
+            />
           </View>
           <View style={styles.infoRow}>
             <Ionicons name="location-outline" size={20} color="#FF69B4" style={styles.infoIcon} />
-            <Text style={styles.info}>New York, NY</Text>
+            <TextInput
+              style={styles.input}
+              value={profile.location}
+              onChangeText={(text) => setProfile({ ...profile, location: text })}
+              placeholder="Location"
+              placeholderTextColor="#666"
+            />
           </View>
         </View>
       </View>
+
+      <TouchableOpacity 
+        style={styles.saveButton}
+        onPress={handleSave}
+        disabled={isSaving}
+      >
+        {isSaving ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <>
+            <Ionicons name="save-outline" size={24} color="#fff" style={styles.saveIcon} />
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          </>
+        )}
+      </TouchableOpacity>
     </LinearGradient>
   );
 }
@@ -59,6 +182,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileHeader: {
     alignItems: 'center',
@@ -87,15 +214,19 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
   },
-  name: {
+  nameInput: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 5,
+    textAlign: 'center',
+    width: '100%',
   },
-  title: {
+  titleInput: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center',
+    width: '100%',
   },
   section: {
     marginBottom: 20,
@@ -127,11 +258,39 @@ const styles = StyleSheet.create({
   infoIcon: {
     marginRight: 15,
   },
-  info: {
+  input: {
+    flex: 1,
     fontSize: 16,
     color: '#333',
+    padding: 0,
   },
-  signOutButton: {
+  headerButton: {
     padding: 10,
+    marginLeft: 10,
+  },
+  saveButton: {
+    backgroundColor: '#FF69B4',
+    borderRadius: 25,
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  saveIcon: {
+    marginRight: 10,
   },
 }); 
