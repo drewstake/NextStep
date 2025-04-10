@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -10,10 +12,11 @@
   align-items: center;
   z-index: 1000;
   padding: 20px;
+  font-family: 'Poor Story', cursive;
 }
 
 .popup-content {
-  background-color: white;
+  background-color: #fff;
   border-radius: 12px;
   padding: 24px;
   max-width: 600px;
@@ -21,7 +24,7 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .popup-title {
@@ -57,6 +60,7 @@
 
 .company-info {
   margin-bottom: 24px;
+  font-family: 'Poor Story', cursive;
 }
 
 .company-info h3 {
@@ -65,17 +69,20 @@
 }
 
 .company-info a {
-  color: #0066cc;
+  color: #2563eb;
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 .company-info a:hover {
+  color: #1d4ed8;
   text-decoration: underline;
 }
 
 .job-details {
   display: flex;
   flex-direction: column;
+  font-family: 'Poor Story', cursive;
 }
 
 .detail-section {
@@ -89,7 +96,7 @@
 
 .detail-section h4 {
   margin: 0 0 8px 0;
-  color: #444;
+  color: #333;
   font-size: 16px;
 }
 
@@ -122,4 +129,4 @@
     font-size: 20px;
     margin-bottom: 20px;
   }
-} 
+}

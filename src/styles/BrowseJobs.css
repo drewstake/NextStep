@@ -26,7 +26,7 @@
   outline: none;
   background: rgba(0, 0, 0, 0.1);  /* subtle dark tint for input background */
   color: #000000;
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-family: 'Poor Story', cursive;
 }
 
@@ -35,12 +35,12 @@
 }
 
 .job-search-button {
-  padding: 10px 20px;
+  padding: 15px 40px;
   border: none;
   border-radius: 30px;
   background: #d3d3d3;  /* switched from gradient to a solid background color */
   color: #000000;
-  font-size: 1rem;
+  font-size: 1.2rem;
   cursor: pointer;
   transition: transform 0.3s ease;
   font-family: 'Poor Story', cursive;

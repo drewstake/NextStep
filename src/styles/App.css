@@ -37,7 +37,7 @@
 .app-nav__link,
 .auth__button {
   padding: 12px 25px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 500;
   border-radius: 30px;
   transition: all 0.3s ease;

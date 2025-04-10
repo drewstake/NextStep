@@ -39,7 +39,7 @@ body::-webkit-scrollbar {
 }
 
 .about-header__title {
-  font-size: 5rem;
+  font-size: 4rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -47,7 +47,7 @@ body::-webkit-scrollbar {
 }
 
 .about-header__subtitle {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   opacity: 0.9;
 }
 
@@ -74,13 +74,13 @@ body::-webkit-scrollbar {
 }
 
 .about-section__icon {
-  font-size: 3rem;
+  font-size: 2.5rem;
   /* Updated icon color to align with text styling */
   color: #000000;
 }
 
 .about-section__title {
-  font-size:3rem;
+  font-size:2.7rem;
   margin-bottom: 15px;
   display: flex;
   align-items: center;
@@ -88,7 +88,7 @@ body::-webkit-scrollbar {
 }
 
 .about-section__text {
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   line-height: 1.6;
   max-width: 700px;
   margin: 0 auto;
@@ -103,7 +103,7 @@ body::-webkit-scrollbar {
 }
 
 .about-section__list-item {
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   line-height: 1.8;
   margin-bottom: 10px;
   display: flex;

@@ -1,80 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+
 .employer-application-tracker-container {
     padding: 20px;
-    color: #fff;
-    background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
+    color: #000; /* Dark text for better readability */
+    background: #FDF4F0; /* Flat light background */
     min-height: 100vh;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poor Story', cursive;
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
+}
   
-  .employer-application-tracker-container h1 {
+.employer-application-tracker-container h1 {
     font-size: 2.5rem;
     margin-bottom: 20px;
     text-align: center;
-  }
+    color: #000;
+}
   
-  .employer-application-tracker-container p {
+.employer-application-tracker-container p {
     font-size: 1.2rem;
     margin-bottom: 30px;
-  }
+    color: #333;
+}
   
-  .employer-tracker-table {
+.employer-tracker-table {
     width: 90%;
     max-width: 1000px;
     border-collapse: collapse;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #fff;
+    border: 1px solid #ddd;
     border-radius: 8px;
     overflow: hidden;
-  }
+}
   
-  .employer-tracker-table th,
-  .employer-tracker-table td {
+.employer-tracker-table th,
+.employer-tracker-table td {
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  }
+    border-bottom: 1px solid #ddd;
+    color: #000;
+}
   
-  .employer-tracker-table th {
-    background: rgba(255, 255, 255, 0.2);
+.employer-tracker-table th {
+    background: #f0f0f0;
     font-size: 1.1rem;
-  }
+    color: #000;
+}
   
-  .employer-tracker-table tr:last-child td {
+.employer-tracker-table tr:last-child td {
     border-bottom: none;
-  }
+}
   
-  .employer-tracker-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.2);
+.employer-tracker-table tbody tr:hover {
+    background: #f9f9f9;
     cursor: pointer;
-  }
+}
   
-  .employer-tracker-table button {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+.employer-tracker-table button {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    color: #fff;
+    color: #000;
     padding: 4px 8px;
     margin-right: 5px;
     cursor: pointer;
     transition: background 0.3s ease;
-  }
+}
   
-  .employer-tracker-table button:hover {
-    background: rgba(255, 255, 255, 0.4);
-  }
+.employer-tracker-table button:hover {
+    background: #e0e0e0;
+}
   
-  .employer-tracker-table input,
-  .employer-tracker-table select {
-    border: 1px solid rgba(255, 255, 255, 0.4);
+.employer-tracker-table input,
+.employer-tracker-table select {
+    border: 1px solid #ccc;
     border-radius: 4px;
     padding: 4px 8px;
-  }
+    color: #000;
+}
   
-  .applicant-name-link {
-    color: rgb(255 122 163);
+.applicant-name-link {
+    color: #2563eb; /* Accent color */
     text-decoration: underline;
     cursor: pointer;
     background: none;
@@ -83,9 +90,8 @@
     font: inherit;
     text-align: left;
     width: 100%;
-  }
+}
   
-  .applicant-name-link:hover {
+.applicant-name-link:hover {
     opacity: 0.8;
-  }
-  
+}

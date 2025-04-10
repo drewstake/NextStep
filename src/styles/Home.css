@@ -23,7 +23,7 @@
 
 .home-branding__title {
   font-family: 'Poor Story', cursive;
-  font-size: 3rem;
+  font-size: 5rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -47,6 +47,6 @@
 
 .home-please-sign-in {
   font-family: 'Poor Story', cursive;
-  font-size: 3rem;
+  font-size: 4rem;
   color: #000000;
 }
