@@ -14,7 +14,7 @@ body::-webkit-scrollbar {
 }
 
 .about-container {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Limelight', sans-serif;
   text-align: center;
   min-height: 100vh; /* allow the container to grow if needed */
   color: #fff;
