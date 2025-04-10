@@ -253,29 +253,17 @@ const Login = () => {
                                   />
                                   <i className="login-form-icon uil uil-phone"></i>
                                 </div>
-                                {!showVerification ? (
-                                  <button
-                                    type="button"
-                                    className="login-btn mt-4"
-                                    onClick={() =>
-                                      handleSendVerificationCode(loginPhone, false)
-                                    }
-                                  >
-                                    Get Code via Call
-                                  </button>
-                                ) : (
-                                  <div className="login-form-group mt-2">
-                                    <input
-                                      type="text"
-                                      className="login-form-input"
-                                      placeholder="Verification Code"
-                                      value={verificationCode}
-                                      onChange={(e) => setVerificationCode(e.target.value)}
-                                      required
-                                    />
-                                    <i className="login-form-icon uil uil-key-skeleton"></i>
-                                  </div>
-                                )}
+                                <div className="login-form-group mt-2">
+                                  <input
+                                    type="text"
+                                    className="login-form-input"
+                                    placeholder="Verification Code"
+                                    value={verificationCode}
+                                    onChange={(e) => setVerificationCode(e.target.value)}
+                                    required
+                                  />
+                                  <i className="login-form-icon uil uil-key-skeleton"></i>
+                                </div>
                               </>
                             )}
 
@@ -351,32 +339,10 @@ const Login = () => {
                               <i className="login-form-icon uil uil-phone"></i>
                             </div>
 
-                            {/* Verification Call Button / Input */}
-                            {!showSignupVerification ? (
-                              <button
-                                type="button"
-                                className="login-btn mt-2"
-                                onClick={() =>
-                                  handleSendVerificationCode(signupPhone, true)
-                                }
-                              >
-                                Verify via Call
-                              </button>
-                            ) : (
-                              <div className="login-form-group mt-2">
-                                <input
-                                  type="text"
-                                  className="login-form-input"
-                                  placeholder="Verification Code"
-                                  value={signupVerificationCode}
-                                  onChange={(e) =>
-                                    setSignupVerificationCode(e.target.value)
-                                  }
-                                  required
-                                />
-                                <i className="login-form-icon uil uil-key-skeleton"></i>
-                              </div>
-                            )}
+                            <div className="login-form-group mt-2">
+                              
+                              <i className="login-form-icon uil uil-key-skeleton"></i>
+                            </div>
 
                             <div className="login-form-group mt-2">
                               <input
