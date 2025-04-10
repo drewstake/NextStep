@@ -1,4 +1,5 @@
 const { ObjectId } = require("mongodb");
+const jwt = require("jsonwebtoken");
 
 /**
  * Controller for handling job-related operations
@@ -371,22 +372,25 @@ const jobsController = {
       if (token) {
         try {
           const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          const appliedJobsResult = await applicationsCollection
+          // Get all jobs the user has interacted with (both applied and ignored)
+          const userApplications = await applicationsCollection
             .find({
               user_id: ObjectId.createFromHexString(decoded.id)
             })
             .project({ job_id: 1, _id: 0 })
             .toArray();
 
-          const appliedJobIds = appliedJobsResult.map(app => app.job_id);
+          const decidedJobIds = userApplications.map(app => app.job_id);
           jobs = baseJobs.filter(job =>
-            !appliedJobIds.some(appliedId =>
-              appliedId.toString() === job._id.toString()
+            !decidedJobIds.some(decidedId =>
+              decidedId.toString() === job._id.toString()
             )
           );
         } catch (error) {
           jobs = baseJobs;
         }
+      } else {
+        jobs = baseJobs;
       }
 
       res.status(200).json(jobs);
