@@ -1,4 +1,4 @@
-/* File: /src/styles/Swipe.css */
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
 
 .swipe-container {
   position: relative;
@@ -8,6 +8,7 @@
   align-items: center;
   justify-content: center;
   overflow: visible;
+  font-family: 'Poor Story', cursive;
 }
 
 .swipe-job-card {
@@ -18,7 +19,7 @@
   background: #fff;
   color: #333;
   border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   padding: 20px;
   cursor: grab;
   transition: transform 0.3s ease, background-color 0.3s ease;
@@ -57,7 +58,7 @@
 
 .swipe-job-card h2 {
   margin-top: 0;
-  color: #ff758c;
+  color: #0073b1; /* updated to a neutral blue for better contrast */
   font-size: 1.2em;
 }
 
@@ -106,7 +107,7 @@
 .swipe-direction-label {
   position: absolute;
   font-size: 1.2em;
-  color: #fafafc;
+  color: #333; /* dark color for readability on a light background */
   font-weight: 500;
   opacity: 0.8;
   transition: opacity 0.3s ease;
@@ -134,10 +135,11 @@
   opacity: 1;
 }
 
-.job-description-swipe{
+.job-description-swipe {
   height: 81px;
   overflow: hidden;
   display: -webkit-box;
+  line-clamp: 4;
   -webkit-line-clamp: 4; /* number of lines to show */
   -webkit-box-orient: vertical;
   word-break: break-word;

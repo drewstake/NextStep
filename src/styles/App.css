@@ -1,11 +1,12 @@
-/* File: /src/styles/App.css */
+/* Importing the 'Poor Story' font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
 
 .app-container {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poor Story', cursive;
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
-  color: #fff;
+  background: #FDF4F0;
+  color: #000000;
   padding: 20px 0 0 0;
   position: relative;
 }
@@ -17,23 +18,26 @@
   margin-top: 20px;
   margin-bottom: 40px;
   padding: 0 10px;
+  font-family: 'Poor Story', cursive;
 }
 
 .nav-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  font-family: 'Poor Story', cursive;
 }
 
 .app-nav {
   display: flex;
   gap: 20px;
+  font-family: 'Poor Story', cursive;
 }
 
 .app-nav__link,
 .auth__button {
   padding: 12px 25px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 500;
   border-radius: 30px;
   transition: all 0.3s ease;
@@ -42,46 +46,46 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: 'Poor Story', cursive;
 }
 
 .app-nav__link {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: #FDF4F0;
+  color: #000000;
+  border: 2px solid #000000;
 }
 
 .app-nav__link:hover {
-  background: linear-gradient(90deg, #ff758c, #ff7eb3);
+  background: #e0e0e0;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(255, 118, 136, 0.4);
-  border-color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  border-color: #000000;
 }
 
 .auth__button {
-  background: linear-gradient(90deg, #ff758c, #ff7eb3);
-  color: #fff;
-  border: none;
+  background: #FDF4F0;
+  color: #000000;
+  border: 2px solid #000000;
   font-weight: 600;
-  box-shadow: 0 5px 15px rgba(255, 118, 136, 0.4);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
 }
 
 .auth__button:hover {
   transform: scale(1.05) translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 118, 136, 0.6);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
 }
 
 .auth-container {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-family: 'Poor Story', cursive;
 }
 
 .app-main {
   width: 100%;
   flex-grow: 1;
+  font-family: 'Poor Story', cursive;
 }
 
 .home-branding {
@@ -91,6 +95,7 @@
   justify-content: center;
   min-height: 30vh;
   text-align: center;
+  font-family: 'Poor Story', cursive;
 }
 
 .home-branding__title {
@@ -99,10 +104,8 @@
   text-transform: uppercase;
   letter-spacing: 3px;
   margin: 0;
-  background: linear-gradient(90deg, #fff, #ff7eb3);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: none;
+  color: #000000;
 }
 
 .home-branding__subtitle {
@@ -110,11 +113,13 @@
   opacity: 0.9;
   margin: 10px 0 0;
   letter-spacing: 1px;
+  color: #000000;
 }
 
 .app-content {
   text-align: center;
   padding: 40px 20px;
+  font-family: 'Poor Story', cursive;
 }
 
 /* Hamburger button styling */
@@ -126,12 +131,13 @@
   border: none;
   cursor: pointer;
   padding: 10px;
+  font-family: 'Poor Story', cursive;
 }
 
 .hamburger .bar {
   width: 25px;
   height: 3px;
-  background-color: #fff;
+  background-color: #000000;
   border-radius: 2px;
 }
 
@@ -163,7 +169,7 @@
 }
 
 .nav-overlay-content {
-  background-color: rgba(20,20,20,0.95);
+  background-color: #FDF4F0;
   padding: 20px;
   border-radius: 8px;
   width: 80%;
@@ -172,12 +178,15 @@
   flex-direction: column;
   gap: 15px;
   text-align: center;
+  color: #000000;
+  font-family: 'Poor Story', cursive;
 }
 
 .close-btn {
   border: none;
   font-size: 2rem;
-  color: #171717;
+  color: #000000;
   align-self: flex-end;
   cursor: pointer;
+  font-family: 'Poor Story', cursive;
 }

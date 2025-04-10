@@ -1,8 +1,13 @@
 /* File: /src/styles/BrowseJobs.css */
+/* Importing the 'Poor Story' font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+
 .browse-jobs-container {
   padding: 20px;
-  color: #fff;
+  color: #000000;
   text-align: center;
+  font-family: 'Poor Story', cursive;
+  background-color: #FDF4F0;
 }
 
 .job-search-form {
@@ -10,6 +15,7 @@
   display: flex;
   justify-content: center;
   gap: 10px;
+  font-family: 'Poor Story', cursive;
 }
 
 .job-search-input {
@@ -18,24 +24,26 @@
   border-radius: 30px;
   width: 300px;
   outline: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: 1rem;
+  background: rgba(0, 0, 0, 0.1);  /* subtle dark tint for input background */
+  color: #000000;
+  font-size: 1.5rem;
+  font-family: 'Poor Story', cursive;
 }
 
 .job-search-input::placeholder {
-  color: #ddd;
+  color: #555; /* updated placeholder color for readability */
 }
 
 .job-search-button {
-  padding: 10px 20px;
+  padding: 15px 40px;
   border: none;
   border-radius: 30px;
-  background: linear-gradient(90deg, #ff758c, #ff7eb3);
-  color: #fff;
-  font-size: 1rem;
+  background: #d3d3d3;  /* switched from gradient to a solid background color */
+  color: #000000;
+  font-size: 1.2rem;
   cursor: pointer;
   transition: transform 0.3s ease;
+  font-family: 'Poor Story', cursive;
 }
 
 .job-search-button:hover {
@@ -47,11 +55,14 @@
   flex-direction: column;
   gap: 20px;  /* Ensure your environment supports this property */
   align-items: flex-start;  /* Left-align job postings */
+  font-family: 'Poor Story', cursive;
+  color: #000000;
 }
 
 .placeholder-text {
   font-size: 1.2rem;
-  color: #ddd;
+  color: #555;
   text-align: center;
   margin: 20px auto;
+  font-family: 'Poor Story', cursive;
 }

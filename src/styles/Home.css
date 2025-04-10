@@ -1,38 +1,52 @@
-/* File: /src/styles/Home.css */
+/* Importing the 'Poor Story' font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
 
 .home-content {
+  font-family: 'Poor Story', cursive;
   text-align: center;
   padding: 40px 20px;
+  background-color: #FDF4F0; /* solid background */
+  color: #000000; /* solid font color */
 }
 
 .home-branding {
+  font-family: 'Poor Story', cursive;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 40vh;
   text-align: center;
+  background-color: #FDF4F0;
+  color: #000000;
 }
 
 .home-branding__title {
-  font-size: 2.8rem;
+  font-family: 'Poor Story', cursive;
+  font-size: 5rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 3px;
   margin: 0;
-  background: linear-gradient(90deg, #fff, #ff7eb3);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* Remove gradient background, display plain black text */
+  background: none;
+  background-clip: initial;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  color: #000000;
 }
 
 .home-branding__subtitle {
-  font-size: 1.2rem;
+  font-family: 'Poor Story', cursive;
+  font-size: 4rem;
   opacity: 0.9;
   margin: 10px 0 0;
   letter-spacing: 1px;
+  color: #000000;
 }
 
-.home-please-sign-in{
-  font-size: 1.5rem;
+.home-please-sign-in {
+  font-family: 'Poor Story', cursive;
+  font-size: 4rem;
+  color: #000000;
 }

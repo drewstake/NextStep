@@ -1,35 +1,35 @@
-/* File: /src/styles/EmployerDashboard.css */
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+
 .employer-dashboard-container {
     padding: 20px;
-    color: #fff;
-    background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
+    color: #333; /* Dark text for clear readability */
+    background: #FDF4F0; /* Flat, light background */
     min-height: 100vh;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poor Story', cursive;
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
+}
   
-  .employer-dashboard-container h1 {
+.employer-dashboard-container h1 {
     text-align: center;
     margin-bottom: 40px;
     font-size: 2.5rem;
-  }
+    color: #333;
+}
   
-  /* Grid container with 4 columns (each 400px wide) and 2 rows */
-  .dashboard-boxes {
+.dashboard-boxes {
     display: grid;
-    grid-template-columns: repeat(3, 300px); /* Each box is now 300px wide */
-    grid-auto-rows: 200px;                  /* Height is now 200px */
+    grid-template-columns: repeat(3, 300px);
+    grid-auto-rows: 200px;
     gap: 20px;
     justify-content: center;
     width: 100%;
-  }
+}
   
-  
-  .dashboard-box {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.dashboard-box {
+    background: #fff;  /* Clean white background */
+    border: 1px solid #ddd; /* Light gray border */
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -39,21 +39,21 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-align: center;
     padding: 20px;
-  }
+    color: #333; /* Dark text color inside boxes */
+}
   
-  .dashboard-box:hover {
+.dashboard-box:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(255, 118, 136, 0.4);
-  }
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
 
-  /* Glow effect for boxes with URLs */
-  .dashboard-box.has-url {
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-  }
+/* Glow effect for boxes with URLs */
+.dashboard-box.has-url {
+    border: 2px solid #2563eb; /* Accent blue border */
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.2);
+}
 
-  .dashboard-box.has-url:hover {
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
-  }
-  
+.dashboard-box.has-url:hover {
+    border-color: #1d4ed8;
+    box-shadow: 0 0 25px rgba(37, 99, 235, 0.4);
+}
