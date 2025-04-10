@@ -172,7 +172,7 @@ const authController = {
       `;
       
       await sendEmail(
-        process.env.EMAIL_FROM || "noreply@nextstep.com",
+        process.env.EMAIL_FROM || "bzm436@psu.edu",
         "NextStep",
         email,
         full_name,
@@ -325,7 +325,7 @@ const authController = {
       `;
       
       await sendEmail(
-        process.env.EMAIL_FROM || "noreply@nextstep.com",
+        process.env.EMAIL_FROM || "bzm436@psu.edu",
         "NextStep",
         email,
         user.full_name,
