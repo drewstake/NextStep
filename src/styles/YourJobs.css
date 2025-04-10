@@ -1,74 +1,81 @@
 /* File: /src/styles/YourJobs.css */
 .your-jobs-container {
-    padding: 20px;
-    color: #fff;
-    text-align: left;
-  }
-  
-  .your-jobs-container h1 {
-    font-size: 2rem;
-    margin-bottom: 20px;
-  }
-  
-  .jobs-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .jobs-table th,
-  .jobs-table td {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 10px;
-    text-align: left;
-  }
-  
-  .jobs-table th {
-    background: rgba(255, 255, 255, 0.1);
-  }
-  
-  .jobs-table tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.05);
-  }
-  
-  .jobs-table input {
-    padding: 5px;
-    margin-right: 5px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
-  
-  /* Container for non-editing state: text on left, edit button on far right */
-  .notes-display {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  /* Container for editing state: input on left, save/cancel buttons on far right */
-  .notes-edit {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .edit-actions {
-    display: flex;
-    gap: 5px;
-  }
-  
-  .jobs-table button {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    background: linear-gradient(90deg, #ff758c, #ff7eb3);
-    color: #fff;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: background 0.3s ease;
-  }
-  
-  .jobs-table button:hover {
-    background: linear-gradient(90deg, #ff7eb3, #ff758c);
-  }
-  
+  padding: 20px;
+  color: #000;               /* Updated text color to black */
+  text-align: left;
+  background-color: #FDF4F0; /* Flat light background */
+  font-family: 'Poor Story', cursive; /* New font family */
+}
+
+.your-jobs-container h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.jobs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.jobs-table th,
+.jobs-table td {
+  border: 1px solid #ddd;  /* Light gray border for a subtle effect */
+  padding: 10px;
+  text-align: left;
+}
+
+.jobs-table th {
+  background: #f0f0f0;      /* Flat light gray background for headers */
+  color: #000;
+}
+
+.jobs-table tr:nth-child(even) {
+  background: #fafafa;      /* Alternate row background for readability */
+}
+
+.jobs-table input {
+  padding: 5px;
+  margin-right: 5px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-family: 'Poor Story', cursive;
+  color: #000;
+}
+
+/* Container for non-editing state: text on left, edit button on far right */
+.notes-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Poor Story', cursive;
+}
+
+/* Container for editing state: input on left, save/cancel buttons on far right */
+.notes-edit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Poor Story', cursive;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.jobs-table button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  background: #7a90f7;    /* Replaced gradient with a flat primary color */
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.3s ease;
+  font-family: 'Poor Story', cursive;
+}
+
+.jobs-table button:hover {
+  background: #8e7df2;    /* Hover state with a slightly altered hue */
+}

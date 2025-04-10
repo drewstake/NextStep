@@ -1,32 +1,38 @@
 /* File: /src/styles/ApplicationTracker.css */
 .application-tracker-container {
-    padding: 20px;
-    color: #fff;
-    text-align: left;
-  }
-  
-  .application-tracker-container h1 {
-    font-size: 2rem;
-    margin-bottom: 20px;
-  }
-  
-  .tracker-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .tracker-table th,
-  .tracker-table td {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 10px;
-  }
-  
-  .tracker-table th {
-    background: rgba(255, 255, 255, 0.1);
-  }
-  
-  .tracker-table tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.05);
-  }
-  
+  padding: 20px;
+  color: #000;                     /* Updated text color to dark for contrast */
+  text-align: left;
+  background-color: #FDF4F0;         /* Flat, light background */
+  font-family: 'Poor Story', cursive; /* Consistent font family */
+}
+
+.application-tracker-container h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #000;                     /* Ensure header text is visible */
+}
+
+.tracker-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-family: 'Poor Story', cursive;
+}
+
+.tracker-table th,
+.tracker-table td {
+  border: 1px solid #ddd;         /* Light gray borders for subtle separation */
+  padding: 10px;
+  text-align: left;
+  color: #000;                    /* Dark text for clarity */
+}
+
+.tracker-table th {
+  background: #f0f0f0;            /* Light gray background for headers */
+  color: #000;
+}
+
+.tracker-table tr:nth-child(even) {
+  background: #fafafa;            /* Alternating row background for readability */
+}

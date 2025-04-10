@@ -1,8 +1,8 @@
 /* File: /src/styles/Login.css */
-@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700,800,900');
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
 
 html {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #FDF4F0;
 }
 
 html, body {
@@ -10,11 +10,11 @@ html, body {
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poor Story', cursive;
   font-weight: 300;
   line-height: 1.7;
-  color: #fff;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #000;
+  background: #FDF4F0;
 }
 
 a:hover {
@@ -22,7 +22,7 @@ a:hover {
 }
 
 .link {
-  color: #fff;
+  color: #000;
 }
 
 .link:hover {
@@ -32,16 +32,19 @@ a:hover {
 p {
   font-weight: 500;
   font-size: 14px;
+  color: #000;
 }
 
 h4 {
   font-weight: 600;
+  color: #000;
 }
 
 h6 span {
   font-size: 36px;
   font-weight: 700;
   padding: 0 20px;
+  color: #000;
 }
 
 .login-section {
@@ -88,8 +91,8 @@ h6 span {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  color: #fff;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #000;
+  background: #FDF4F0;
   font-family: 'unicons';
   content: '\eb4f';
   z-index: 20;
@@ -114,7 +117,7 @@ h6 span {
   perspective: 800px;
   margin-top: 60px;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #FDF4F0;
   border-radius: 8px;
 }
 
@@ -124,7 +127,7 @@ h6 span {
   position: absolute;
   transform-style: preserve-3d;
   transition: all 600ms ease-out;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #FDF4F0;
 }
 
 .login-card-front,
@@ -138,11 +141,11 @@ h6 span {
 }
 
 .login-card-front {
-  background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(197, 35, 200, 0.95));
+  background: #fff;
 }
 
 .login-card-back {
-  background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(197, 35, 200, 0.95));
+  background: #fff;
   transform: rotateY(180deg);
 }
 
@@ -180,7 +183,7 @@ h6 span {
   letter-spacing: 0.5px;
   outline: none;
   color: #3f3f3f;
-  background-color: rgba(255, 255, 255, 0.952);
+  background-color: rgba(255, 255, 255, 0.95);
   border: none;
   transition: all 200ms linear;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
@@ -202,7 +205,7 @@ h6 span {
   line-height: 48px;
   text-align: left;
   transition: all 200ms linear;
-  color: purple;
+  color: #000;
 }
 
 .login-btn {
@@ -216,17 +219,18 @@ h6 span {
   letter-spacing: 1px;
   display: inline-flex;
   align-items: center;
-  background: linear-gradient(90deg, #7489f4, #8e7df2);
+  background: #7a90f7;
   color: #fff;
   border: none;
   cursor: pointer;
 }
 
 .login-btn:hover {
-  background: linear-gradient(90deg, #8e7df2, #7489f4);
+  background: #8e7df2;
   box-shadow: 0 8px 24px 0 rgba(0,0,0,0.2);
 }
 
+/* Ensure the 3D card containers remain transparent as needed */
 .login-card-3d-wrap,
 .login-card-3d-wrapper {
   background: transparent !important;

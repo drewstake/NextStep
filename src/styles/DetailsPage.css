@@ -1,10 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+
 .details-page {
   min-height: 100vh;
   padding: 2rem;
-  background: linear-gradient(135deg, #6b46c1 0%, #9333ea 100%);
+  background-color: #FDF4F0; /* flat, light background */
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-family: 'Poor Story', cursive;
 }
 
 .search-container {
@@ -18,14 +21,15 @@
   padding: 1rem;
   border: none;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  background: #fff;
   font-size: 1.1rem;
+  color: #000;
 }
 
 .details-container {
   width: 100%;
   max-width: 800px;
-  background: white;
+  background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 2rem;
@@ -38,12 +42,13 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #ccc;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
   margin-bottom: 2rem;
   transition: all 0.2s ease;
+  color: #000;
 }
 
 .back-button:hover {
@@ -70,7 +75,7 @@
 
 .company-name {
   font-size: 1.2rem;
-  color: #666;
+  color: #333;
   margin-bottom: 1rem;
 }
 
@@ -158,7 +163,7 @@
 .apply-button {
   background: #2563eb;
   border: none;
-  color: white;
+  color: #fff;
 }
 
 .skip-button:hover {
@@ -171,7 +176,7 @@
 
 .job-counter {
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
+  color: #666;
   margin-top: 1rem;
   font-size: 0.9rem;
 }
