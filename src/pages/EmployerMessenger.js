@@ -18,8 +18,10 @@ const EmployerMessenger = () => {
   const currentUserId = decoded?.id;
   const isEmployer = decoded?.employerFlag || false;
   const messagesEndRef = useRef(null);
+  const timedDelay = 5000;
 
   const scrollToBottom = () => {
+//console.log('scrollToBottom');
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -35,10 +37,11 @@ const EmployerMessenger = () => {
   }, [isEmployer, navigate]);
 
   const fetchEmployerMessages = useCallback(async () => {
+//console.log('fetchEmployerMessages');
     if (!token) return;
     try {
       const response = await axiosInstance.get('/employer/messages');
-      //console.log("fetchEmployerMessages response", response);
+//console.log('fetchEmployerMessages response', response.data.length);
       if (response.data.length > 0) {
         setMessages(response.data);
       }
@@ -48,19 +51,20 @@ const EmployerMessenger = () => {
   }, [token]);
 
   const refreshMessages = useCallback(async () => {
-    fetchEmployerMessages();
-    //console.log("refreshMessages selectedContact", selectedContact);
+//console.log('refreshMessages');
+    await fetchEmployerMessages();
     if (selectedContact?._id) {
       const currentContact = contacts.find(c => c._id === selectedContact._id);
       if (currentContact?.countOfUnreadMessages > 0) {
         setTimeout(() => {
           markMessagesAsRead(selectedContact._id);
-        }, 2000);
+        }, timedDelay);
       }
     }
   }, [fetchEmployerMessages, selectedContact, contacts]);
 
   const fetchApplicantsFromJobs = async () => {
+//console.log('fetchApplicantsFromJobs');
     try {
       const response = await axiosInstance.get('/employer/applicants');
       setApplicants(response.data);
@@ -70,8 +74,10 @@ const EmployerMessenger = () => {
   };
 
   const fetchApplicantContacts = async () => {
+//console.log('fetchApplicantContacts');
     try {
       const response = await axiosInstance.get('/employer/recent-applicant-contacts');
+//console.log('fetchApplicantContacts response', response.data.length);
       setContacts(response.data);
     } catch (error) {
       console.error('Error fetching applicant contacts:', error);
@@ -91,7 +97,7 @@ const EmployerMessenger = () => {
     const interval = setInterval(() => {
       fetchEmployerMessages();
       fetchApplicantContacts();
-    }, 2000);
+    }, timedDelay);
 
     return () => clearInterval(interval);
   }, [token, fetchEmployerMessages, navigate]);
@@ -103,29 +109,30 @@ const EmployerMessenger = () => {
       if (currentContact?.countOfUnreadMessages > 0) {
         setTimeout(() => {
           markMessagesAsRead(selectedContact._id);
-        }, 2000);
+        }, timedDelay);
       }
     }
   }, [selectedContact, contacts]);
 
   const handleUserSelected = (user) => {
-    //console.log("user", user);
+//console.log('handleUserSelected');
     setSelectedContact(user);
     markMessagesAsRead(user._id);
-    //    fetchApplicantContacts();
   };
 
   const markMessagesAsRead = async (contactId) => {
+//console.log('markMessagesAsRead');
     try {
       const response = await axiosInstance.put(`/employer/messages/read/${contactId}`);
-      //console.log("markMessagesAsRead response", response);
       setMessages(response.data.messages);
+//console.log('markMessagesAsRead response', response.data.messages.length);
     } catch (error) {
       console.error('Error marking messages as read:', error);
     }
   };
 
   const sendMessage = async (e) => {
+//console.log('sendMessage');
     e.preventDefault();
     if (!selectedContact?._id || !newMessage || !token) return;
 
@@ -147,6 +154,7 @@ const EmployerMessenger = () => {
     (msg.applicantId === selectedContact._id && msg.receiverId === currentUserId)
   )?.applicantName || '';
 
+  //console.log("Recomputation triggered");
 
   return (
     <div className="messenger-container">
