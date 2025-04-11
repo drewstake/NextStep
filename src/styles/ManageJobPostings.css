@@ -1,17 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
-
 .manage-job-postings-container {
   padding: 2rem;
   max-width: 900px;
   margin: 0 auto;
-  color: #333; /* Dark text for readability */
-  background-color: #FDF4F0; /* Light, flat background */
-  font-family: 'Poor Story', cursive;
+  color: #fff;
 }
 
 .manage-job-postings-container h1 {
   margin-bottom: 2rem;
-  color: #333;
 }
 
 .actions-bar {
@@ -26,28 +21,25 @@
   gap: 1rem;
   flex: 1;
   max-width: 500px;
-  font-family: 'Poor Story', cursive;
 }
 
 .search-form input {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
-  color: #333;
 }
 
 .create-job-btn {
   padding: 0.5rem 1rem;
   background-color: #4CAF50;
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.2s;
-  font-family: 'Poor Story', cursive;
 }
 
 .create-job-btn:hover {
@@ -68,14 +60,13 @@
 }
 
 .job-form {
-  background-color: #fff;
+  background-color: #230c23;
   padding: 2rem;
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  font-family: 'Poor Story', cursive;
 }
 
 .job-form h2 {
@@ -85,7 +76,6 @@
 
 .form-group {
   margin-bottom: 1rem;
-  font-family: 'Poor Story', cursive;
 }
 
 .form-group label {
@@ -98,10 +88,9 @@
 .form-group textarea {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
-  color: #333;
 }
 
 .form-group textarea {
@@ -122,12 +111,11 @@
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.2s;
-  font-family: 'Poor Story', cursive;
 }
 
 .form-actions button[type="submit"] {
   background-color: #4CAF50;
-  color: #fff;
+  color: white;
 }
 
 .form-actions button[type="submit"]:hover {
@@ -136,7 +124,7 @@
 
 .form-actions button[type="button"] {
   background-color: #f44336;
-  color: #fff;
+  color: white;
 }
 
 .form-actions button[type="button"]:hover {
@@ -145,20 +133,18 @@
 
 .jobs-list {
   display: flex;
-  flex-wrap: wrap;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
   align-items: center;
-  font-family: 'Poor Story', cursive;
 }
 
 .job-card {
-  background-color: #fff;
+  background-color: white;
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
   width: 100%;
-  font-family: 'Poor Story', cursive;
 }
 
 .job-card:hover {
@@ -170,7 +156,6 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
-  font-family: 'Poor Story', cursive;
 }
 
 .job-header h3 {
@@ -184,7 +169,6 @@
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.875rem;
-  font-family: 'Poor Story', cursive;
 }
 
 .job-details {
@@ -194,7 +178,6 @@
   margin: 1rem 0;
   padding: 0.5rem 0;
   border-bottom: 1px solid #eee;
-  font-family: 'Poor Story', cursive;
 }
 
 .detail-item {
@@ -203,7 +186,6 @@
   align-items: center;
   flex: 1;
   text-align: center;
-  font-family: 'Poor Story', cursive;
 }
 
 .detail-label {
@@ -223,7 +205,6 @@
   gap: 0.5rem;
   margin-top: 15px;
   justify-content: flex-end;
-  font-family: 'Poor Story', cursive;
 }
 
 .job-actions button {
@@ -233,12 +214,11 @@
   cursor: pointer;
   font-size: 0.875rem;
   transition: background-color 0.2s;
-  font-family: 'Poor Story', cursive;
 }
 
 .job-actions button:first-child {
   background-color: #2196f3;
-  color: #fff;
+  color: white;
 }
 
 .job-actions button:first-child:hover {
@@ -247,7 +227,7 @@
 
 .job-actions .delete-btn {
   background-color: #f44336;
-  color: #fff;
+  color: white;
 }
 
 .job-actions .delete-btn:hover {
@@ -261,7 +241,6 @@
   min-height: 200px;
   font-size: 1.2rem;
   color: #666;
-  font-family: 'Poor Story', cursive;
 }
 
 .job-company-info {
@@ -271,18 +250,15 @@
   margin: 0.5rem 0;
   padding: 0.5rem 0;
   border-bottom: 1px solid #eee;
-  font-family: 'Poor Story', cursive;
 }
 
 .company-name {
   font-weight: 600;
   color: #333;
   font-size: 1.1rem;
-  font-family: 'Poor Story', cursive;
 }
 
 .company-location {
   color: #666;
   font-size: 0.9rem;
-  font-family: 'Poor Story', cursive;
-}
+} 

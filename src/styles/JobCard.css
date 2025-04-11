@@ -1,35 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+/* JobCard.css */
 
-/* Container for the job card and details window */
+/* Container is positioned relative so the details window can be absolutely placed */
 .job-card-container {
   position: relative;
   margin: 20px auto;
   overflow: visible; /* Allows the details window to appear outside the container */
 }
 
-/* The job card itself */
+/* Job card styles remain unchanged */
 .job-card-container .job-card {
   background: #fff;
   border: 1px solid #e1e4e8;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   max-width: 800px;
   margin: 20px auto;
-  font-family: 'Poor Story', cursive;
+  font-family: 'Poppins', sans-serif;
   color: #333;
   display: flex;
   flex-direction: column;
-  transition: transform 0.5s ease;
+  transition: transform 0.5s ease; /* Transition for sliding effect */
   position: relative;
   z-index: 2;
+  min-width: 800px;
 }
 
-/* Slide effect for when details are shown */
+/* When details are shown, slide the job card left by 400px */
 .slide-left {
   transform: translateX(-400px);
 }
 
-/* Header area of the job card */
 .job-card-header {
   display: flex;
   justify-content: space-between;
@@ -44,7 +44,6 @@
   flex-direction: column;
 }
 
-/* Job title styling */
 .job-title {
   font-size: 1.5rem;
   margin: 0 0 4px 0;
@@ -52,7 +51,6 @@
   text-align: left;
 }
 
-/* Company information styling */
 .company-info {
   display: flex;
   align-items: center;
@@ -63,19 +61,16 @@
   color: #555;
   text-decoration: none;
   margin-right: 8px;
-  transition: text-decoration 0.2s ease;
 }
 
 .company-info a:hover {
   text-decoration: underline;
 }
 
-/* Job location text */
 .job-location {
   color: #888;
 }
 
-/* Apply button in header-right */
 .header-right .apply-button {
   background-color: #0073b1;
   color: #fff;
@@ -91,12 +86,10 @@
   background-color: #005582;
 }
 
-/* Body of the job card */
 .job-card-body {
   padding: 20px;
 }
 
-/* Row for displaying job info such as salary and schedule */
 .job-info-row {
   display: flex;
   justify-content: space-between;
@@ -119,33 +112,29 @@
   text-align: right;
 }
 
-/* Job benefits list styling */
 .job-benefits {
   font-size: 0.95rem;
   margin-bottom: 8px;
   color: #555;
 }
 
-/* Job description styling */
 .job-description {
   font-size: 1rem;
   line-height: 1.6;
-  margin-bottom: 0;
+  margin-bottom: 0px;
   color: #444;
   text-align: justify;
 }
 
-/* Container for additional details */
 .job-details {
-  margin: 0;
+  margin: 0px;
 }
 
-.job-description p {
+.job-description p{
   text-align: justify;
-  margin-bottom: 0;
+  margin-bottom: 0px;
 }
 
-/* Job skills section styling */
 .job-skills {
   font-size: 0.95rem;
   text-align: left;
@@ -157,7 +146,6 @@
   padding-left: 0;
 }
 
-/* Footer area of the job card */
 .job-card-footer {
   display: flex;
   flex-direction: column;
@@ -167,7 +155,6 @@
   background: #f8f8f8;
 }
 
-/* Details button styling */
 .details-button {
   background-color: #0073b1;
   color: #fff;
@@ -184,19 +171,21 @@
   background-color: #005582;
 }
 
-/* Details window styling, positioned to the right of the job card */
+/* Details window: absolutely positioned to the right of the job card, same size as the job card */
 .details-window {
   position: absolute;
   top: 0;
+  /* With the job card sliding left by 400px, its right edge is at 800 - 400 = 400px.
+     Setting left: 100px places the details window flush to the right of the job card. */
   left: 100px;
   width: 800px;
   background: #fff;
   border: 1px solid #e1e4e8;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   animation: slideIn 0.5s ease forwards;
-  font-family: 'Poor Story', cursive;
+  font-family: 'Poppins', sans-serif;
   color: #333;
   z-index: 1;
 }
@@ -212,7 +201,6 @@
   }
 }
 
-/* Close button styling */
 .close-button {
   background: transparent;
   border: none;
@@ -221,7 +209,7 @@
   float: right;
 }
 
-/* Styling for additional detailed descriptions */
+/* Optional additional detailed description styling */
 .detailed-description {
   margin-top: 16px;
   font-size: 0.95rem;
@@ -230,13 +218,13 @@
   text-align: left;
 }
 
-/* Remove list bullets in the details window */
+/* Remove bullets from lists inside the details window */
 .details-window ul {
   list-style: none;
   padding-left: 0;
 }
 
-/* Headers in the details window */
+/* Style headers in the details window to match blue (#0073b1) */
 .details-window h4 {
   color: #0073b1;
 }

@@ -28,7 +28,9 @@ const authController = require("./controllers/authController");
 const jobsController = require("./controllers/jobsController");
 const applicationsController = require("./controllers/applicationsController");
 const messagesController = require("./controllers/messagesController");
+const employerMessagingController = require("./controllers/employerMessagingController");
 const { profileController, upload } = require("./controllers/profileController");
+const companyRoutes = require("./routes/companyRoutes");
 
 // Import middleware
 const { verifyToken } = require("./middleware/auth");
@@ -69,7 +71,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB Connection
 const uri = process.env.MONGODB_URI;           // e.g. "mongodb+srv://..."
-const dbName = process.env.NODE_ENV === 'test' ? "mydb_test" : "mydb";                         // or process.env.DB_NAME
+const dbName = process.env.NODE_ENV === 'test' ? "mydb_test" : "db2";                         // or process.env.DB_NAME
 const client = new MongoClient(uri);
 const PORT = process.env.PORT || 4000;
 
@@ -178,6 +180,11 @@ client
       app.get("/jobs", jobsController.getAllJobs);
 
       /* ------------------
+         Get New Jobs (excluding already applied)
+      ------------------ */
+      app.get("/newJobs", verifyToken, jobsController.getNewJobs);
+
+      /* ------------------
          Create New Job Posting
       ------------------ */
       app.post("/jobs", verifyToken, filterJobContent, jobsController.createJob);
@@ -223,6 +230,11 @@ client
       app.put("/messages/read/:contactId", verifyToken, messagesController.markMessagesAsRead);
 
       /* ------------------
+         Mark Company Messages as Read
+      ------------------ */
+      app.put("/messages/read/company/:companyId", verifyToken, messagesController.markCompanyMessagesAsRead);
+
+      /* ------------------
          Send Message
       ------------------ */
       app.post("/messages", verifyToken, messagesController.sendMessage);
@@ -231,6 +243,30 @@ client
          Get Recent Contacts
       ------------------ */
       app.get("/myRecentContacts", verifyToken, messagesController.getRecentContacts);
+
+      /* ------------------
+         Get Recent Employer Contacts
+      ------------------ */
+      app.get("/myRecentEmployerContacts", verifyToken, messagesController.getRecentEmployerContacts);
+
+      /* ------------------
+         Get Employers from Applications
+      ------------------ */
+      app.get("/employersFromApplications", verifyToken, messagesController.getEmployersFromApplications);
+
+      /* ------------------
+         Send Message to Company
+      ------------------ */
+      app.post("/messages/company", verifyToken, messagesController.sendMessageToCompany);
+
+      /* ------------------
+         Employer Messaging Routes
+      ------------------ */
+      app.get("/employer/messages", verifyToken, employerMessagingController.getEmployerMessages);
+      app.put("/employer/messages/read/:applicantId", verifyToken, employerMessagingController.markMessagesAsRead);
+      app.get("/employer/recent-applicant-contacts", verifyToken, employerMessagingController.getRecentApplicantContacts);
+      app.get("/employer/applicants", verifyToken, employerMessagingController.getApplicantsFromJobs);
+      app.post("/employer/messages", verifyToken, employerMessagingController.sendMessageToApplicant);
 
       /* ------------------
          Get Employer's Applications with Details
@@ -246,6 +282,11 @@ client
          Get Application Details
       ------------------ */
       app.get("/employer/applications/:applicationId", verifyToken, applicationsController.getApplicationDetails);
+
+      /* ------------------
+         Get All Applications (unfiltered)
+      ------------------ */
+      app.get("/getallappl", verifyToken, applicationsController.getAllApplications);
 
       app.get("/userProfile/:userId", profileController.getUserProfile);
 
@@ -263,6 +304,11 @@ client
          Search Employer's Job Postings
       ------------------ */
       app.get("/employer/jobs/search", verifyToken, jobsController.searchEmployerJobs);
+
+      /* ------------------
+         Get Company Profile
+      ------------------ */
+      app.use('/', companyRoutes);
 
       /******************************************
        *         ROUTES DEFINITION END          *

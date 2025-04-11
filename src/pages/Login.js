@@ -36,7 +36,7 @@ const Login = () => {
   // Context & Navigation
   // ======================
   const navigate = useNavigate();
-  const { token, setToken, employerFlag, setEmployerFlag, setEmail, setName } =
+  const { token, setToken, employerFlag, setEmployerFlag, setEmail, setName, setCompanyId } =
     useContext(TokenContext);
 
   // If a token already exists, redirect to profile
@@ -76,6 +76,7 @@ const Login = () => {
   // ======================
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     try {
       const loginData =
         loginMethod === "email"
@@ -84,21 +85,15 @@ const Login = () => {
 
       const response = await axios.post("http://localhost:4000/signin", loginData);
       setToken(response.data.token);
-      setEmployerFlag(response.data.isEmployer);
-      setEmail(response.data.email);
+      setEmployerFlag(response.data.employerFlag);
       setName(response.data.full_name);
-    } catch (error) {
-      console.error("Login error:", error);
-      
-      // Handle network errors
-      if (!error.response) {
-        setError("Unable to connect to the server. Please check your internet connection and try again. Also ensure that the server API is available.");
-        return;
-      }else if (error.response.data && error.response.data.message) {
-        setError(error.response.data.message);
-      }else{
-        setError("An unexpected error occurred. Please try again later. If the problem persists, contact support.");
+      setEmail(response.data.email);
+      if (response.data.companyId) {
+        setCompanyId(response.data.companyId);
       }
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "An error occurred during login");
     }
   };
 
@@ -131,17 +126,21 @@ const Login = () => {
   // ======================
   // Google OAuth
   // ======================
-  const handleGoogleSuccess = async (credentialResponse) => {
+  const handleGoogleSuccess = async (response) => {
     try {
-      const response = await axios.post("http://localhost:4000/auth/google", {
-        token: credentialResponse.credential,
+      const res = await axios.post("http://localhost:4000/google-auth", {
+        token: response.credential,
       });
-      setToken(response.data.token);
-      setEmployerFlag(response.data.isEmployer);
-      navigate("/profile");
-    } catch (error) {
-      console.error("Google login error:", error);
-      setError("Google login failed. Please try again.");
+      setToken(res.data.token);
+      setEmployerFlag(res.data.employerFlag);
+      setName(res.data.full_name);
+      setEmail(res.data.email);
+      if (res.data.companyId) {
+        setCompanyId(res.data.companyId);
+      }
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "An error occurred during Google login");
     }
   };
 
@@ -253,17 +252,29 @@ const Login = () => {
                                   />
                                   <i className="login-form-icon uil uil-phone"></i>
                                 </div>
-                                <div className="login-form-group mt-2">
-                                  <input
-                                    type="text"
-                                    className="login-form-input"
-                                    placeholder="Verification Code"
-                                    value={verificationCode}
-                                    onChange={(e) => setVerificationCode(e.target.value)}
-                                    required
-                                  />
-                                  <i className="login-form-icon uil uil-key-skeleton"></i>
-                                </div>
+                                {!showVerification ? (
+                                  <button
+                                    type="button"
+                                    className="login-btn mt-4"
+                                    onClick={() =>
+                                      handleSendVerificationCode(loginPhone, false)
+                                    }
+                                  >
+                                    Get Code via Call
+                                  </button>
+                                ) : (
+                                  <div className="login-form-group mt-2">
+                                    <input
+                                      type="text"
+                                      className="login-form-input"
+                                      placeholder="Verification Code"
+                                      value={verificationCode}
+                                      onChange={(e) => setVerificationCode(e.target.value)}
+                                      required
+                                    />
+                                    <i className="login-form-icon uil uil-key-skeleton"></i>
+                                  </div>
+                                )}
                               </>
                             )}
 
@@ -339,10 +350,32 @@ const Login = () => {
                               <i className="login-form-icon uil uil-phone"></i>
                             </div>
 
-                            <div className="login-form-group mt-2">
-                              
-                              <i className="login-form-icon uil uil-key-skeleton"></i>
-                            </div>
+                            {/* Verification Call Button / Input */}
+                            {!showSignupVerification ? (
+                              <button
+                                type="button"
+                                className="login-btn mt-2"
+                                onClick={() =>
+                                  handleSendVerificationCode(signupPhone, true)
+                                }
+                              >
+                                Verify via Call
+                              </button>
+                            ) : (
+                              <div className="login-form-group mt-2">
+                                <input
+                                  type="text"
+                                  className="login-form-input"
+                                  placeholder="Verification Code"
+                                  value={signupVerificationCode}
+                                  onChange={(e) =>
+                                    setSignupVerificationCode(e.target.value)
+                                  }
+                                  required
+                                />
+                                <i className="login-form-icon uil uil-key-skeleton"></i>
+                              </div>
+                            )}
 
                             <div className="login-form-group mt-2">
                               <input

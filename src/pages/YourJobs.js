@@ -20,13 +20,11 @@ const YourJobs = () => {
 
   useEffect(() => {
     const fetchMyApplications = async () =>{
-      console.log("fetching applications");
       if (token) {
         try {
           const response = await axios.get(`http://localhost:4000/applications`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          console.log(`${response.status} ${response.statusText}\n`);
           setMyApplications(response.data);
           
         } catch (error) {
@@ -82,7 +80,7 @@ const YourJobs = () => {
           {myApplications.map(job => (
             <tr key={job.jobDetails._id}>
               <td>{job.jobDetails.title}</td>
-              <td>{job.jobDetails.companyName}</td>
+              <td>{job.companyDetails.name}</td>
               <td>{formatDate(job.date_applied)}</td>
               <td>{job.status}</td>
               <td>

@@ -5,10 +5,10 @@ Remove-Item -Path "server\node_modules" -Recurse -Force -ErrorAction SilentlyCon
 
 # Create a zip file of the rest of the files and folders
 $source = "." # Current directory
-$destination = "E:\source.zip"
+$destination = "E:\ns-web.zip"
 
 # Get all items except the node_modules directory.
-$itemsToZip = Get-ChildItem -Path $source -Exclude "node_modules", "server\node_modules", "source.zip" # Exclude the node_modules and the zip file itself.
+$itemsToZip = Get-ChildItem -Path $source -Exclude "node_modules", "server\node_modules", "ns-web.zip" # Exclude the node_modules and the zip file itself.
 
 # Check if there are any items to zip.
 if ($itemsToZip) {

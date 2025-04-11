@@ -1,30 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
-
 .messenger-container {
   display: flex;
   height: calc(80vh - 80px);
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin: 20px;
   border-radius: 8px;
   overflow: hidden;
-  font-family: 'Poor Story', cursive;
 }
 
 .messenger-sidebar {
   width: 300px;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid #e0e0e0;
   background-color: #f8f9fa;
   display: flex;
   flex-direction: column;
-  font-family: 'Poor Story', cursive;
 }
 
 .messenger-sidebar h2 {
   margin: 0;
   font-size: 1.5rem;
   color: #333;
-  padding: 20px;
 }
 
 .users-list {
@@ -36,8 +31,7 @@
   padding: 15px 20px;
   cursor: pointer;
   transition: background-color 0.2s;
-  border-bottom: 1px solid #ddd;
-  font-family: 'Poor Story', cursive;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .user-item:hover {
@@ -55,7 +49,6 @@
   flex-direction: column;
   width: 100%;
   padding: 0 10px;
-  font-family: 'Poor Story', cursive;
 }
 
 .contact-name {
@@ -66,9 +59,14 @@
 }
 
 .contact-email {
+  display: flex;
   font-size: 0.8rem;
   color: #666;
   margin-top: 2px;
+}
+
+.contact-phone {
+  display: flex;
 }
 
 .unread-badge {
@@ -90,18 +88,16 @@
   display: flex;
   flex-direction: column;
   background-color: #fff;
-  font-family: 'Poor Story', cursive;
 }
 
 .messenger-header {
   padding: 20px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .messenger-header h3 {
   margin: 0;
   color: #333;
-  font-family: 'Poor Story', cursive;
 }
 
 .messages-container {
@@ -112,7 +108,6 @@
   flex-direction: column;
   gap: 10px;
   background-color: #f8f9fa;
-  font-family: 'Poor Story', cursive;
 }
 
 .message {
@@ -120,13 +115,12 @@
   padding: 10px 15px;
   border-radius: 15px;
   position: relative;
-  font-family: 'Poor Story', cursive;
 }
 
 .message.sent {
   align-self: flex-end;
   background-color: #007bff;
-  color: #fff;
+  color: white;
   margin-left: 30%;
 }
 
@@ -145,16 +139,14 @@
   font-size: 0.75rem;
   opacity: 0.7;
   margin-top: 5px;
-  font-family: 'Poor Story', cursive;
 }
 
 .message-form {
   padding: 20px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #e0e0e0;
   display: flex;
   gap: 10px;
   background-color: #fff;
-  font-family: 'Poor Story', cursive;
 }
 
 .message-input {
@@ -165,8 +157,6 @@
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
-  font-family: 'Poor Story', cursive;
-  color: #333;
 }
 
 .message-input:focus {
@@ -176,13 +166,12 @@
 .send-button {
   padding: 12px 24px;
   background-color: #007bff;
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 20px;
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.2s;
-  font-family: 'Poor Story', cursive;
 }
 
 .send-button:hover {
@@ -201,7 +190,6 @@
   height: 100%;
   color: #666;
   font-size: 1.1rem;
-  font-family: 'Poor Story', cursive;
 }
 
 /* Responsive Design */
@@ -212,16 +200,16 @@
     height: calc(100vh - 60px);
     border-radius: 0;
   }
-  
+
   .messenger-sidebar {
     width: 100%;
     height: 200px;
   }
-  
+
   .messenger-main {
     height: calc(100vh - 260px);
   }
-  
+
   .message {
     max-width: 85%;
   }
@@ -232,19 +220,17 @@
   justify-content: space-around;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #ddd;
-  font-family: 'Poor Story', cursive;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .new-message-btn {
   background-color: #007bff;
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 20px;
   cursor: pointer;
   font-size: 0.9rem;
   transition: background-color 0.2s;
-  font-family: 'Poor Story', cursive;
 }
 
 .new-message-btn:hover {
@@ -262,11 +248,10 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  font-family: 'Poor Story', cursive;
 }
 
 .new-message-content {
-  background-color: #fff;
+  background-color: white;
   width: 90%;
   max-width: 500px;
   max-height: 80vh;
@@ -274,22 +259,19 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  font-family: 'Poor Story', cursive;
 }
 
 .new-message-header {
   padding: 20px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #e0e0e0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: 'Poor Story', cursive;
 }
 
 .new-message-header h3 {
   margin: 0;
   color: #333;
-  font-family: 'Poor Story', cursive;
 }
 
 .close-btn {
@@ -299,8 +281,6 @@
   cursor: pointer;
   color: #131212;
   padding: 0 8px;
-  transition: color 0.2s;
-  font-family: 'Poor Story', cursive;
 }
 
 .close-btn:hover {
@@ -309,8 +289,7 @@
 
 .search-box {
   padding: 15px 20px;
-  border-bottom: 1px solid #ddd;
-  font-family: 'Poor Story', cursive;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .search-input {
@@ -321,8 +300,6 @@
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
-  font-family: 'Poor Story', cursive;
-  color: #333;
 }
 
 .search-input:focus {
@@ -333,15 +310,13 @@
   flex: 1;
   overflow-y: auto;
   max-height: calc(80vh - 150px);
-  font-family: 'Poor Story', cursive;
 }
 
 .all-users-list .user-item {
   padding: 15px 20px;
   cursor: pointer;
   transition: background-color 0.2s;
-  border-bottom: 1px solid #ddd;
-  font-family: 'Poor Story', cursive;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .all-users-list .user-item:hover {
@@ -351,5 +326,4 @@
 .all-users-list .user-item-name {
   font-size: 1rem;
   color: #333;
-  font-family: 'Poor Story', cursive;
-}
+} 

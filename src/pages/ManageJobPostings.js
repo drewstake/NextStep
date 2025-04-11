@@ -15,14 +15,13 @@ const ManageJobPostings = () => {
   // Form state
   const [formData, setFormData] = useState({
     title: '',
-    companyName: '',
-    companyWebsite: '',
     salaryRange: '',
     benefits: [],
     locations: [],
     schedule: '',
     jobDescription: '',
-    skills: []
+    skills: [],
+    companyId: ''
   });
 
   const fetchJobs = useCallback(async () => {
@@ -61,21 +60,19 @@ const ManageJobPostings = () => {
   const handleCreateJob = async (e) => {
     e.preventDefault();
     
-    
     try {
       await axiosInstance.post('/jobs', formData);
       setMessage('Job created successfully');
       setShowCreateForm(false);
       setFormData({
         title: '',
-        companyName: '',
-        companyWebsite: '',
         salaryRange: '',
         benefits: [],
         locations: [],
         schedule: '',
         jobDescription: '',
-        skills: []
+        skills: [],
+        companyId: ''
       });
       fetchJobs();
     } catch (error) {
@@ -98,14 +95,13 @@ const ManageJobPostings = () => {
       setEditingJob(null);
       setFormData({
         title: '',
-        companyName: '',
-        companyWebsite: '',
         salaryRange: '',
         benefits: [],
         locations: [],
         schedule: '',
         jobDescription: '',
-        skills: []
+        skills: [],
+        companyId: ''
       });
       fetchJobs();
     } catch (error) {
@@ -136,14 +132,13 @@ const ManageJobPostings = () => {
     setEditingJob(job);
     setFormData({
       title: job.title,
-      companyName: job.companyName,
-      companyWebsite: job.companyWebsite,
       salaryRange: job.salaryRange,
       benefits: job.benefits,
       locations: job.locations,
       schedule: job.schedule,
       jobDescription: job.jobDescription,
-      skills: job.skills
+      skills: job.skills,
+      companyId: job.companyId
     });
   };
 
@@ -208,29 +203,7 @@ const ManageJobPostings = () => {
                   required
                 />
               </div>
-              
-              <div className="form-group">
-                <label>Company Name</label>
-                <input
-                  type="text"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Company Website</label>
-                <input
-                  type="url"
-                  name="companyWebsite"
-                  value={formData.companyWebsite}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
+                            
               <div className="form-group">
                 <label>Salary Range</label>
                 <input
@@ -304,14 +277,13 @@ const ManageJobPostings = () => {
                     setEditingJob(null);
                     setFormData({
                       title: '',
-                      companyName: '',
-                      companyWebsite: '',
                       salaryRange: '',
                       benefits: [],
                       locations: [],
                       schedule: '',
                       jobDescription: '',
-                      skills: []
+                      skills: [],
+                      companyId: ''
                     });
                   }}
                 >

@@ -21,10 +21,8 @@ const ApplicantProfile = () => {
     // Format as XXX-XXX-XXXX
     const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
     if (match) {
-      console.log(match);
       return `${match[1]}-${match[2]}-${match[3]}`;
     }else{
-      console.log(phone);
       return phone;
     }
   };

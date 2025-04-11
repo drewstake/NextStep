@@ -26,7 +26,6 @@ const JobCard = ({
     "We are seeking an experienced professional to join our team. In this role, you will work on cutting-edge projects, collaborate with a talented group, and contribute to innovative solutions. Responsibilities include project management, client engagement, and strategic planning. Enjoy a competitive salary, excellent benefits, and a dynamic work environment.";
 
   const handleApply = () => {
-    console.log("Clicked job id " + job_id);
     onApplyClick(job_id);
   };
 

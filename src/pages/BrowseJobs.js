@@ -33,7 +33,6 @@ const BrowseJobs = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     // For now, just log the search query. Later, you could use this to filter the jobs or make a new API call.
-    console.log('Searching for:', searchQuery);
     const response = await axios.get('http://localhost:4000/jobs?q=' + searchQuery);
     setJobs(response.data);
   };
@@ -45,14 +44,13 @@ const BrowseJobs = () => {
     }
     try {
       const response = await axios.post('http://localhost:4000/jobsTracker', { 
-        _id: jobId, 
+        _id:jobId, 
         email,
         name,
         swipeMode: APPLY 
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log(`${response.status} ${response.statusText}\n`);
       setMessage("Applied successfully!");
     } catch (error) {
       if (error.response && error.response.status === 409) {

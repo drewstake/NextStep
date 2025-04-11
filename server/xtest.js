@@ -14,7 +14,7 @@ async function connectToMongoDB() {
     const { MongoClient, ObjectId } = require('mongodb');
 
     const uri = process.env.MONGODB_URI;
-    const dbName = 'mydb';
+    const dbName = 'db2';
 
     const USER_PROFILES_COLLECTION = 'users';
     const JOBS_COLLECTION = 'Jobs';
@@ -305,6 +305,31 @@ async function testSendMessage() {
     }
 }
 
+async function testSendMessageToCompany() {
+    try {
+        // Create a sample message payload for sending to a company
+        const messageData = {
+            companyId: '67f7622f3c53624ac8a3f199', // Replace with actual company ID
+            content: 'Hello! I am interested in your job posting. This is a test message from a job seeker.'
+        };
+
+        // Make the POST request to send a message to a company
+        const response = await axios.post(`${BASE_URL}/messages/company`, messageData, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // Log the response status and data
+        console.log(`${response.status} ${response.statusText}\n`);
+        console.log('Send Message to Company Response:', response.data);
+
+    } catch (error) {
+        // Log any error that occurs
+        console.error('Send message to company error:', error.response ? error.response.data : error.message);
+    }
+}
+
 async function testGetRecentContacts() {
     try {
         // Make the GET request to retrieve recent contacts
@@ -409,7 +434,7 @@ function generateRandomSchedule() {
 
 function generateRandomSkills() {
     const allSkills = [
-        "JavaScript", "TypeScript", "React", "Node.js", "Python", "Java", "Go", "Rust",
+        "JavaScript", "TypeScript", "React", "Nod.js", "Python", "Java", "Go", "Rust",
         "AWS", "Azure", "GCP", "Docker", "Kubernetes", "Terraform", "CI/CD", "Git",
         "MongoDB", "PostgreSQL", "Redis", "GraphQL", "REST APIs", "Microservices",
         "Agile", "Scrum", "JIRA", "Confluence", "Figma", "Adobe XD", "UI/UX Design",
@@ -440,14 +465,12 @@ async function testCreateJobPosting() {
         // Create a sample job posting payload
         const jobData = {
             title: "Senior Software Engineer",
-            companyName: "Tech Solutions Inc.",
-            companyWebsite: "https://techsolutions.com",
             salaryRange: "$120,000 - $150,000",
             benefits: ["Health Insurance", "401(k)", "Remote Work", "Flexible Hours"],
             locations: ["San Francisco, CA", "Remote"],
             schedule: "Full-time",
-            jobDescription: "We are looking for an experienced software engineer to join our team. The ideal candidate will have strong experience with React, Node.js, and cloud technologies.",
-            skills: ["React", "Node.js", "MongoDB", "AWS", "TypeScript"]
+            jobDescription: "We are looking for an experienced software engineer to join our team. The ideal candidate will have strong experience with React, N.js, and cloud technologies.",
+            skills: ["React", "N.js", "MongoDB", "AWS", "TypeScript"]
         };
 
         // Make the POST request to create a job posting
@@ -478,8 +501,6 @@ async function testCreateMultipleJobPostings() {
             
             const jobData = {
                 title: title,
-                companyName: company.name,
-                companyWebsite: company.website,
                 salaryRange: generateRandomSalary(),
                 benefits: generateRandomBenefits(),
                 locations: generateRandomLocations(),
@@ -513,21 +534,249 @@ async function testCreateMultipleJobPostings() {
     }
 }
 
+async function updateAllJobsCompanyId() {
+    const { MongoClient, ObjectId } = require('mongodb');
+
+    const uri = process.env.MONGODB_URI;
+    const dbName = 'mydb';
+    const JOBS_COLLECTION = 'Jobs';
+
+    const client = new MongoClient(uri);
+    console.log('Connecting to MongoDB to update all jobs companyId');
+
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const jobs_collection = db.collection(JOBS_COLLECTION);
+
+        // Convert the string ID to ObjectId
+        const companyId = ObjectId.createFromHexString('67f7144987d55c4f5b1df550');
+
+        // Update all documents in the Jobs collection
+        const result = await jobs_collection.updateMany(
+            {}, // Match all documents
+            { $set: { companyId: companyId } } // Set the companyId field
+        );
+
+        console.log(`Updated ${result.modifiedCount} job listings with companyId: ${companyId}`);
+        return result;
+
+    } catch (error) {
+        console.error('Error updating jobs companyId:', error);
+        throw error;
+    } finally {
+        await client.close();
+        console.log('MongoDB connection closed');
+    }
+}
+
+// Example of how to call the function:
+// updateAllJobsCompanyId().then(result => console.log(result)).catch(err => console.error(err));
+
+async function testShowAllCollections() {
+    try {
+        console.log("\n=== SHOWING ONE INSTANCE FROM EACH COLLECTION ===\n");
+        
+        // 1. Get one application
+        console.log("--- APPLICATIONS COLLECTION ---");
+        const applicationsResponse = await axios.get(`${BASE_URL}/applications`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (applicationsResponse.data && applicationsResponse.data.length > 0) {
+            console.log("Sample Application:");
+            console.log(JSON.stringify(applicationsResponse.data[0], null, 2));
+        } else {
+            console.log("No applications found");
+        }
+        
+        // 2. Get one job
+        console.log("\n--- JOBS COLLECTION ---");
+        const jobsResponse = await axios.get(`${BASE_URL}/jobs`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (jobsResponse.data && jobsResponse.data.length > 0) {
+            console.log("Sample Job:");
+            console.log(JSON.stringify(jobsResponse.data[0], null, 2));
+        } else {
+            console.log("No jobs found");
+        }
+        
+        // 3. Get user profile
+        console.log("\n--- USERS COLLECTION ---");
+        const userResponse = await axios.get(`${BASE_URL}/profile`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (userResponse.data) {
+            console.log("Current User Profile:");
+            console.log(JSON.stringify(userResponse.data, null, 2));
+        } else {
+            console.log("No user profile found");
+        }
+        
+        // 4. Get company profile
+        console.log("\n--- COMPANIES COLLECTION ---");
+        const companyResponse = await axios.get(`${BASE_URL}/companyProfile`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (companyResponse.data) {
+            console.log("Company Profile:");
+            console.log(JSON.stringify(companyResponse.data, null, 2));
+        } else {
+            console.log("No company profile found");
+        }
+        
+        // 5. Get one message
+        console.log("\n--- MESSAGES COLLECTION ---");
+        const messagesResponse = await axios.get(`${BASE_URL}/messages`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (messagesResponse.data && messagesResponse.data.length > 0) {
+            console.log("Sample Message:");
+            console.log(JSON.stringify(messagesResponse.data[0], null, 2));
+        } else {
+            console.log("No messages found");
+        }
+        
+        console.log("\n=== END OF COLLECTIONS DISPLAY ===\n");
+        
+    } catch (error) {
+        console.error('Error displaying collections:', error.response ? error.response.data : error.message);
+    }
+}
+
+async function testSearchJobs() {
+    try {
+        console.log("\n=== SEARCHING FOR JOBS ===\n");
+        
+        // Define different search parameters to test
+        const searchParams = [
+            { title: "Software" },
+            { location: "Remote" },
+            { skills: "React" },
+            { title: "Engineer", location: "San Francisco" },
+            { skills: "JavaScript", location: "Remote" }
+        ];
+        
+        // Test each search parameter
+        for (let i = 0; i < searchParams.length; i++) {
+            const params = searchParams[i];
+            console.log(`\n--- Search #${i+1}: ${JSON.stringify(params)} ---`);
+            
+            // Build query string from params
+            const queryString = Object.entries(params)
+                .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                .join('&');
+            
+            // Make the GET request to search for jobs
+            const response = await axios.get(`${BASE_URL}/jobs?q=`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            // Display results
+            if (response.data && response.data.length > 0) {
+                console.log(`Found ${response.data.length} jobs matching the criteria:`);
+                
+                // Display first 3 results (or fewer if less than 3)
+                const resultsToShow = Math.min(3, response.data.length);
+                for (let j = 0; j < resultsToShow; j++) {
+                    console.log(`\nJob #${j+1}:`);
+                    console.log(`Title: ${response.data[j].title}`);
+                    console.log(`Company: ${response.data[j].companyName || 'N/A'}`);
+                    console.log(`Location: ${response.data[j].locations ? response.data[j].locations.join(', ') : 'N/A'}`);
+                    console.log(`Salary: ${response.data[j].salaryRange || 'N/A'}`);
+                }
+                
+                if (response.data.length > 3) {
+                    console.log(`\n... and ${response.data.length - 3} more jobs`);
+                }
+            } else {
+                console.log("No jobs found matching the criteria");
+            }
+        }
+        
+        console.log("\n=== END OF JOB SEARCH ===\n");
+        
+    } catch (error) {
+        console.error('Error searching for jobs:', error.response ? error.response.data : error.message);
+    }
+}
+
+async function testGetAllApplications() {
+    try {
+        console.log("\n=== GETTING ALL APPLICATIONS (UNFILTERED) ===\n");
+        
+        // Make the GET request to retrieve all applications
+        const response = await axios.get(`${BASE_URL}/getallappl`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        // Display results
+        if (response.data && response.data.length > 0) {
+            console.log(`Found ${response.data.length} applications in total:`);
+            
+            // Display first 3 applications (or fewer if less than 3)
+            const resultsToShow = Math.min(3, response.data.length);
+            for (let i = 0; i < resultsToShow; i++) {
+                const app = response.data[i];
+                console.log(`\nApplication #${i+1} (Complete JSON):`);
+                console.log(JSON.stringify(app, null, 2));
+            }
+            
+            if (response.data.length > 3) {
+                console.log(`\n... and ${response.data.length - 3} more applications`);
+            }
+        } else {
+            console.log("No applications found in the database");
+        }
+        
+        console.log("\n=== END OF ALL APPLICATIONS DISPLAY ===\n");
+        
+    } catch (error) {
+        console.error('Error retrieving all applications:', error.response ? error.response.data : error.message);
+    }
+}
+
 // Run tests
 (async function () {
     const asEmployer = true; // set this to false to register as an applicant/job seeker
     //await testSignup(asEmployer);
-    await testSignin('1@c.com');
+    await testSignin('e@c1.com');
     //await testProfile();
     //await testUpdateProfile();
     // await testApplyForJob();
     //await testGetApplications();
-    //await testCreateJobPosting();
-   // await testCreateMultipleJobPostings();
+   //await testCreateJobPosting();
+    await testCreateMultipleJobPostings();
     //await testGetMessages();
     //await testSendMessage();
-    await testGetRecentContacts();
+   // await testSendMessageToCompany();
+    //await testGetRecentContacts();
+    //await updateAllJobsCompanyId();
     //await testLogout();
+    //await testShowAllCollections();
+    //await testSignin('1@c.com');
+    //await testGetMessages();
+    //await testSearchJobs();
+    //await testGetAllApplications();
 })();
 
 

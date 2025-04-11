@@ -12,9 +12,12 @@ import YourJobs from "./pages/YourJobs";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import EmployerApplicationTracker from "./pages/EmployerApplicationTracker";
 import ManageJobPostings from "./pages/ManageJobPostings";
+import CompanyProfile from "./pages/CompanyProfile";
 import Messenger from "./pages/Messenger";
+import EmployerMessenger from "./pages/EmployerMessenger";
 import Details from "./pages/Details";
 import ApplicantProfile from "./pages/ApplicantProfile";
+import ManageUsers from "./pages/ManageUsers";
 import "./styles/App.css";
 import { TokenContext } from "./components/TokenContext";
 import axios from "axios";
@@ -108,8 +111,13 @@ function App() {
                     Profile: {userName}
                   </Link>
                 )}
-                {token && (
+                {token && !employerFlag && (
                   <Link className="app-nav__link" to="/messenger">
+                    Messenger
+                  </Link>
+                )}
+                {token && employerFlag && (
+                  <Link className="app-nav__link" to="/employer-messenger">
                     Messenger
                   </Link>
                 )}
@@ -169,10 +177,19 @@ function App() {
                   My Jobs
                 </Link>
               )}
-              {token && (
+              {token && !employerFlag && (
                 <Link
                   className="app-nav__link"
                   to="/messenger"
+                  onClick={toggleNav}
+                >
+                  Messenger
+                </Link>
+              )}
+              {token && employerFlag && (
+                <Link
+                  className="app-nav__link"
+                  to="/employer-messenger"
                   onClick={toggleNav}
                 >
                   Messenger
@@ -198,12 +215,15 @@ function App() {
               path="/employer-application-tracker"
               element={<EmployerApplicationTracker />}
             />
+            <Route path="/company-profile" element={<CompanyProfile />} />
             <Route path="/messenger" element={<Messenger />} />
+            <Route path="/employer-messenger" element={<EmployerMessenger />} />
             <Route path="/jobs/:jobId/:returnTo" element={<Details />} />
             <Route
               path="/applicant-profile/:userId"
               element={<ApplicantProfile />}
             />
+            <Route path="/manage-users" element={<ManageUsers />} />
           </Routes>
         </main>
         {/* Global Chat Widget rendered at the bottom-right */}

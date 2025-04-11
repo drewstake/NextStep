@@ -9,10 +9,10 @@ const EmployerDashboard = () => {
   const functions = [
     { label: "Manage Job Postings", action: () => { navigate('/manage-job-postings'); }, isUrl: true },
     { label: "Applicant Tracking", action: () => { navigate('/employer-application-tracker'); }, isUrl: true },
-    { label: "Communication Tools", action: () => { /* TODO: Hook up communication tools functionality */ }, isUrl: false },
-    { label: "Analytics & Reporting", action: () => { /* TODO: Hook up analytics & reporting functionality */ }, isUrl: false },
-    { label: "Company Profile", action: () => { /* TODO: Hook up company profile & branding functionality */ }, isUrl: false },
-    { label: "Integrations", action: () => { /* TODO: Hook up integrations functionality */ }, isUrl: false }
+/*     { label: "Communication Tools", action: () => { navigate('/employer-messenger'); }, isUrl: true },
+ */    { label: "Company Profile", action: () => { navigate('/company-profile'); }, isUrl: true },
+    { label: "Manage Users", action: () => { navigate('/manage-users'); }, isUrl: true },
+   /*  { label: "Integrations", action: () => {  }, isUrl: false } */
   ];
 
   return (

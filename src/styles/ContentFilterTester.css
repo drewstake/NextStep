@@ -1,19 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
-
 .content-filter-tester {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #FDF4F0;  /* Soft flat light background */
+  background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester h2 {
   margin-top: 0;
   color: #333;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester .form-group {
@@ -24,19 +20,15 @@
   display: block;
   margin-bottom: 8px;
   font-weight: bold;
-  color: #333;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
   margin-bottom: 10px;
-  font-family: 'Poor Story', cursive;
-  color: #333;
 }
 
 .content-filter-tester button {
@@ -47,8 +39,6 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  font-family: 'Poor Story', cursive;
-  transition: background-color 0.2s;
 }
 
 .content-filter-tester button:hover {
@@ -61,14 +51,12 @@
   padding: 10px;
   background-color: #fadbd8;
   border-radius: 4px;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester .results {
   margin-bottom: 20px;
   padding: 15px;
   border-radius: 4px;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester .client-results {
@@ -83,34 +71,28 @@
 
 .content-filter-tester .results h3 {
   margin-top: 0;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester .results ul {
   margin-top: 5px;
   padding-left: 20px;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester .examples {
   margin-top: 30px;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester .examples h3 {
   margin-bottom: 10px;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester .examples ul {
   list-style-type: none;
   padding: 0;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester .examples li {
   margin-bottom: 8px;
-  font-family: 'Poor Story', cursive;
 }
 
 .content-filter-tester .examples button {
@@ -119,12 +101,8 @@
   text-align: left;
   width: 100%;
   padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  font-family: 'Poor Story', cursive;
-  transition: background-color 0.2s;
 }
 
 .content-filter-tester .examples button:hover {
   background-color: #e0e0e0;
-}
+} 

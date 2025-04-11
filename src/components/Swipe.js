@@ -272,6 +272,23 @@ const Swipe = () => {
           <strong>Location(s):</strong> {Array.isArray(job.locations) ? job.locations.join(', ') : job.locations}
         </p>
         <p className="job-description-swipe">{job.jobDescription}</p>
+        
+        {/* Benefits Section */}
+        {job.benefits && job.benefits.length > 0 && (
+          <div className="job-benefits-swipe">
+            <h3>Benefits</h3>
+            <p>{job.benefits.join(', ')}</p>
+          </div>
+        )}
+        
+        {/* Required Skills Section */}
+        {job.skills && job.skills.length > 0 && (
+          <div className="job-skills-swipe">
+            <h3>Required Skills</h3>
+            <p>{job.skills.join(', ')}</p>
+          </div>
+        )}
+        
         {swipeClass === 'swiping-right' && <ThumbsUp className="icon" />}
         {swipeClass === 'swiping-left' && <ThumbsDown className="icon" />}
       </div>

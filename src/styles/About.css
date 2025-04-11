@@ -1,6 +1,4 @@
 /* File: /src/styles/About.css */
-/* Importing the 'Poor Story' font from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
 
 html,
 body {
@@ -8,8 +6,6 @@ body {
   padding: 0;
   overflow-y: scroll;
   scrollbar-width: none;
-  background-color: #FDF4F0;
-  color: #000000;
 }
 
 html::-webkit-scrollbar,
@@ -18,11 +14,10 @@ body::-webkit-scrollbar {
 }
 
 .about-container {
-  font-family: 'Poor Story', cursive;
+  font-family: 'Poppins', sans-serif;
   text-align: center;
   min-height: 100vh; /* allow the container to grow if needed */
-  background-color: #FDF4F0; /* full background applied */
-  color: #000000; /* updated text color */
+  color: #fff;
   padding: 40px 0;
   box-sizing: border-box;
   scrollbar-width: none;
@@ -32,6 +27,7 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+
 /* Header for About page */
 .about-header {
   margin-bottom: 40px;
@@ -39,7 +35,7 @@ body::-webkit-scrollbar {
 }
 
 .about-header__title {
-  font-size: 4rem;
+  font-size: 3rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -47,24 +43,24 @@ body::-webkit-scrollbar {
 }
 
 .about-header__subtitle {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   opacity: 0.9;
 }
 
 /* About sections */
 .about-section {
-  background-color: #ffffff; /* solid white for contrast on the light page */
+  background-color: rgba(255, 255, 255, 0.1);
   padding: 30px 20px;
   border-radius: 10px;
   margin: 20px auto;
   max-width: 800px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .about-section:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 .about-section__icon-container {
@@ -74,13 +70,12 @@ body::-webkit-scrollbar {
 }
 
 .about-section__icon {
-  font-size: 2.5rem;
-  /* Updated icon color to align with text styling */
-  color: #000000;
+  font-size: 2rem;
+  color: #ff7eb3;
 }
 
 .about-section__title {
-  font-size:2.7rem;
+  font-size: 1.8rem;
   margin-bottom: 15px;
   display: flex;
   align-items: center;
@@ -88,7 +83,7 @@ body::-webkit-scrollbar {
 }
 
 .about-section__text {
-  font-size: 1.5rem;
+  font-size: 1rem;
   line-height: 1.6;
   max-width: 700px;
   margin: 0 auto;
@@ -103,7 +98,7 @@ body::-webkit-scrollbar {
 }
 
 .about-section__list-item {
-  font-size: 1.5rem;
+  font-size: 1rem;
   line-height: 1.8;
   margin-bottom: 10px;
   display: flex;

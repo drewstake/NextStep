@@ -1,11 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
-
 .details-container {
-  font-family: 'Poor Story', cursive;
+  font-family: 'Poppins', sans-serif;
   min-height: 100vh;
   width: 100%;
-  background: #FDF4F0; /* flat light background */
-  color: #333; /* dark text for readability */
+  background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
+  color: #fff;
   padding: 40px 20px;
   box-sizing: border-box;
   display: flex;
@@ -14,14 +12,14 @@
 }
 
 .details-content {
-  background: #fff; /* solid white card */
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   padding: 40px;
   width: 100%;
   max-width: 800px;
   position: relative;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  /* Removed backdrop-filter for a simpler flat design */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .close-button {
@@ -31,7 +29,7 @@
   background: none;
   border: none;
   font-size: 24px;
-  color: #333;
+  color: #fff;
   cursor: pointer;
   padding: 5px 10px;
   transition: transform 0.2s;
@@ -48,32 +46,39 @@
 .job-header h1 {
   font-size: 2.5rem;
   margin-bottom: 15px;
-  color: #333; /* plain text without gradient */
-  /* Removed gradient text effect */
+  background: linear-gradient(90deg, #fff, #ff7eb3);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .company-info {
   display: flex;
   align-items: center;
   font-size: 1.1rem;
+  margin-right: 23px;
 }
 
 .company-info a {
-  color: #2563eb; /* updated accent blue */
+  color: #ff7eb3;
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .company-info a:hover {
-  color: #1d4ed8;
+  color: #ff758c;
 }
 
 .job-location {
-  color: #666;
+  color: rgba(80, 79, 79, 0.7);
+}
+
+.job-location2 {
+  color: rgb(169 166 166 / 70%);
 }
 
 .job-overview {
-  background: #f9f9f9;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 30px;
@@ -90,7 +95,7 @@
 
 .detailed-section {
   margin-bottom: 30px;
-  background: #f9f9f9;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 20px;
 }
@@ -98,7 +103,7 @@
 .detailed-section h2 {
   font-size: 1.5rem;
   margin-bottom: 15px;
-  color: #2563eb; /* accent color */
+  color: #ff7eb3;
 }
 
 .detailed-section p {
@@ -119,7 +124,7 @@
 
 .detailed-section ul li:before {
   content: "•";
-  color: #2563eb;
+  color: #ff7eb3;
   position: absolute;
   left: 0;
 }
@@ -140,38 +145,38 @@
 }
 
 .back-button {
-  background: #f5f5f5;
-  border: 2px solid #ddd;
-  color: #333;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
 .back-button:hover {
-  background: #eaeaea;
+  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
 }
 
 .apply-button {
-  background: #2563eb;
+  background: linear-gradient(90deg, #ff758c, #ff7eb3);
   border: none;
-  color: #fff;
-  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+  color: white;
+  box-shadow: 0 5px 15px rgba(255, 118, 136, 0.4);
 }
 
 .apply-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6);
+  box-shadow: 0 8px 25px rgba(255, 118, 136, 0.6);
 }
 
 .loading {
   text-align: center;
   font-size: 1.2rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .error-message {
-  background: #ffe5e5;
-  border: 1px solid #ffcccc;
-  color: #ff4444;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff6b6b;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;

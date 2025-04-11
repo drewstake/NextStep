@@ -1,25 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+/* File: /src/styles/Swipe.css */
 
 .swipe-container {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 450px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: visible;
-  font-family: 'Poor Story', cursive;
 }
 
 .swipe-job-card {
-  height: 222px;
+  height: 360px;
   position: absolute;
-  width: 300px;
+  width: 500px;
   max-width: 90%;
   background: #fff;
   color: #333;
   border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   padding: 20px;
   cursor: grab;
   transition: transform 0.3s ease, background-color 0.3s ease;
@@ -58,7 +57,7 @@
 
 .swipe-job-card h2 {
   margin-top: 0;
-  color: #0073b1; /* updated to a neutral blue for better contrast */
+  color: #ff758c;
   font-size: 1.2em;
 }
 
@@ -107,26 +106,26 @@
 .swipe-direction-label {
   position: absolute;
   font-size: 1.2em;
-  color: #333; /* dark color for readability on a light background */
+  color: #fafafc;
   font-weight: 500;
   opacity: 0.8;
   transition: opacity 0.3s ease;
 }
 
 .swipe-direction-label.left {
-  left: calc(50% - 350px);
+  left: calc(40% - 350px);
   top: 50%;
   transform: translateY(-50%);
 }
 
 .swipe-direction-label.right {
-  left: calc(50% + 173px);
+  left: calc(60% + 173px);
   top: 50%;
   transform: translateY(-50%);
 }
 
 .swipe-direction-label.up {
-  top: 10px;
+  top: 0px;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -135,12 +134,36 @@
   opacity: 1;
 }
 
-.job-description-swipe {
+.job-description-swipe{
   height: 81px;
   overflow: hidden;
   display: -webkit-box;
-  line-clamp: 4;
   -webkit-line-clamp: 4; /* number of lines to show */
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+/* Styles for Benefits and Skills sections */
+.job-benefits-swipe, .job-skills-swipe {
+  margin-top: 10px;
+  padding-top: 5px;
+  border-top: 1px solid #eee;
+}
+
+.job-benefits-swipe h3, .job-skills-swipe h3 {
+  font-size: 0.9em;
+  color: #ff758c;
+  margin: 0 0 5px 0;
+}
+
+.job-benefits-swipe p, .job-skills-swipe p {
+  font-size: 0.85em;
+  margin: 0;
+  line-height: 1.3;
+ /*  height: 40px; */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
 }

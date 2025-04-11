@@ -13,7 +13,7 @@ const Details = () => {
   const [job, setJob] = useState(null);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
-  const { token, email, name } = useContext(TokenContext);
+  const { token, email, name, employerFlag } = useContext(TokenContext);
 
   const handleBackToJobs = async () => {
     if (returnTo === "jobs") {
@@ -81,7 +81,7 @@ const Details = () => {
             <a href={job.companyWebsite} target="_blank" rel="noopener noreferrer">
               {job.companyName}
             </a>
-            <span className="job-location">{job.locations.join(", ")}</span>
+            <span className="job-location2">{job.locations.join(", ")}</span>
           </div>
         </div>
 
@@ -115,9 +115,11 @@ const Details = () => {
           <button onClick={handleBackToJobs} className="back-button">
             Back to Jobs
           </button>
-          <button onClick={handleApplyNow} className="apply-button">
-            Apply Now
-          </button>
+          {!employerFlag && (
+            <button onClick={handleApplyNow} className="apply-button">
+              Apply Now
+            </button>
+          )}
         </div>
       </div>
     </div>

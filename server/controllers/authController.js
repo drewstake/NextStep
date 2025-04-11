@@ -65,7 +65,7 @@ const authController = {
 
       // Generate JWT
       const token = jwt.sign(
-        { id: user._id, isEmployer: user.employerFlag },
+        { id: user._id, employerFlag: user.employerFlag },
         process.env.JWT_SECRET,
         { expiresIn: "1h" }
       );
@@ -75,7 +75,8 @@ const authController = {
         email,
         full_name: user.full_name,
         message: "Login success",
-        isEmployer: user.employerFlag,
+        employerFlag: user.employerFlag,
+        companyId: user.companyId || null
       });
     } catch (err) {
       res.status(500).json({ error: "Failed to retrieve users" });
@@ -172,7 +173,7 @@ const authController = {
       `;
       
       await sendEmail(
-        process.env.EMAIL_FROM || "bzm436@psu.edu",
+        process.env.EMAIL_FROM || "noreply@nextstep.com",
         "NextStep",
         email,
         full_name,
@@ -180,7 +181,8 @@ const authController = {
         emailBody
       );
       res.status(201).json({ 
-        message: "User created successfully. Please check your email to verify your account." 
+        message: "User created successfully. Please check your email to verify your account.",
+        userId: newUser._id
       });
     } catch (error) {
       res.status(400).json({ error: `Error creating user. ${error.message}` });
@@ -229,7 +231,7 @@ const authController = {
 
       // Generate JWT token
       const jwtToken = jwt.sign(
-        { id: user._id, isEmployer: user.employerFlag },
+        { id: user._id, employerFlag: user.employerFlag },
         process.env.JWT_SECRET,
         { expiresIn: "1h" }
       );
@@ -237,7 +239,8 @@ const authController = {
       res.status(200).json({
         token: jwtToken,
         message: "Login success",
-        isEmployer: user.employerFlag,
+        employerFlag: user.employerFlag,
+        companyId: user.companyId || null
       });
     } catch (error) {
       res.status(401).json({ error: "Invalid Google token" });
@@ -325,7 +328,7 @@ const authController = {
       `;
       
       await sendEmail(
-        process.env.EMAIL_FROM || "bzm436@psu.edu",
+        process.env.EMAIL_FROM || "noreply@nextstep.com",
         "NextStep",
         email,
         user.full_name,

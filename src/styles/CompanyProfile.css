@@ -1,0 +1,121 @@
+.company-profile-container {
+  max-width: 800px;
+  margin: 30px auto;
+  background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
+  padding: 20px;
+  border-radius: 8px;
+  text-align: left;
+  min-height: 100vh; /* Ensures the container covers the full viewport */
+}
+
+.company-profile-container h1 {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+
+.company-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: transparent;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder,
+.form-group select::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-group input[type="file"] {
+  padding: 0.5rem 0;
+  border: none;
+  background: transparent;
+}
+
+.save-button {
+  display: block;
+  width: 300px;
+  padding: 12px 20px;
+  background-color: #ff7eb3;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 20px auto 0;
+  transition: background-color 0.3s ease;
+}
+
+.save-button:hover {
+  background-color: #ff6ba1;
+}
+
+.error-message {
+  background-color: rgba(255, 0, 0, 0.2);
+  color: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.success-message {
+  background-color: rgba(0, 255, 0, 0.2);
+  color: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .company-profile-container {
+    padding: 1rem;
+    margin: 15px auto;
+  }
+  
+  .company-profile-form {
+    padding: 1.5rem;
+  }
+  
+  .save-button {
+    width: 100%;
+  }
+} 

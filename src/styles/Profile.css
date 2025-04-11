@@ -2,17 +2,16 @@
 .profile-container {
   max-width: 1000px;
   margin: 30px auto;
-  background: #FDF4F0;
+  background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
   padding: 20px;
   border-radius: 8px;
   text-align: left;
   min-height: 100vh; /* Ensures the container covers the full viewport */
-  font-family: 'Poor Story', cursive;
 }
 
 .profile-container h2 {
   text-align: center;
-  color: #000;
+  color: #fff;
   margin-bottom: 30px;
   font-size: 2rem;
 }
@@ -42,7 +41,7 @@
 
 .profile-label {
   font-weight: bold;
-  color: #000;
+  color: #fff;
 }
 
 .profile-input {
@@ -50,12 +49,12 @@
   border-radius: 4px;
   border: none;
   font-size: 1rem;
-  background: #fff;
-  color: #000;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .profile-input::placeholder {
-  color: #555;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .file-input {
@@ -65,10 +64,10 @@
 .upload-label {
   margin-left: 10px;
   border-radius: 2px;
-  border: 1px solid #aaa; /* Neutral border color */
-  color: #000;
+  border-width: 1px;
+  border-color: aliceblue;
+  color: #fff;
   cursor: pointer;
-  padding: 5px;
 }
 
 .profile-button {
@@ -76,7 +75,7 @@
   border: none;
   border-radius: 4px;
   font-weight: 600;
-  background-color: #7a90f7;
+  background-color: #ff7eb3;
   color: #fff;
   cursor: pointer;
   font-size: 1rem;
@@ -87,7 +86,7 @@
 }
 
 .profile-button:hover {
-  background-color: #8e7df2;
+  background-color: #ff6ba1;
 }
 
 .profile-image-container {
@@ -103,7 +102,7 @@
   display: block;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid rgba(0, 0, 0, 0.1);
+  border: 3px solid rgba(255, 255, 255, 0.2);
 }
 
 .profile-image-edit {
@@ -112,21 +111,21 @@
   right: 0;
   width: 30px;
   height: 30px;
-  background-color: #7a90f7;
+  background-color: #e12270;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #fff;
+  color: white;
   font-size: 16px;
-  border: 2px solid #fff;
+  border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
 }
 
 .profile-image-edit:hover {
-  background-color: #6a80c7;
+  background-color: #ff6ba1;
   transform: scale(1.1);
 }
 
@@ -145,8 +144,8 @@
 .upload-button {
   display: block;
   padding: 12px 20px;
-  background-color: #7a90f7;
-  color: #fff;
+  background-color: #ff7eb3;
+  color: white;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
@@ -165,7 +164,7 @@
 }
 
 .upload-button:hover {
-  background-color: #8e7df2;
+  background-color: #ff6ba1;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

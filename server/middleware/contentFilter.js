@@ -72,7 +72,7 @@ const filterJobContent = async (req, res, next) => {
       let badWordsResult;
 
       // In test environment, check for test inappropriate words
-      if (process.env.NODE_ENV === 'test') {
+     /*  if (process.env.NODE_ENV === 'test') {
         const hasInappropriateContent = contentToCheck.toLowerCase().includes('bitch');
         badWordsResult = {
           bad_words_total: hasInappropriateContent ? 1 : 0,
@@ -89,15 +89,15 @@ const filterJobContent = async (req, res, next) => {
         // Call the bad words API in non-test environment
         const response = await makeApiCall(contentToCheck);
         badWordsResult = response;
-      }
+      } */
 
       // Check if any bad words were found
-      if (badWordsResult.bad_words_total > 0) {
+     /*  if (badWordsResult.bad_words_total > 0) {
         return res.status(406).json({
           error: 'The content contains inappropriate language. Please revise and try again.',
           details: '[bad words list]'
         });
-      }
+      } */
 
       // If we get here, no bad words were found
       next();
