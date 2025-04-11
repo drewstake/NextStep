@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Activity
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import api from '../api/config';
 
 // Create a cross-platform alert function
@@ -14,13 +15,18 @@ const showAlert = (title, message) => {
   }
 };
 
-export default function BrowseJobsScreen({ navigation }) {
+export default function BrowseJobsScreen({ navigation, route }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEmployer, setIsEmployer] = useState(false);
   const [error, setError] = useState(null);
+
+  // Function to remove a job from the filtered list
+  const removeJobFromList = (jobId) => {
+    setFilteredJobs(prevJobs => prevJobs.filter(job => job._id !== jobId));
+  };
 
   // Fetch jobs from API
   const fetchJobs = async (searchTerm = '') => {
@@ -41,7 +47,7 @@ export default function BrowseJobsScreen({ navigation }) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       // Make the API call with search query if provided
-      const response = await api.get(`/jobs${searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : ''}`);
+      const response = await api.get(`/retrieveJobsForHomepage${searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : ''}`);
       
       // Check if user is an employer
       const userProfile = await api.get('/profile');
@@ -90,6 +96,23 @@ export default function BrowseJobsScreen({ navigation }) {
     fetchJobs();
   }, []);
 
+  // Refresh view when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // Just refresh the current filtered jobs without API call
+      setFilteredJobs(prevJobs => [...prevJobs]);
+    }, [])
+  );
+
+  // Handle job removal when returning from job details
+  useEffect(() => {
+    const removeJobId = route.params?.removeJobId;
+    if (removeJobId) {
+      removeJobFromList(removeJobId);
+      navigation.setParams({ removeJobId: null });
+    }
+  }, [route.params?.removeJobId]);
+
   // Handle search
   const handleSearch = () => {
     fetchJobs(searchQuery);
@@ -111,9 +134,12 @@ export default function BrowseJobsScreen({ navigation }) {
       
       // Track job application (mode 1 for apply)
       await api.post('/jobsTracker', {
-        jobId,
-        mode: 1
+        _id: jobId,
+        swipeMode: 1
       });
+      
+      // Remove the job from the filtered list
+      removeJobFromList(jobId);
       
       showAlert('Success', 'Application submitted successfully!');
     } catch (error) {
@@ -127,6 +153,10 @@ export default function BrowseJobsScreen({ navigation }) {
           navigation.replace('Login');
         } else {
           showAlert('Error', data.error || 'Failed to submit application. Please try again.');
+          if (data.error.toLowerCase().includes('already')) {
+            removeJobFromList(jobId);
+          }
+    
         }
       } else {
         showAlert('Error', 'Network error. Please check your internet connection.');
@@ -134,12 +164,14 @@ export default function BrowseJobsScreen({ navigation }) {
     }
   };
 
-  const renderJobItem = ({ item }) => (
+  const renderJobItem = ({ item, index }) => (
     <TouchableOpacity
       style={styles.jobCard}
       onPress={() => navigation.navigate('JobDetails', { 
         jobId: item._id,
-        source: 'BrowseJobs'
+        source: 'BrowseJobs',
+        jobs: filteredJobs,
+        currentIndex: index
       })}
     >
       <View style={styles.jobHeader}>

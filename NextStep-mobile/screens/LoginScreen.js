@@ -78,13 +78,14 @@ export default function LoginScreen({ navigation }) {
         });
 
         // Store the token securely (you might want to use AsyncStorage or a secure storage solution)
-        const { token, full_name, isEmployer } = response.data;
+        const { token, full_name, isEmployer, companyId } = response.data;
         
         // TODO: Store token securely
         await AsyncStorage.setItem('userToken', token);
+        await AsyncStorage.setItem('companyId', companyId);
         
         // Navigate to MainApp
-        navigation.replace('MainApp');
+        navigation.replace('MainApp', { companyId });
       } else {
         // Handle Sign Up
         const response = await api.post('/signup', {
@@ -150,7 +151,7 @@ export default function LoginScreen({ navigation }) {
       });
 
       // Handle successful Google sign in
-      const { token, isEmployer } = response.data;
+      const { token, isEmployer , companyId } = response.data;
       // TODO: Store token securely
       navigation.replace('MainApp');
     } catch (error) {

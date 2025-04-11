@@ -18,67 +18,49 @@ const showAlert = (title, message) => {
 };
 
 export default function JobDetailsScreen({ route, navigation }) {
-  const { jobId, source } = route.params;
+  const { jobId, source, jobs, currentIndex } = route.params;
   const [job, setJob] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentJobIndex, setCurrentJobIndex] = useState(currentIndex);
   const position = new Animated.ValueXY();
 
-  // Fetch job details from API
+  // Set the job from the passed jobs array
   useEffect(() => {
-    const fetchJobDetails = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Get the auth token from storage
-        const token = await AsyncStorage.getItem('userToken');
-        
-        if (!token) {
-          showAlert('Authentication Error', 'Please log in again');
-          navigation.replace('Login');
-          return;
-        }
-        
-        // Set the authorization header
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
-        // Make the API call to get job details
-        const response = await api.get(`/jobs/${jobId}`);
-        setJob(response.data);
-      } catch (error) {
-        console.error('Error fetching job details:', error);
-        
-        if (error.response) {
-          // Server responded with an error
-          const { status, data } = error.response;
+    if (jobs && currentIndex !== undefined && currentIndex < jobs.length) {
+      setJob(jobs[currentIndex]);
+      setCurrentJobIndex(currentIndex);
+    } else if (jobId) {
+      // Fallback to API if jobs array is not available
+      const fetchJobDetails = async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
           
-          if (status === 401) {
-            // Unauthorized - token expired or invalid
-            showAlert('Session Expired', 'Please log in again');
+          const token = await AsyncStorage.getItem('userToken');
+          
+          if (!token) {
+            showAlert('Authentication Error', 'Please log in again');
             navigation.replace('Login');
-          } else if (status === 404) {
-            // Job not found
-            setError('Job not found. It may have been removed or is no longer available.');
-          } else {
-            // Other server errors
-            setError(data.error || 'Failed to load job details. Please try again later.');
+            return;
           }
-        } else if (error.request) {
-          // Request was made but no response received
-          setError('Network error. Please check your internet connection.');
-        } else {
-          // Something else happened
-          setError('An unexpected error occurred. Please try again.');
+          
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          const response = await api.get(`/jobs/${jobId}`);
+          setJob(response.data);
+        } catch (error) {
+          console.error('Error fetching job details:', error);
+          setError('Failed to load job details. Please try again.');
+        } finally {
+          setIsLoading(false);
         }
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      };
 
-    fetchJobDetails();
-  }, [jobId, navigation]);
+      fetchJobDetails();
+    } else {
+      setError('No job data available');
+    }
+  }, [jobs, currentIndex, jobId, navigation]);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -120,8 +102,23 @@ export default function JobDetailsScreen({ route, navigation }) {
     direction === 'left' ? handleReject(job) : 
     handleIgnore(job);
 
-    position.setValue({ x: 0, y: 0 });
-    setCurrentIndex(currentIndex + 1);
+    // Remove the job from the list in the previous screen
+    navigation.setParams({ removeJobId: job._id });
+
+    // Navigate to next job if available
+    const nextIndex = currentJobIndex + 1;
+    console.log('Current index:', currentJobIndex, 'Next index:', nextIndex, 'Total jobs:', jobs?.length);
+    
+    if (jobs && nextIndex < jobs.length) {
+      console.log('Loading next job:', jobs[nextIndex].title);
+      setCurrentJobIndex(nextIndex);
+      setJob(jobs[nextIndex]);
+      position.setValue({ x: 0, y: 0 });
+    } else {
+      console.log('No more jobs available, returning to browse screen');
+      // No more jobs, go back to browse screen
+      navigation.goBack();
+    }
   };
 
   const resetPosition = () => {
@@ -146,11 +143,25 @@ export default function JobDetailsScreen({ route, navigation }) {
       
       // Track job application (mode 1 for apply)
       await api.post('/jobsTracker', {
-        jobId: job._id,
-        mode: 1
+        _id: job._id,
+        swipeMode: 1
       });
       
       showAlert('Applied!', `You have applied for ${job.title} at ${job.companyName}`);
+      
+      // Remove the job from the list in the previous screen
+      navigation.setParams({ removeJobId: job._id });
+
+      // Navigate to next job if available
+      const nextIndex = currentJobIndex + 1;
+      if (jobs && nextIndex < jobs.length) {
+        setCurrentJobIndex(nextIndex);
+        setJob(jobs[nextIndex]);
+        position.setValue({ x: 0, y: 0 });
+      } else {
+        // No more jobs, go back to browse screen
+        navigation.goBack();
+      }
     } catch (error) {
       console.error('Error applying for job:', error);
       
@@ -161,7 +172,22 @@ export default function JobDetailsScreen({ route, navigation }) {
           showAlert('Session Expired', 'Please log in again');
           navigation.replace('Login');
         } else {
-          showAlert('Error', data.error || 'Failed to submit application. Please try again.');
+          const errorMessage = data.error || 'Failed to submit application. Please try again.';
+          showAlert('Error', errorMessage);
+          
+          // Check if error message contains "already"
+          if (errorMessage.toLowerCase().includes('already')) {
+            navigation.setParams({ removeJobId: job._id });
+            // Navigate to next job if available
+            const nextIndex = currentJobIndex + 1;
+            if (jobs && nextIndex < jobs.length) {
+              setCurrentJobIndex(nextIndex);
+              setJob(jobs[nextIndex]);
+              position.setValue({ x: 0, y: 0 });
+            } else {
+              navigation.goBack();
+            }
+          }
         }
       } else {
         showAlert('Error', 'Network error. Please check your internet connection.');
@@ -184,14 +210,20 @@ export default function JobDetailsScreen({ route, navigation }) {
       
       // Track job rejection (mode 2 for skip)
       await api.post('/jobsTracker', {
-        jobId: job._id,
-        mode: 2
+        _id: job._id,
+        swipeMode: 2
       });
       
       showAlert('Rejected', `You have rejected ${job.title} at ${job.companyName}`);
     } catch (error) {
       console.error('Error rejecting job:', error);
-      showAlert('Error', 'Failed to record your rejection. Please try again.');
+      const errorMessage = error?.response?.data?.error || 'Failed to record your rejection. Please try again.';
+      showAlert('Error', errorMessage);
+      
+      // Check if error message contains "already"
+      if (errorMessage.toLowerCase().includes('already')) {
+        navigation.setParams({ removeJobId: job._id });
+      }
     }
   };
 
@@ -210,14 +242,20 @@ export default function JobDetailsScreen({ route, navigation }) {
       
       // Track job ignore (mode 3 for ignore)
       await api.post('/jobsTracker', {
-        jobId: job._id,
-        mode: 3
+        _id: job._id,
+        swipeMode: 3
       });
       
       showAlert('Ignored', `You have ignored ${job.title} at ${job.companyName}`);
     } catch (error) {
-      console.error('Error ignoring job:', error);
-      showAlert('Error', 'Failed to record your action. Please try again.');
+      console.error('Error:', error);
+      const errorMessage = error?.response?.data?.error || 'Failed to record your action. Please try again.';
+      showAlert('Error', errorMessage);
+      
+      // Check if error message contains "already"
+      if (errorMessage.toLowerCase().includes('already')) {
+        navigation.setParams({ removeJobId: job._id });
+      }
     }
   };
 
@@ -300,64 +338,73 @@ export default function JobDetailsScreen({ route, navigation }) {
         </TouchableOpacity>
       </View>
 
-      <Animated.View 
-        style={[styles.card, getCardStyle()]} 
-        {...panResponder.panHandlers}
-      >
-        <Text style={styles.jobTitle}>{job.title}</Text>
-        <Text style={styles.companyName}>{job.companyName}</Text>
-        <Text style={styles.location}>{job.locations?.[0] || 'Location not specified'}</Text>
-        
-        <View style={styles.salaryContainer}>
-          <Text style={styles.salaryLabel}>Salary Range</Text>
-          <Text style={styles.salaryAmount}>{job.salaryRange || 'Not specified'}</Text>
+      {!job ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF69B4" />
+          <Text style={styles.loadingText}>Loading job details...</Text>
         </View>
+      ) : (
+        <Animated.View 
+          style={[styles.card, getCardStyle()]} 
+          {...panResponder.panHandlers}
+        >
+          <Text style={styles.jobTitle}>{job.title}</Text>
+          <Text style={styles.companyName}>{job.companyName}</Text>
+          <Text style={styles.location}>{job.locations?.[0] || 'Location not specified'}</Text>
+          
+          <View style={styles.salaryContainer}>
+            <Text style={styles.salaryLabel}>Salary Range</Text>
+            <Text style={styles.salaryAmount}>{job.salaryRange || 'Not specified'}</Text>
+          </View>
 
-        <View style={styles.scheduleContainer}>
-          <Text style={styles.scheduleLabel}>Schedule</Text>
-          <Text style={styles.scheduleType}>{job.schedule || 'Not specified'}</Text>
-        </View>
+          <View style={styles.scheduleContainer}>
+            <Text style={styles.scheduleLabel}>Schedule</Text>
+            <Text style={styles.scheduleType}>{job.schedule || 'Not specified'}</Text>
+          </View>
 
-        {job.benefits && job.benefits.length > 0 && (
-          <View style={styles.benefitsContainer}>
-            <Text style={styles.benefitsLabel}>Benefits</Text>
-            <Text style={styles.benefitsList}>
-              {job.benefits.join(', ')}
+          {job.benefits && job.benefits.length > 0 && (
+            <View style={styles.benefitsContainer}>
+              <Text style={styles.benefitsLabel}>Benefits</Text>
+              <Text style={styles.benefitsList}>
+                {job.benefits.join(', ')}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.summaryContainer}>
+            <Text style={styles.summaryLabel}>Job Summary</Text>
+            <Text style={styles.summaryText}>
+              {job.jobDescription || 'No description available.'}
             </Text>
           </View>
-        )}
 
-        <View style={styles.summaryContainer}>
-          <Text style={styles.summaryLabel}>Job Summary</Text>
-          <Text style={styles.summaryText}>
-            {job.jobDescription || 'No description available.'}
-          </Text>
+          {job.skills && job.skills.length > 0 && (
+            <View style={styles.skillsContainer}>
+              <Text style={styles.skillsLabel}>Required Skills</Text>
+              <Text style={styles.skillsList}>
+                {job.skills.join(', ')}
+              </Text>
+            </View>
+          )}
+        </Animated.View>
+      )}
+
+      {source !== 'MyJobs' && job && (
+        <View style={styles.actionButtons}>
+          <TouchableOpacity 
+            style={styles.backToJobsButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backToJobsText}>Back to Jobs</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.applyNowButton}
+            onPress={() => handleApply(job)}
+          >
+            <Text style={styles.applyNowText}>Apply Now</Text>
+          </TouchableOpacity>
         </View>
-
-        {job.skills && job.skills.length > 0 && (
-          <View style={styles.skillsContainer}>
-            <Text style={styles.skillsLabel}>Required Skills</Text>
-            <Text style={styles.skillsList}>
-              {job.skills.join(', ')}
-            </Text>
-          </View>
-        )}
-      </Animated.View>
-
-      <View style={styles.actionButtons}>
-        <TouchableOpacity 
-          style={styles.backToJobsButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backToJobsText}>Back to Jobs</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.applyNowButton}
-          onPress={() => handleApply(job)}
-        >
-          <Text style={styles.applyNowText}>Apply Now</Text>
-        </TouchableOpacity>
-      </View>
+      )}
     </LinearGradient>
   );
 }

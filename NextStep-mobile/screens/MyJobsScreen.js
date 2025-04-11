@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator }
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getUserApplications } from '../api/services';
+import { useFocusEffect } from '@react-navigation/native';
 
 const getStatusColor = (status) => {
   switch (status) {
-    case 'Applied':
+    case 'Pending':
       return '#FF69B4'; // Pink to match theme
     case 'Offered':
       return '#34C759'; // Keep green for success
@@ -19,7 +20,7 @@ const getStatusColor = (status) => {
 
 const getStatusIcon = (status) => {
   switch (status) {
-    case 'Applied':
+    case 'Pending':
       return 'time-outline';
     case 'Offered':
       return 'checkmark-circle-outline';
@@ -35,9 +36,11 @@ export default function MyJobsScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchApplications();
+    }, [])
+  );
 
   const fetchApplications = async () => {
     try {
@@ -71,18 +74,21 @@ export default function MyJobsScreen({ navigation }) {
       }
     };
 
+    console.log("Loading 2");
+
     return (
       <TouchableOpacity 
         style={styles.applicationCard}
         onPress={() => navigation.navigate('JobDetails', { 
           job: item.jobDetails,
-          jobId: item.job_id || item.jobDetails._id 
+          jobId: item.job_id || item.jobDetails._id,
+          source: 'MyJobs'
         })}
       >
         <View style={styles.applicationHeader}>
           <View>
             <Text style={styles.jobTitle}>{item.jobDetails.title}</Text>
-            <Text style={styles.companyName}>{item.jobDetails.companyName}</Text>
+            <Text style={styles.companyName}>{item.companyDetails.name}</Text>
           </View>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
             <Ionicons name={getStatusIcon(item.status)} size={16} color="#fff" />
@@ -91,7 +97,14 @@ export default function MyJobsScreen({ navigation }) {
         </View>
         <View style={styles.applicationFooter}>
           <Text style={styles.dateText}>Applied on {formatDate(item.date_applied)}</Text>
-          <TouchableOpacity style={styles.detailsButton}>
+          <TouchableOpacity 
+            style={styles.detailsButton}
+            onPress={() => navigation.navigate('JobDetails', { 
+              job: item.jobDetails,
+              jobId: item.job_id || item.jobDetails._id,
+              source: 'MyJobs'
+            })}
+          >
             <Text style={styles.detailsButtonText}>View Details</Text>
             <Ionicons name="chevron-forward" size={16} color="#FF69B4" />
           </TouchableOpacity>

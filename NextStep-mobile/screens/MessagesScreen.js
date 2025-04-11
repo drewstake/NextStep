@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+import api from '../api/config';
 
 const DUMMY_CONTACTS = [
   {
@@ -46,28 +49,188 @@ const DUMMY_MESSAGES = {
   ],
 };
 
+// Create a cross-platform alert function
+const showAlert = (title, message) => {
+  if (Platform.OS === 'web') {
+    window.alert(`${title}\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+};
+
 export default function MessagesScreen({ navigation }) {
   const [selectedContact, setSelectedContact] = useState(null);
   const [messageText, setMessageText] = useState('');
+  const [contacts, setContacts] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [error, setError] = useState(null);
+  const [pollingInterval, setPollingInterval] = useState(null);
+  const messagesListRef = useRef(null);
+
+  const fetchContacts = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Get the auth token from storage
+      const token = await AsyncStorage.getItem('userToken');
+
+      if (!token) {
+        showAlert('Authentication Error', 'Please log in again');
+        navigation.replace('Login');
+        return;
+      }
+
+      // Set the authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      // Make the API call to get recent contacts
+      const response = await api.get('/myRecentEmployerContacts');
+      setContacts(response.data);
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+
+      if (error.response) {
+        // Server responded with an error
+        const { status, data } = error.response;
+
+        if (status === 401) {
+          // Unauthorized - token expired or invalid
+          showAlert('Session Expired', 'Please log in again');
+          navigation.replace('Login');
+        } else if (status === 403) {
+          // Forbidden - user doesn't have permission
+          showAlert('Access Denied', 'You do not have permission to view contacts');
+        } else {
+          // Other server errors
+          setError(data.error || 'Failed to load contacts. Please try again later.');
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        setError('Network error. Please check your internet connection.');
+      } else {
+        // Something else happened
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchMessages = async (companyId) => {
+    try {
+      setIsLoadingMessages(true);
+      setError(null);
+
+      // Get the auth token from storage
+      const token = await AsyncStorage.getItem('userToken');
+
+      if (!token) {
+        showAlert('Authentication Error', 'Please log in again');
+        navigation.replace('Login');
+        return;
+      }
+
+      // Set the authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      // Make the API call to get messages
+      const response = await api.get(`/messages?companyId=${companyId}`);
+
+      // Sort messages by createdAt in ascending order
+      const sortedMessages = response.data.sort((a, b) =>
+        new Date(a.createdAt) - new Date(b.createdAt)
+      );
+
+      setMessages(sortedMessages);
+      
+      // Scroll to bottom after messages are updated
+      setTimeout(() => {
+        messagesListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+
+      if (error.response) {
+        const { status, data } = error.response;
+
+        if (status === 401) {
+          showAlert('Session Expired', 'Please log in again');
+          navigation.replace('Login');
+        } else {
+          setError(data.error || 'Failed to load messages. Please try again later.');
+        }
+      } else if (error.request) {
+        setError('Network error. Please check your internet connection.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  };
+
+  const handleContactSelect = async (contact) => {
+    // Clear any existing polling interval
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+
+    setSelectedContact(contact);
+    await fetchMessages(contact._id);
+
+    // Start polling for new messages
+    const interval = setInterval(() => {
+      if (contact._id) {
+        fetchMessages(contact._id);
+      }
+    }, 5000);
+
+    setPollingInterval(interval);
+  };
+
+  // Clean up polling interval when component unmounts or contact changes
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
+
+  // Initial load
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  // Refresh contacts when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchContacts();
+    }, [])
+  );
 
   const renderContactItem = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.contactItem}
-      onPress={() => setSelectedContact(item)}
+      onPress={() => handleContactSelect(item)}
     >
       <View style={[styles.avatarContainer, { backgroundColor: '#FF69B4' }]}>
-        <Text style={styles.avatarText}>{item.avatar}</Text>
+        <Text style={styles.avatarText}>{item.companyName.charAt(0)}</Text>
       </View>
       <View style={styles.contactInfo}>
         <View style={styles.contactHeader}>
-          <Text style={styles.contactName}>{item.name}</Text>
+          <Text style={styles.contactName}>{item.companyName}</Text>
           <Text style={styles.messageTime}>{item.time}</Text>
         </View>
         <View style={styles.messagePreview}>
           <Text style={styles.lastMessage} numberOfLines={1}>{item.lastMessage}</Text>
-          {item.unreadCount > 0 && (
+          {item.countOfUnreadMessages > 0 && (
             <View style={[styles.unreadBadge, { backgroundColor: '#FF69B4' }]}>
-              <Text style={styles.unreadCount}>{item.unreadCount}</Text>
+              <Text style={styles.unreadCount}>{item.countOfUnreadMessages}</Text>
             </View>
           )}
         </View>
@@ -78,19 +241,57 @@ export default function MessagesScreen({ navigation }) {
   const renderMessageItem = ({ item }) => (
     <View style={[
       styles.messageContainer,
-      item.isMe ? styles.myMessage : styles.theirMessage
+      !item.receiverId ? styles.myMessage : styles.theirMessage
     ]}>
       <Text style={[
         styles.messageText,
-        item.isMe ? styles.myMessageText : styles.theirMessageText
-      ]}>{item.text}</Text>
+        !item.receiverId ? styles.myMessageText : styles.theirMessageText
+      ]}>{item.content}</Text>
     </View>
   );
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (messageText.trim()) {
-      // TODO: Implement actual message sending
-      setMessageText('');
+      try {
+        // Get the auth token from storage
+        const token = await AsyncStorage.getItem('userToken');
+
+        if (!token) {
+          showAlert('Authentication Error', 'Please log in again');
+          navigation.replace('Login');
+          return;
+        }
+
+        // Set the authorization header
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        // Send the message
+        await api.post('/messages/company', {
+          companyId: selectedContact._id,
+          content: messageText.trim()
+        });
+
+        // Clear the input field
+        setMessageText('');
+
+        // Fetch the latest messages
+        await fetchMessages(selectedContact._id);
+      } catch (error) {
+        console.error('Error sending message:', error);
+
+        if (error.response) {
+          const { status, data } = error.response;
+
+          if (status === 401) {
+            showAlert('Session Expired', 'Please log in again');
+            navigation.replace('Login');
+          } else {
+            showAlert('Error', data.error || 'Failed to send message. Please try again.');
+          }
+        } else {
+          showAlert('Error', 'Network error. Please check your internet connection.');
+        }
+      }
     }
   };
 
@@ -101,23 +302,25 @@ export default function MessagesScreen({ navigation }) {
         style={styles.chatContainer}
       >
         <View style={styles.chatHeader}>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setSelectedContact(null)}
             style={styles.backButton}
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <View style={styles.chatHeaderInfo}>
-            <Text style={styles.chatHeaderName}>{selectedContact.name}</Text>
+            <Text style={styles.chatHeaderName}>{selectedContact.companyName}</Text>
             <Text style={styles.chatHeaderStatus}>Online</Text>
           </View>
         </View>
 
         <FlatList
-          data={DUMMY_MESSAGES[selectedContact.id]}
+          ref={messagesListRef}
+          data={messages}
           renderItem={renderMessageItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           contentContainerStyle={styles.messagesList}
+          onContentSizeChange={() => messagesListRef.current?.scrollToEnd({ animated: true })}
         />
 
         <View style={styles.messageInputContainer}>
@@ -129,11 +332,42 @@ export default function MessagesScreen({ navigation }) {
             placeholderTextColor="#666"
             multiline
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.sendButton}
             onPress={handleSendMessage}
           >
             <Ionicons name="send" size={24} color="#FF69B4" />
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <LinearGradient
+        colors={['#2A0845', '#6441A5']}
+        style={styles.container}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF69B4" />
+          <Text style={styles.loadingText}>Loading contacts...</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  if (error) {
+    return (
+      <LinearGradient
+        colors={['#2A0845', '#6441A5']}
+        style={styles.container}
+      >
+        <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={50} color="#FF69B4" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchContacts}>
+            <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -146,7 +380,7 @@ export default function MessagesScreen({ navigation }) {
       style={styles.container}
     >
       <FlatList
-        data={DUMMY_CONTACTS}
+        data={contacts}
         renderItem={renderContactItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
@@ -307,5 +541,38 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     padding: 5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#fff',
+    marginTop: 10,
+    fontSize: 16,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: '#fff',
+    marginTop: 10,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: '#FF69B4',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 }); 
