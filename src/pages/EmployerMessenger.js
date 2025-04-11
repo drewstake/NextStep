@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { TokenContext } from '../components/TokenContext';
 import jwt_decode from 'jwt-decode';
 import axiosInstance from '../utils/axiosConfig';
@@ -17,6 +17,15 @@ const EmployerMessenger = () => {
   const decoded = token ? jwt_decode(token) : null;
   const currentUserId = decoded?.id;
   const isEmployer = decoded?.employerFlag || false;
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Redirect if user is not an employer
   useEffect(() => {
@@ -29,6 +38,7 @@ const EmployerMessenger = () => {
     if (!token) return;
     try {
       const response = await axiosInstance.get('/employer/messages');
+      //console.log("fetchEmployerMessages response", response);
       if (response.data.length > 0) {
         setMessages(response.data);
       }
@@ -39,6 +49,7 @@ const EmployerMessenger = () => {
 
   const refreshMessages = useCallback(async () => {
     fetchEmployerMessages();
+    //console.log("refreshMessages selectedContact", selectedContact);
     if (selectedContact?._id) {
       const currentContact = contacts.find(c => c._id === selectedContact._id);
       if (currentContact?.countOfUnreadMessages > 0) {
@@ -226,6 +237,7 @@ const EmployerMessenger = () => {
                     </div>
                   </div>
                 ))}
+              <div ref={messagesEndRef} />
             </div>
             <form onSubmit={sendMessage} className="message-form">
               <input
