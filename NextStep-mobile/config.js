@@ -1,15 +1,16 @@
 // API Configuration
 import { Platform } from 'react-native';
+import Config from 'react-native-config';
 
-const IS_DEV = process.env.NODE_ENV === 'development';
+const IS_DEV = __DEV__;
 
 export const API_BASE_URL = IS_DEV 
   ? Platform.select({
       android: 'http://10.0.2.2:4000',
-      ios: 'http://192.168.1.100:4000', // Replace with your computer's IP
+      ios: 'http://192.168.1.100:4000', // Replace with your computer's IP if needed
       default: 'http://localhost:4000'
     })
-  : 'https://your-production-api.com'; // Replace with your production API URL
+  : Config.API_BASE_URL_PROD;
 
 // Other configuration constants
 export const APP_NAME = 'NextStep';
