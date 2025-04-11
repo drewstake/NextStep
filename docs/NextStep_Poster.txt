@@ -1,0 +1,75 @@
+[SLIDE 1 - 48" x 36"]
+
+[HEADER - Purple background #2D1441]
+NEXTSTEP: Swipe-Based Job Matching App
+PENN STATE CAPSTONE 2025
+Andrew Nguyen • Enrin Debbarma • Soleyana Abera • Bryan R Mathews
+
+[LEFT COLUMN]
+Abstract
+-------------------
+NextStep revolutionizes the job search experience by combining the intuitive simplicity of swipe-based interfaces with powerful AI-driven matching technology. Our platform addresses the fundamental challenges in today's job market by creating seamless connections between job seekers and employers.
+
+Our AI-powered platform learns from each interaction, creating a dynamic matching system that gets smarter with every swipe. By analyzing user behavior, skills, and preferences, NextStep delivers precisely targeted job opportunities to candidates while providing employers with pre-qualified, interested applicants.
+
+Key Innovation Points:
+• AI-Powered Job Matching
+• Intuitive Swipe Interface
+• Real-time Application Tracking
+• Secure Data Management
+
+[MIDDLE COLUMN]
+System Architecture
+-------------------
+Technology Stack:
+
+Frontend:
+• React.js (Web Application)
+• React Native (Mobile Apps)
+
+Backend:
+• Node.js with Express.js
+• Cloud-based MongoDB
+
+External Services:
+• Google OAuth Authentication
+• Twilio Phone Verification
+• Firebase Real-time Updates
+
+[RIGHT COLUMN]
+Security & Performance
+-------------------
+Data Protection:
+• End-to-end encryption
+• GDPR compliance
+• Regular security audits
+• Secure data storage
+
+System Performance:
+• 100,000+ concurrent users
+• 95% pages load < 2 seconds
+• 99.9% uptime guarantee
+• Mobile-optimized experience
+
+Future Development:
+• Enhanced AI capabilities
+• Expanded API integrations
+• Advanced analytics dashboard
+• International market expansion
+
+[FOOTER - Purple background #2D1441]
+Contact: info@nextstep4.com | www.nextstep4.com | (123) 456-7890
+
+[STYLING]
+Colors:
+- Header/Footer background: #2D1441
+- Section titles: #2D1441
+- Body text: #4B5563
+- Borders: #E5E7EB
+
+Fonts:
+- Title: 72pt
+- Subtitle: 48pt
+- Team names: 32pt
+- Section headers: 36pt
+- Body text: 24pt 

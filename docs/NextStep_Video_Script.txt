@@ -1,0 +1,51 @@
+NEXTSTEP APP - VIDEO PRESENTATION SCRIPT (2 MINUTES)
+=============================================
+
+[0:00-0:10] INTRO
+-----------------
+*[Fade in with NextStep logo and smooth animation]*
+VOICEOVER: "Introducing NextStep - the revolutionary job matching platform that's changing how we find career opportunities."
+
+[0:10-0:25] PROBLEM STATEMENT
+-----------------------------
+*[Show split screen of frustrated job seekers scrolling through endless listings]*
+VOICEOVER: "Traditional job searching is time-consuming and inefficient. Endless scrolling, countless applications, and rarely finding the right fit."
+
+[0:25-0:45] APP OVERVIEW
+-----------------------
+*[Show app login screen, transition to main interface]*
+VOICEOVER: "NextStep simplifies the entire process with an intuitive, swipe-based interface powered by advanced AI matching technology."
+*[Demonstrate swipe gestures with hand motions over the interface]*
+VOICEOVER: "Swipe right to apply, left to reject, or up to save jobs for later. It's that simple."
+
+[0:45-1:05] KEY FEATURES
+-----------------------
+*[Show each feature with quick visual transitions]*
+
+VOICEOVER: 
+"NextStep offers four game-changing features:
+- AI-powered personalized job recommendations tailored to your skills and preferences
+- One-click apply using your stored profile data
+- Comprehensive application tracking to manage your job search journey
+- Real-time notifications about application status updates"
+
+[1:05-1:20] TECHNOLOGY SHOWCASE
+------------------------------
+*[Show brief technical visualization of the system architecture]*
+VOICEOVER: "Built with cutting-edge technology including React Native, Node.js, and MongoDB, NextStep delivers a seamless experience across all devices with enterprise-grade security."
+
+[1:20-1:40] USER TESTIMONIAL/SCENARIO
+------------------------------------
+*[Show mock user journey - profile creation, job matching, application, and job offer]*
+VOICEOVER: "Meet Sarah. With NextStep, she created her profile in minutes, matched with jobs aligned to her skills, applied with a single tap, and landed her dream position in just two weeks."
+
+[1:40-2:00] CALL TO ACTION
+-------------------------
+*[Show app screens with team logo and contact information]*
+VOICEOVER: "Stop wasting time on inefficient job searches. Your next career move is just a swipe away. NextStep - simplifying the path to your professional future."
+
+*[Display website address and download information]*
+VOICEOVER: "Visit nextstep.com today to download the app and transform your job search experience."
+
+[END WITH TEAM LOGO AND TAGLINE]
+"Your next career move, simplified." 

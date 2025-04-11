@@ -1,0 +1,74 @@
+[PowerPoint Presentation]
+Layout: Custom - 48" x 36" (Landscape)
+Background: White (#FFFFFF)
+
+[Master Styles]
+- Primary Color: #4A1D96 (NextStep Purple - for headers and accents)
+- Secondary Color: #6B7280 (Professional gray for body text)
+- Accent Color: #818CF8 (For highlights and checkmarks)
+- Font: Calibri for headers, Arial for body text
+
+[Header Section - Top Banner]
+Background: #4A1D96 (NextStep Purple)
+Text Color: White
+Content:
+- Title: "NEXTSTEP: Swipe-Based Job Matching App" (Calibri, 72pt, White)
+- Subtitle: "PENN STATE CAPSTONE 2025" (Calibri, 48pt, White)
+- Team: "Andrew Nguyen • Enrin Debbarma • Soleyana Abera • Bryan R Matthews" (Arial, 32pt, White)
+
+[Content Layout - Three Column Design with White Background]
+
+[Left Column]
+1. Project Overview
+Background: White
+Border: Thin line (#E5E7EB)
+Shadow: Subtle drop shadow
+Content:
+- Overview text in dark gray (#1F2937)
+- Bullet points with NextStep purple markers
+- Key points highlighted in purple
+
+2. Introduction & Purpose
+- Clean white background
+- Purple section headers
+- Gray body text
+- Checkmark bullets in NextStep purple
+
+[Middle Column]
+1. System Architecture
+- White cards with subtle borders
+- Technology stack with icons
+- Clean typography in gray
+- Purple accent elements
+
+2. Core Features
+- Feature boxes with light purple borders
+- Clean iconography
+- Organized lists with purple bullets
+- White space for readability
+
+[Right Column]
+1. Security & Performance
+- Professional metrics display
+- Clean data visualization
+- Purple accent elements
+- White background with subtle grid
+
+2. Future Development
+- Clean roadmap style
+- Purple milestone markers
+- Professional typography
+- Subtle gridlines
+
+[Footer]
+Background: #4A1D96
+Text: White
+Contact information with icons
+
+[Design Elements]
+- Professional white space management
+- Subtle grid system
+- Clean lines and borders
+- Corporate-style data visualization
+- Professional icons and bullets
+- Consistent typography hierarchy 

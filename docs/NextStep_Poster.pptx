@@ -1,0 +1,39 @@
+[PowerPoint Presentation]
+SlideSize:
+Width: 48 inches
+Height: 36 inches
+Orientation: Landscape
+
+[Slide 1]
+Layout: Blank
+
+[Header Shape]
+Type: Rectangle
+Position: Top
+Width: 48 inches
+Height: 6 inches
+Fill: #2D1441
+Text Color: White
+Content:
+- Title: "NEXTSTEP: Swipe-Based Job Matching App" (72pt)
+- Subtitle: "PENN STATE CAPSTONE 2025" (48pt)
+- Team: "Andrew Nguyen • Enrin Debbarma • Soleyana Abera • Bryan R Mathews" (32pt)
+
+[Content Area]
+Three equal columns with shapes:
+- Left Column (Abstract)
+- Middle Column (System Architecture)
+- Right Column (Security & Performance)
+Width per column: 15 inches
+Height: 24 inches
+Background: White
+Border: #E5E7EB
+
+[Footer Shape]
+Type: Rectangle
+Position: Bottom
+Width: 48 inches
+Height: 2 inches
+Fill: #2D1441
+Text Color: White
+Content: "Contact: info@nextstep4.com | www.nextstep4.com | (123) 456-7890" (32pt) 
