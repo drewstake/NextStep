@@ -19,7 +19,7 @@ const CompanyProfile = () => {
     website: '',
     logo: null
   });
-  const { token, setCompanyId } = useContext(TokenContext);
+  const { setCompanyId } = useContext(TokenContext);
 
   // Fetch company profile data on component mount
   useEffect(() => {
@@ -66,16 +66,6 @@ const CompanyProfile = () => {
       ...prev,
       [name]: value
     }));
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCompanyData(prev => ({
-        ...prev,
-        logo: file
-      }));
-    }
   };
 
   const handleSubmit = async (e) => {

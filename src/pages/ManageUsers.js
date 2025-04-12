@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/ManageUsers.css';
@@ -11,22 +11,14 @@ const ManageUsers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
   const [companyUsers, setCompanyUsers] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [emailToAdd, setEmailToAdd] = useState('');
   const [isAddingByEmail, setIsAddingByEmail] = useState(false);
   const { token } = useContext(TokenContext);
   const currentUserId = token ? jwt_decode(token).id : null;
 
-  // Fetch company users on component mount
-  useEffect(() => {
-    fetchCompanyUsers();
-  }, []);
-
   // Fetch company users
-  const fetchCompanyUsers = async () => {
+  const fetchCompanyUsers = useCallback(async () => {
     try {
       if (!token) {
         navigate('/login');
@@ -48,7 +40,13 @@ const ManageUsers = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, navigate]);
+
+  // Fetch company users on component mount
+  useEffect(() => {
+    fetchCompanyUsers();
+  }, [fetchCompanyUsers]);
+
 
   // Add user by email
   const handleAddUserByEmail = async (e) => {
@@ -69,7 +67,7 @@ const ManageUsers = () => {
 
       if (searchResponse.data && searchResponse.data.length > 0) {
         const user = searchResponse.data[0];
-        
+
         // Add the user to the company
         await axios.post('http://localhost:4000/company/users', { userId: user._id }, {
           headers: {
@@ -123,13 +121,6 @@ const ManageUsers = () => {
     }
   };
 
-  // Check if a user is already in the company
-  const isUserInCompany = (userId) => {
-    return companyUsers.some(user => user._id === userId);
-  };
-
-  // Add user to company
-
   if (loading) {
     return <div className="manage-users-container">Loading...</div>;
   }
@@ -138,9 +129,9 @@ const ManageUsers = () => {
     <div className="manage-users-container">
       {error && <NotificationBanner message={error} type="error" onDismiss={() => setError(null)} />}
       {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
-      
+
       <h1>Manage Company Users</h1>
-      
+
       <div className="add-by-email-section">
         <h2>Add User by Email</h2>
         <p>Add an EMPLOYER user to the company by entering their email address.</p>
@@ -154,8 +145,8 @@ const ManageUsers = () => {
               placeholder="Enter user's email"
               required
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="add-button"
               disabled={isAddingByEmail}
             >
@@ -164,7 +155,7 @@ const ManageUsers = () => {
           </div>
         </form>
       </div>
-           
+
       <div className="company-users-section">
         <h2>Current Company Users</h2>
         {companyUsers.length > 0 ? (

@@ -43,7 +43,7 @@ const BrowseJobs = () => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:4000/jobsTracker', { 
+      await axios.post('http://localhost:4000/jobsTracker', { 
         _id:jobId, 
         email,
         name,
