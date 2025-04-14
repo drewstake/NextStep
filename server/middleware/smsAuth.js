@@ -120,7 +120,7 @@ const sendVerificationCode = async (phoneNumber) => {
         twiml: twiml.toString(),
         to: formattedPhone,
         from: fromNumber,
-        statusCallback: "http://localhost:4000/call-status",
+        statusCallback: `${API_SERVER}/call-status`,
         statusCallbackEvent: ["initiated", "ringing", "answered", "completed"],
       });
 

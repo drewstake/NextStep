@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { TokenContext } from "../components/TokenContext";
 import { GoogleLogin } from "@react-oauth/google";
 import NotificationBanner from "../components/NotificationBanner";
+import { API_SERVER } from '../config';
+
 const Login = () => {
   // ======================
   // Error state
@@ -56,7 +58,7 @@ const Login = () => {
   // ======================
   const handleSendVerificationCode = async (phone, isSignup = false) => {
     try {
-      await axios.post("http://localhost:4000/send-verification", {
+      await axios.post(`${API_SERVER}/send-verification`, {
         phoneNumber: phone,
       });
       if (isSignup) {
@@ -83,7 +85,7 @@ const Login = () => {
           ? { email: loginEmail, password: loginPassword }
           : { phone: loginPhone, verificationCode };
 
-      const response = await axios.post("http://localhost:4000/signin", loginData);
+      const response = await axios.post(`${API_SERVER}/signin`, loginData);
       setToken(response.data.token);
       setEmployerFlag(response.data.employerFlag);
       setName(response.data.full_name);
@@ -111,7 +113,7 @@ const Login = () => {
     };
 
     try {
-      await axios.post("http://localhost:4000/signup", signupData);
+      await axios.post(`${API_SERVER}/signup`, signupData);
       setMessage("Account created. Please check your email for verification instructions.");
       navigate("/login");
     } catch (error) {
@@ -128,7 +130,7 @@ const Login = () => {
   // ======================
   const handleGoogleSuccess = async (response) => {
     try {
-      const res = await axios.post("http://localhost:4000/google-auth", {
+      const res = await axios.post(`${API_SERVER}/google-auth`, {
         token: response.credential,
       });
       setToken(res.data.token);

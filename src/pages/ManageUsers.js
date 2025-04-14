@@ -5,6 +5,7 @@ import '../styles/ManageUsers.css';
 import NotificationBanner from '../components/NotificationBanner';
 import { TokenContext } from '../components/TokenContext';
 import jwt_decode from 'jwt-decode';
+import { API_SERVER } from '../config';
 
 const ManageUsers = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const ManageUsers = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:4000/company/users', {
+      const response = await axios.get(`${API_SERVER}/company/users`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -59,7 +60,7 @@ const ManageUsers = () => {
       }
 
       // First search for the user by email
-      const searchResponse = await axios.get(`http://localhost:4000/company/users/search?search=${emailToAdd}`, {
+      const searchResponse = await axios.get(`${API_SERVER}/company/users/search?search=${emailToAdd}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -69,7 +70,7 @@ const ManageUsers = () => {
         const user = searchResponse.data[0];
 
         // Add the user to the company
-        await axios.post('http://localhost:4000/company/users', { userId: user._id }, {
+        await axios.post(`${API_SERVER}/company/users`, { userId: user._id }, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -104,7 +105,7 @@ const ManageUsers = () => {
         return;
       }
 
-      await axios.delete(`http://localhost:4000/company/users/${userId}`, {
+      await axios.delete(`${API_SERVER}/company/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

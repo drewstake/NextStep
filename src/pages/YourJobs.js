@@ -2,7 +2,7 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import axios from 'axios';
 import moment from 'moment';
-
+import { API_SERVER } from '../config';
 
 import '../styles/YourJobs.css';
 import { TokenContext } from '../components/TokenContext';
@@ -22,7 +22,7 @@ const YourJobs = () => {
     const fetchMyApplications = async () =>{
       if (token) {
         try {
-          const response = await axios.get(`http://localhost:4000/applications`, {
+          const response = await axios.get(`${API_SERVER}/applications`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setMyApplications(response.data);

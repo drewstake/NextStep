@@ -1,11 +1,12 @@
 import axios from 'axios';
+import { API_SERVER } from '../config';
 
 // Use this component to make requests to the server
 // it will handle token expiration and redirect to login page
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:4000',
+  baseURL: API_SERVER,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'

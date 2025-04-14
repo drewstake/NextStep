@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom'
 import { TokenContext } from '../components/TokenContext';
 import NotificationBanner from '../components/NotificationBanner';
+import { API_SERVER } from '../config';
 
 const Profile = () => {
   const [firstName, setFirstName] = useState('');
@@ -17,7 +18,7 @@ const Profile = () => {
   const [profilePic, setProfilePic] = useState(null);
   const [resume, setResume] = useState(null);
   const [location, setLocation] = useState('');
-  const [profilePicAlt, setProfilePicAlt] = useState("Profile"); // Default alt text
+  const [profilePicAlt, setProfilePicAlt] = useState(""); // Default alt text
 
   const navigate = useNavigate(1);
   //const location = useLocation();
@@ -30,7 +31,7 @@ const Profile = () => {
     const fetchProfile = async () => {
       if (token) {
         try {
-          const response = await axios.get(`http://localhost:4000/profile`, {
+          const response = await axios.get(`${API_SERVER}/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setResume(response.data.resume);
@@ -93,7 +94,7 @@ const Profile = () => {
     }
 
     try {
-      await axios.post('http://localhost:4000/updateprofile', formData, {
+      await axios.post(`${API_SERVER}/updateprofile`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessage("Profile Updated");

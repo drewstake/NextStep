@@ -6,6 +6,7 @@ import axios from "axios";
 import "../styles/Details.css";
 import NotificationBanner from "../components/NotificationBanner";
 import { TokenContext } from '../components/TokenContext';
+import { API_SERVER } from '../config';
 
 const Details = () => {
   const { jobId, returnTo } = useParams();
@@ -25,7 +26,7 @@ const Details = () => {
 
   const handleApplyNow = async () => {
     try {
-      await axios.post('http://localhost:4000/jobsTracker', {
+      await axios.post(`${API_SERVER}/jobsTracker`, {
         _id: job._id,
         name,
         email,
@@ -46,7 +47,7 @@ const Details = () => {
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/jobs/${jobId}`);
+        const response = await axios.get(`${API_SERVER}/jobs/${jobId}`);
         setJob(response.data);
       } catch (error) {
         console.error("Error fetching job details:", error);

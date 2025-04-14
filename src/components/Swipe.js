@@ -6,6 +6,7 @@ import axios from 'axios';
 import { ThumbsUp, ThumbsDown } from 'lucide-react'; // Import icons
 import NotificationBanner from './NotificationBanner';
 import { TokenContext } from './TokenContext';
+import { API_SERVER } from '../config';
 
 // Define swipe mode constants
 const APPLY = 1;
@@ -30,7 +31,7 @@ const Swipe = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/retrieveJobsForHomepage?q=', {
+        const response = await axios.get(`${API_SERVER}/retrieveJobsForHomepage?q=`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setJobs(response.data);
@@ -48,7 +49,7 @@ const Swipe = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:4000/jobsTracker', { 
+      await axios.post(`${API_SERVER}/jobsTracker`, { 
         _id: jobId, 
         email,
         name,

@@ -22,6 +22,7 @@ import "./styles/App.css";
 import { TokenContext } from "./components/TokenContext";
 import axios from "axios";
 import ChatWidget from "./components/ChatWidget"; // Import the global chat widget
+import { API_SERVER } from './config';
 
 function App() {
   const { token, employerFlag, profileUpdateTrigger } = useContext(TokenContext);
@@ -38,7 +39,7 @@ function App() {
     const fetchUserProfile = async () => {
       if (token) {
         try {
-          const response = await axios.get("http://localhost:4000/profile", {
+          const response = await axios.get(`${API_SERVER}/profile`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const user = response.data;

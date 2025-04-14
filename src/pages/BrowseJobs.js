@@ -5,6 +5,7 @@ import JobCard from '../components/JobCard';
 import '../styles/BrowseJobs.css';
 import { TokenContext } from '../components/TokenContext';
 import NotificationBanner from '../components/NotificationBanner';
+import { API_SERVER } from '../config';
 
 // Define swipe mode constants
 const APPLY = 1;
@@ -20,7 +21,7 @@ const BrowseJobs = () => {
     const fetchJobs = async () => {
       try {
         // Replace the URL with your actual API endpoint.
-        const response = await axios.get('http://localhost:4000/jobs?keyword=');
+        const response = await axios.get(`${API_SERVER}/jobs?keyword=`);
         setJobs(response.data);
       } catch (error) {
         console.error('Error fetching jobs:', error);
@@ -33,7 +34,7 @@ const BrowseJobs = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     // For now, just log the search query. Later, you could use this to filter the jobs or make a new API call.
-    const response = await axios.get('http://localhost:4000/jobs?q=' + searchQuery);
+    const response = await axios.get(`${API_SERVER}/jobs?q=` + searchQuery);
     setJobs(response.data);
   };
 
@@ -43,7 +44,7 @@ const BrowseJobs = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:4000/jobsTracker', { 
+      await axios.post(`${API_SERVER}/jobsTracker`, { 
         _id:jobId, 
         email,
         name,
