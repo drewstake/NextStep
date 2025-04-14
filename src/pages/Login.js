@@ -129,7 +129,7 @@ const Login = () => {
   // ======================
   const handleGoogleSuccess = async (response) => {
     try {
-      const res = await axios.post(`${API_SERVER}/google-auth`, {
+      const res = await axios.post(`${API_SERVER}/auth/google`, {
         token: response.credential,
       });
       setToken(res.data.token);
