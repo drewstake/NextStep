@@ -4,7 +4,6 @@ const { OAuth2Client } = require("google-auth-library");
 const { ObjectId } = require("mongodb");
 const crypto = require("crypto");
 const { sendEmail } = require("../middleware/mailer");
-const { API_SERVER } = require("../config");
 
 // Initialize Google OAuth client
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
