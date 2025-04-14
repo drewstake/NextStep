@@ -161,6 +161,7 @@ const authController = {
       
       // Send verification email
       const verificationUrl = `${process.env.SERVER_DOMAIN}/verified?token=${verificationToken}`;
+      console.log(verificationUrl);
       const emailSubject = "Verify your NextStep account";
       const emailBody = `
         <h1>Welcome to NextStep!</h1>
