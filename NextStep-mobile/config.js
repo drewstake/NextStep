@@ -5,11 +5,11 @@ const IS_DEV = process.env.NODE_ENV === 'development';
 
 export const API_BASE_URL = IS_DEV 
   ? Platform.select({
-      android: 'http://10.0.2.2:4000',
-      ios: 'http://192.168.1.100:4000', // Replace with your computer's IP
-      default: 'http://localhost:4000'
+      android: 'https://nextstep-api.onrender.com',
+      ios: 'https://nextstep-api.onrender.com', // Replace with your computer's IP
+      default: 'https://nextstep-api.onrender.com'
     })
-  : 'https://your-production-api.com'; // Replace with your production API URL
+  : 'https://nextstep-api.onrender.com'; // Replace with your production API URL
 
 // Other configuration constants
 export const APP_NAME = 'NextStep';
