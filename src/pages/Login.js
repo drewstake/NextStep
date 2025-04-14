@@ -31,8 +31,7 @@ const Login = () => {
   const [signupPhone, setSignupPhone] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
-  const [signupVerificationCode, setSignupVerificationCode] = useState("");
-  const [showSignupVerification, setShowSignupVerification] = useState(false);
+  const [setShowSignupVerification] = useState(false);
 
   // ======================
   // Context & Navigation
@@ -353,7 +352,7 @@ const Login = () => {
                             </div>
 
                             {/* Verification Call Button / Input */}
-                            {!showSignupVerification ? (
+                            {/* {!showSignupVerification ? (
                               <button
                                 type="button"
                                 className="login-btn mt-2"
@@ -377,7 +376,7 @@ const Login = () => {
                                 />
                                 <i className="login-form-icon uil uil-key-skeleton"></i>
                               </div>
-                            )}
+                            )} */}
 
                             <div className="login-form-group mt-2">
                               <input
