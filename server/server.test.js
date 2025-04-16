@@ -180,14 +180,6 @@ describe('API Tests', () => {
             { expiresIn: '1h' }
         );
 
-        // Create test job
-        const jobsCollection = db.collection('Jobs');
-        const testJobResult = await jobsCollection.insertOne({
-            ...testJob,
-            employerId: testEmployerId
-        });
-        testJobId = testJobResult.insertedId;
-
         // Create test company
         const companiesCollection = db.collection('companies');
         const testCompanyResult = await companiesCollection.insertOne({
@@ -199,6 +191,15 @@ describe('API Tests', () => {
             location: 'Remote',
             founded: 2020
         });
+
+        // Create test job with correct companyId
+        const jobsCollection = db.collection('Jobs');
+        const testJobResult = await jobsCollection.insertOne({
+            ...testJob,
+            employerId: testEmployerId,
+            companyId: testCompanyResult.insertedId
+        });
+        testJobId = testJobResult.insertedId;
 
         // Associate employer with company
         await usersCollection.updateOne(
@@ -454,6 +455,24 @@ describe('API Tests', () => {
 
             expect(response.status).toBe(200);
             expect(Array.isArray(response.body)).toBe(true);
+        });
+
+        test('GET /retrieveJobsForHomepage - should include companyName for each job', async () => {
+            const response = await request(app)
+                .get('/retrieveJobsForHomepage')
+                .set('Authorization', `Bearer ${testUserToken}`)
+                .send();
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+            // At least one job should be present for a meaningful test
+            if (response.body.length > 0) {
+                response.body.forEach(job => {
+                    expect(job).toHaveProperty('companyName');
+                    expect(job.companyName).not.toBeNull();
+                    expect(job.companyName).not.toBe('');
+                });
+            }
         });
 
         // POST /jobs tests

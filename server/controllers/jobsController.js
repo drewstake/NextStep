@@ -489,7 +489,42 @@ const jobsController = {
       };
 
       let jobs = [];
-      const baseJobs = await jobsCollection.find(query).toArray();
+      // Use aggregation to join with companies and project companyName
+      const baseJobs = await jobsCollection.aggregate([
+        { $match: query },
+        {
+          $lookup: {
+            from: "companies",
+            localField: "companyId",
+            foreignField: "_id",
+            as: "companyInfo"
+          }
+        },
+        {
+          $unwind: {
+            path: "$companyInfo",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            jobDescription: 1,
+            skills: 1,
+            locations: 1,
+            benefits: 1,
+            schedule: 1,
+            salary: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            employerId: 1,
+            companyId: 1,
+            companyName: "$companyInfo.name",
+            companyWebsite: "$companyInfo.website"
+          }
+        }
+      ]).toArray();
 
       const token = req.headers.authorization?.split(" ")[1];
       if (token) {
@@ -511,6 +546,8 @@ const jobsController = {
         } catch (error) {
           jobs = baseJobs;
         }
+      } else {
+        jobs = baseJobs;
       }
 
       res.status(200).json(jobs);
