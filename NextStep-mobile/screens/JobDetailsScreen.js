@@ -107,15 +107,15 @@ export default function JobDetailsScreen({ route, navigation }) {
 
     // Navigate to next job if available
     const nextIndex = currentJobIndex + 1;
-    console.log('Current index:', currentJobIndex, 'Next index:', nextIndex, 'Total jobs:', jobs?.length);
+    //console.log('Current index:', currentJobIndex, 'Next index:', nextIndex, 'Total jobs:', jobs?.length);
     
     if (jobs && nextIndex < jobs.length) {
-      console.log('Loading next job:', jobs[nextIndex].title);
+      //console.log('Loading next job:', jobs[nextIndex].title);
       setCurrentJobIndex(nextIndex);
       setJob(jobs[nextIndex]);
       position.setValue({ x: 0, y: 0 });
     } else {
-      console.log('No more jobs available, returning to browse screen');
+     // console.log('No more jobs available, returning to browse screen');
       // No more jobs, go back to browse screen
       navigation.goBack();
     }

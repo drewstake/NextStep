@@ -82,7 +82,9 @@ export default function LoginScreen({ navigation }) {
         
         // TODO: Store token securely
         await AsyncStorage.setItem('userToken', token);
-        await AsyncStorage.setItem('companyId', companyId);
+        if (companyId) {
+          await AsyncStorage.setItem('companyId', companyId);
+        }
         
         // Navigate to MainApp
         navigation.replace('MainApp', { companyId });
@@ -100,6 +102,7 @@ export default function LoginScreen({ navigation }) {
         setIsEmailLogin(true); // Switch to login view after successful registration
       }
     } catch (error) {
+      console.log("Login Error", error);
       let errorMessage = 'An error occurred. Make sure the API server is up, and try again.';
       
       if (error.response) {

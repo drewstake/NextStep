@@ -64,7 +64,7 @@ export default function MyJobsScreen({ navigation }) {
       try {
         const date = new Date(dateString);
         if (isNaN(date.getTime())) {
-          console.log('Invalid date string:', dateString);
+          //console.log('Invalid date string:', dateString);
           return 'Date not available';
         }
         return date.toLocaleDateString();
@@ -74,7 +74,6 @@ export default function MyJobsScreen({ navigation }) {
       }
     };
 
-    console.log("Loading 2");
 
     return (
       <TouchableOpacity 
