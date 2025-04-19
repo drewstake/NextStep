@@ -295,6 +295,17 @@ const applicationsController = {
           $unwind: "$jobDetails"
         },
         {
+          $lookup: {
+            from: "companies",
+            localField: "jobDetails.companyId",
+            foreignField: "_id",
+            as: "companyDetails"
+          }
+        },
+        {
+          $unwind: "$companyDetails"
+        },
+        {
           $match: {
             "jobDetails.employerId": ObjectId.createFromHexString(req.user.id)
           }
@@ -321,9 +332,10 @@ const applicationsController = {
 
       const appl_email = application[0].email;
       const appl_name = application[0].name;
-      const company_name = application[0].jobDetails.companyName;
+      const company_name = application[0].companyDetails.name;
       const jobTitle = application[0].jobDetails.title;
       const senderEmail = "bzm436@psu.edu";
+
       if (status === 'Offered') {
         sendEmail(
           senderEmail, // sender email
@@ -342,7 +354,7 @@ const applicationsController = {
                     
                     <p>We believe your experience and skills will make a significant impact in our company, and we are excited to have you on board. Please review the attached offer details and respond with your acceptance by <strong>April 20, 2025</strong>.</p>
                     
-                    <p>If you have any questions, feel free to reach out to our HR department at <a href="mailto:hr@example.com">hr@example.com</a>.</p>
+                    <p>If you have any questions, feel free to reach out to our HR department by messaging us on the platform.</p>
                     
                     <p>Looking forward to your positive response!</p>
                     
@@ -375,7 +387,7 @@ const applicationsController = {
 
                           <p>We will keep your resume on file for future opportunities that may better suit your background, and we encourage you to apply for any other roles with us that you feel may be a good fit.</p>
 
-                          <p>If you would like feedback on your interview or have any questions, feel free to reach out to us at <a href="mailto:hr@example.com">hr@example.com</a>.</p>
+                          <p>If you would like feedback on your interview or have any questions, feel free to reach out to us by messaging us on the platform.</p>
 
                           <p>Thank you again for your time and for considering ${company_name}. We wish you the best of luck with your job search and future career endeavors.</p>
 
@@ -406,7 +418,7 @@ const applicationsController = {
     
                     <p>Please note that we will be in touch with you once we've completed our initial review. If we feel that your qualifications match the position, we will contact you for further steps.</p>
     
-                    <p>If you have any questions or need more information, please feel free to reach out to us at <a href="mailto:hr@example.com">hr@example.com</a>.</p>
+                    <p>If you have any questions or need more information, please feel free to reach out by messaging us on the platform.</p>
     
                     <p>Thank you again for considering ${company_name}. We will be in touch soon.</p>
     
@@ -433,7 +445,7 @@ const applicationsController = {
   
                   <p>Thank you for your interest in the position of <strong>${jobTitle}</strong> at ${company_name}. We have reviewed your application, and we would like to move forward with scheduling an interview with you.</p>
   
-                  <p>Please contact us at your earliest convenience to arrange a suitable time for the interview. You can reach our HR department directly at <a href="mailto:hr@example.com">hr@example.com</a> or simply reply to this email with your available dates and times.</p>
+                  <p>Please contact us at your earliest convenience to arrange a suitable time for the interview. You can reach our HR department directly by messaging us on the platform or simply reply to this email with your available dates and times.</p>
   
                   <p>We look forward to discussing your qualifications further and getting to know you better during the interview.</p>
   

@@ -1,11 +1,12 @@
 const { ObjectId } = require("mongodb");
 const jwt = require("jsonwebtoken");
-
+const { parseSearchCriteria, generateEmbeddings, refineFoundPositions } = require("../middleware/genAI");
 /**
  * Controller for handling job-related operations
  * @namespace jobsController
  */
 const jobsController = {
+  
   /**
    * Retrieves all jobs with optional search functionality
    * @async
@@ -18,58 +19,15 @@ const jobsController = {
    */
   getAllJobs: async (req, res) => {
     try {
-      const jobsCollection = req.app.locals.db.collection("Jobs");
-      const companiesCollection = req.app.locals.db.collection("companies");
       const queryText = req.query.q || "";
-      const query = {
-        $or: [
-          { title: { $regex: queryText, $options: "i" } },
-          { jobDescription: { $regex: queryText, $options: "i" } },
-          { skills: { $regex: queryText, $options: "i" } },
-          { locations: { $regex: queryText, $options: "i" } },
-          { benefits: { $regex: queryText, $options: "i" } },
-          { schedule: { $regex: queryText, $options: "i" } },
-          { salary: { $regex: queryText, $options: "i" } },
-        ],
-      };
+      if (!queryText) {
+        const jobs = await jobsDirectSearch(req);
+        res.status(200).json(jobs);
+      } else {
+        const jobs = await jobsSemanticSearch(req);
+        res.status(200).json(jobs);
+      }
 
-      const jobs = await jobsCollection.aggregate([
-        { $match: query },
-        {
-          $lookup: {
-            from: "companies",
-            localField: "companyId",
-            foreignField: "_id",
-            as: "companyInfo"
-          }
-        },
-        {
-          $unwind: {
-            path: "$companyInfo",
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $project: {
-            _id: 1,
-            title: 1,
-            jobDescription: 1,
-            skills: 1,
-            locations: 1,
-            benefits: 1,
-            schedule: 1,
-            salary: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            employerId: 1,
-            companyId: 1,
-            companyName: "$companyInfo.name",
-            companyWebsite: "$companyInfo.website"
-          }
-        }
-      ]).toArray();
-      
-      res.status(200).json(jobs);
     } catch (error) {
       res.status(500).json({ error: `Error searching jobs. ${error}` });
     }
@@ -195,7 +153,7 @@ const jobsController = {
         // Fallback to getting companyId from user's record
         const usersCollection = req.app.locals.db.collection("users");
         const user = await usersCollection.findOne({ _id: ObjectId.createFromHexString(req.user.id) });
-        
+
         if (!user || !user.companyId) {
           return res.status(400).json({ error: "User not associated with any company" });
         }
@@ -223,7 +181,10 @@ const jobsController = {
         companyId: companyId
       };
 
-      const result = await collection.insertOne(newJob);
+      const textToEmbed = `${newJob.title} ${newJob.jobDescription} ${newJob.skills.join(' ')} ${newJob.companyName? newJob.companyName : ''} ${newJob.locations.join(' ')} ${newJob.salaryRange? newJob.salaryRange : ''} ${newJob.benefits.join(' ')} ${newJob.schedule? newJob.schedule : ''}`;
+      const embedding = await generateEmbeddings(textToEmbed);
+
+      const result = await collection.insertOne({...newJob, embedding});
       res.status(201).json({
         message: "Job posting created successfully",
         jobId: result.insertedId
@@ -295,6 +256,9 @@ const jobsController = {
         return res.status(404).json({ error: "Job not found or unauthorized" });
       }
 
+      const textToEmbed = `${job.title} ${job.jobDescription} ${job.skills.join(' ')} ${job.companyName? job.companyName : ''} ${job.locations.join(' ')} ${job.salaryRange? job.salaryRange : ''} ${job.benefits.join(' ')} ${job.schedule? job.schedule : ''}`;
+      const embedding = await generateEmbeddings(textToEmbed);
+
       const result = await collection.updateOne(
         { _id: ObjectId.createFromHexString(jobId) },
         {
@@ -308,6 +272,7 @@ const jobsController = {
             schedule,
             jobDescription,
             skills: Array.isArray(skills) ? skills : [skills],
+            embedding,
             updatedAt: new Date()
           }
         }
@@ -404,7 +369,7 @@ const jobsController = {
         // Fallback to getting companyId from user's record
         const usersCollection = req.app.locals.db.collection("users");
         const user = await usersCollection.findOne({ _id: ObjectId.createFromHexString(req.user.id) });
-        
+
         if (!user || !user.companyId) {
           return res.status(400).json({ error: "User not associated with any company" });
         }
@@ -469,6 +434,107 @@ const jobsController = {
     }
   },
 
+  getHomepageJobsUsingSemanticSearch: async (req, res) => {
+    try {
+
+      let searchCriteria = req.query.q || "";
+      //const jobs = await searchJobs(queryText, 10);
+
+
+      const jobDetails = await parseSearchCriteria(searchCriteria);
+
+      console.log(jobDetails);
+
+      let processedCriteria = jobDetails.my_requirements ? jobDetails.my_requirements : "";
+
+      if (jobDetails.locations?.length > 0) {
+        processedCriteria += `\nLocations: ${jobDetails.locations?.join(', ')}`;
+      }
+
+      if (jobDetails.salaryRange?.minimum || jobDetails.salaryRange?.maximum) {
+        processedCriteria += `\nSalary: ${jobDetails.salaryRange?.minimum} - ${jobDetails.salaryRange?.maximum}`;
+      }
+
+
+      if (jobDetails.company) {
+        processedCriteria += `\nCompany: ${jobDetails.company}`;
+      }
+
+      if (!processedCriteria) {
+        processedCriteria = searchCriteria;
+      }
+      // Generate embedding for the search query
+      const queryEmbedding = await generateEmbeddings(processedCriteria);
+
+      // Perform vector search
+      const results = await req.app.locals.db.collection("Jobs").aggregate([
+        {
+          $vectorSearch: {
+            queryVector: queryEmbedding,
+            path: "embedding",
+            numCandidates: 100,
+            limit: 10,
+            index: "js_vector_index",
+          }
+        },
+        {
+          $lookup: {
+            from: "companies",
+            localField: "companyId",
+            foreignField: "_id",
+            as: "companyInfo"
+          }
+        },
+        {
+          $unwind: {
+            path: "$companyInfo",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            companyName: "$companyInfo.name",
+            companyWebsite: "$companyInfo.website",
+            jobDescription: 1,
+            salaryRange: 1,
+            locations: 1,
+            benefits: 1,
+            schedule: 1,
+            skills: 1,
+            score: { $meta: "vectorSearchScore" }
+          }
+        }
+      ]).toArray();
+
+      // Filter results to only include those with a score greater than 0.62
+      const filteredResults = results.filter(result => result.score > 0.62);
+
+      console.log("MongoDB returned : ", filteredResults.length);
+      if (jobDetails.skills?.length > 0) {
+        searchCriteria += `\nMatch one or more of these skills: (${jobDetails.skills?.join(', ')})`;
+      } 
+
+      console.log("Refining results with the following criteria: ", searchCriteria);
+      // use the criteria as specified by the user to refine the results
+      const enhancedJobs = await refineFoundPositions(filteredResults, searchCriteria);
+
+      console.log("Enhanced jobs: ", enhancedJobs.length);
+
+      // Filter and sort to show "great" matches before "good" matches
+      const greatMatches = enhancedJobs
+        .filter(job => job.match === "great" || job.match === "good")
+        .sort((a, b) => b.match === "great" ? 1 : -1);
+
+      console.log("Refined matches: ", greatMatches.length);
+
+      res.status(200).json(greatMatches);
+    } catch (error) {
+      console.error("Error in getHomepageJobsUsingSemanticSearch:", error);
+      res.status(500).json({ error: "Failed to search jobs", details: error });
+    }
+  },
   // Get jobs for homepage
   getHomepageJobs: async (req, res) => {
     try {
@@ -621,7 +687,7 @@ const jobsController = {
           }
         }
       ]).toArray();
-      
+
       // Get all jobs the user has already applied to
       const appliedJobs = await applicationsCollection
         .find({
@@ -629,14 +695,14 @@ const jobsController = {
         })
         .project({ job_id: 1, _id: 0 })
         .toArray();
-      
+
       const appliedJobIds = appliedJobs.map(app => app.job_id.toString());
-      
+
       // Filter out jobs the user has already applied to
-      const newJobs = jobs.filter(job => 
+      const newJobs = jobs.filter(job =>
         !appliedJobIds.includes(job._id.toString())
       );
-      
+
       res.status(200).json(newJobs);
     } catch (error) {
       res.status(500).json({ error: `Error searching new jobs. ${error}` });
@@ -644,4 +710,160 @@ const jobsController = {
   }
 };
 
-module.exports = jobsController; 
+
+async function jobsDirectSearch(req) {
+  const jobsCollection = req.app.locals.db.collection("Jobs");
+  const companiesCollection = req.app.locals.db.collection("companies");
+  const queryText = req.query.q || "";
+
+  const query = {
+    $or: [
+      { title: { $regex: queryText, $options: "i" } },
+      { jobDescription: { $regex: queryText, $options: "i" } },
+      { skills: { $regex: queryText, $options: "i" } },
+      { locations: { $regex: queryText, $options: "i" } },
+      { benefits: { $regex: queryText, $options: "i" } },
+      { schedule: { $regex: queryText, $options: "i" } },
+      { salary: { $regex: queryText, $options: "i" } },
+    ],
+  };
+
+  const jobs = await jobsCollection.aggregate([
+    { $match: query },
+    {
+      $lookup: {
+        from: "companies",
+        localField: "companyId",
+        foreignField: "_id",
+        as: "companyInfo"
+      }
+    },
+    {
+      $unwind: {
+        path: "$companyInfo",
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        title: 1,
+        jobDescription: 1,
+        skills: 1,
+        locations: 1,
+        benefits: 1,
+        schedule: 1,
+        salaryRange: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        employerId: 1,
+        companyId: 1,
+        companyName: "$companyInfo.name",
+        companyWebsite: "$companyInfo.website"
+      }
+    }
+  ]).toArray();
+  return jobs;
+};
+
+async function jobsSemanticSearch(req)  {
+  try {
+    const searchCriteria = req.query.q || "";
+    const jobDetails = await parseSearchCriteria(searchCriteria);
+
+    console.log(jobDetails);
+
+    let processedCriteria = jobDetails.my_requirements ? jobDetails.my_requirements : "";
+
+    if (jobDetails.locations?.length > 0) {
+      processedCriteria += `\nLocations: ${jobDetails.locations?.join(', ')}`;
+    }
+
+    if (jobDetails.salaryRange?.minimum || jobDetails.salaryRange?.maximum) {
+      processedCriteria += `\nSalary: ${jobDetails.salaryRange?.minimum} - ${jobDetails.salaryRange?.maximum}`;
+    }
+
+    if (jobDetails.skills?.length > 0) {
+      processedCriteria += `\nSkills: ${jobDetails.skills?.join(', ')}`;
+    }
+
+    if (jobDetails.company) {
+      processedCriteria += `\nCompany: ${jobDetails.company}`;
+    }
+
+    if (!processedCriteria) {
+      processedCriteria = searchCriteria;
+    }
+
+    // Generate embedding for the search query
+    const queryEmbedding = await generateEmbeddings(processedCriteria);
+
+    // Perform vector search
+    const results = await req.app.locals.db.collection("Jobs").aggregate([
+      {
+        $vectorSearch: {
+          queryVector: queryEmbedding,
+          path: "embedding",
+          numCandidates: 100,
+          limit: 10,
+          index: "js_vector_index",
+        }
+      },
+      {
+        $lookup: {
+          from: "companies",
+          localField: "companyId",
+          foreignField: "_id",
+          as: "companyInfo"
+        }
+      },
+      {
+        $unwind: {
+          path: "$companyInfo",
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          companyName: "$companyInfo.name",
+          companyWebsite: "$companyInfo.website",
+          jobDescription: 1,
+          salaryRange: 1,
+          locations: 1,
+          benefits: 1,
+          schedule: 1,
+          skills: 1,
+          score: { $meta: "vectorSearchScore" }
+        }
+      }
+    ]).toArray();
+
+    // Filter results to only include those with a score greater than 0.62
+    const filteredResults = results.filter(result => result.score > 0.62);
+
+    console.log("MongoDB returned : ", filteredResults.length);
+    console.log("Refining results with the following criteria: ", searchCriteria);
+    
+    // use the criteria as specified by the user to refine the results
+    const enhancedJobs = await refineFoundPositions(filteredResults, searchCriteria);
+
+    console.log("Enhanced jobs: ", enhancedJobs.length);
+
+    // Filter and sort to show "great" matches before "good" matches
+    const greatMatches = enhancedJobs
+      .filter(job => job.match === "great" || job.match === "good")
+      .sort((a, b) => b.match === "great" ? 1 : -1);
+
+    console.log("Refined matches: ", greatMatches.length);
+
+    return greatMatches;
+  } catch (error) {
+    console.error("Error in jobsSemanticSearch:", error);
+    throw error;
+  }
+};
+
+
+module.exports = jobsController;

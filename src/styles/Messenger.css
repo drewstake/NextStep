@@ -51,22 +51,29 @@
   padding: 0 10px;
 }
 
-.contact-name {
+.user-item-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   width: 100%;
 }
 
-.contact-email {
-  display: flex;
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 2px;
+.contact-timestamp {
+  font-size: 0.8em;
+  white-space: nowrap;
+  color: #4d4c4c;
 }
 
-.contact-phone {
+.contact-name {
   display: flex;
+  gap: 8px;
+  color: #4d4c4c;
+}
+
+.contact-email, .contact-phone {
+  font-size: 0.9em;
+  margin-top: 2px;
+  color: #4d4c4c;
+  text-align: left;
 }
 
 .unread-badge {

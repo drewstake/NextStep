@@ -61,7 +61,7 @@
     padding: 5px 10px;
     border: none;
     border-radius: 4px;
-    background: linear-gradient(90deg, #ff758c, #ff7eb3);
+    background: linear-gradient(90deg, #ff758c, #c9658e);
     color: #fff;
     cursor: pointer;
     font-size: 0.8rem;
@@ -69,6 +69,6 @@
   }
   
   .jobs-table button:hover {
-    background: linear-gradient(90deg, #ff7eb3, #ff758c);
+    background: linear-gradient(90deg, #c9658e, #ff758c);
   }
   

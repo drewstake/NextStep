@@ -2,7 +2,6 @@
   font-family: 'Poppins', sans-serif;
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
   color: #fff;
   padding: 40px 20px;
   box-sizing: border-box;
@@ -46,7 +45,7 @@
 .job-header h1 {
   font-size: 2.5rem;
   margin-bottom: 15px;
-  background: linear-gradient(90deg, #fff, #ff7eb3);
+  background: linear-gradient(90deg, #fff, #c9658e);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -60,7 +59,7 @@
 }
 
 .company-info a {
-  color: #ff7eb3;
+  color: #c9658e;
   text-decoration: none;
   transition: color 0.2s;
 }
@@ -103,7 +102,7 @@
 .detailed-section h2 {
   font-size: 1.5rem;
   margin-bottom: 15px;
-  color: #ff7eb3;
+  color: #c9658e;
 }
 
 .detailed-section p {
@@ -124,7 +123,7 @@
 
 .detailed-section ul li:before {
   content: "•";
-  color: #ff7eb3;
+  color: #c9658e;
   position: absolute;
   left: 0;
 }
@@ -156,7 +155,7 @@
 }
 
 .apply-button {
-  background: linear-gradient(90deg, #ff758c, #ff7eb3);
+  background: linear-gradient(90deg, #ff758c, #c9658e);
   border: none;
   color: white;
   box-shadow: 0 5px 15px rgba(255, 118, 136, 0.4);

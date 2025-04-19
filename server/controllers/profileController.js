@@ -50,6 +50,7 @@ const profileController = {
    * @param {string} [req.body.email] - User's email
    * @param {string} [req.body.location] - User's location
    * @param {string} [req.body.full_name] - User's full name
+   * @param {string} [req.body.skills] - User's skills
    * @param {Object} req.files - Uploaded files
    * @param {Object} [req.files.photo] - Profile photo file
    * @param {Object} [req.files.resume] - Resume file
@@ -62,7 +63,7 @@ const profileController = {
    */
   updateProfile: async (req, res) => {
     try {
-      const { firstName, lastName, phone, email, location, full_name } = req.body;
+      const { firstName, lastName, phone, email, location, full_name, skills } = req.body;
       const collection = req.app.locals.db.collection("users");
 
       let resumeFile = null;
@@ -91,6 +92,7 @@ const profileController = {
         full_name,
         ...(encodedPhoto && { encodedPhoto }),
         ...(resumeFile && { resumeFile }),
+        ...(skills != null && skills != "" && skills != "undefined" && { skills: JSON.parse(skills) }),
       };
 
       const result = await collection.updateOne(

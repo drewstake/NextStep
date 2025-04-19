@@ -19,6 +19,9 @@ const Profile = () => {
   const [resume, setResume] = useState(null);
   const [location, setLocation] = useState('');
   const [profilePicAlt, setProfilePicAlt] = useState(""); // Default alt text
+  const [skills, setSkills] = useState([]);
+  const [newSkill, setNewSkill] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const navigate = useNavigate(1);
   //const location = useLocation();
@@ -35,14 +38,21 @@ const Profile = () => {
             headers: { Authorization: `Bearer ${token}` }
           });
           setResume(response.data.resume);
-          setFirstName(response.data.firstName);
-          setLastName(response.data.lastName);
           setFullName(response.data.full_name);
+          if (!response.data.firstName || !response.data.lastName) {
+            const nameParts = (response.data.full_name || '').split(' ');
+            setFirstName(nameParts[0] || '');
+            setLastName(nameParts.slice(1).join(' ') || '');
+          } else {
+            setFirstName(response.data.firstName);
+            setLastName(response.data.lastName);
+          }
           setPhone(response.data.phone);
           setEmail(response.data.email);
           setLocation(response.data.location);
           setProfileImage(response.data.encodedPhoto);
           setProfilePic(response.data.pictureUrl);
+          setSkills(response.data.skills);
 
         } catch (error) {
           console.error('Profile error:', error.response.data);
@@ -71,8 +81,62 @@ const Profile = () => {
     }
   };
 
-  const handleResumeChange = (e) => {
-    setResume(e.target.files[0]);
+  const handleResumeChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setResume(file);
+      setIsAnalyzing(true);
+      setMessage('Analyzing your resume...');
+      
+      try {
+        const formData = new FormData();
+        formData.append('pdf', file);
+        
+        const response = await axios.post(`${API_SERVER}/analyze-resume`, formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        if (response.data) {
+          const { skills: analyzedSkills } = response.data;
+          setMessage(`Resume analysis complete! Please review the skills and update your profile.`);
+          setSkills(analyzedSkills || []);
+        }
+      } catch (error) {
+        console.error('Error analyzing resume:', error);
+        setError('Failed to analyze resume. Please try again.');
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }
+  };
+
+  const handleSkillAdd = (e) => {
+    e.preventDefault();
+    const trimmedSkill = newSkill.trim();
+    
+    if (!trimmedSkill) {
+      return;
+    }
+    
+    if (skills.includes(trimmedSkill)) {
+      setError(`Skill "${trimmedSkill}" already exists in your list`);
+      return;
+    }
+    
+    setSkills(prevSkills => [...prevSkills, trimmedSkill]);
+    setNewSkill('');
+  };
+
+  const handleSkillRemove = (index) => {
+    setSkills(prevSkills => prevSkills.filter((_, i) => i !== index));
+  };
+
+  const handleClearSkills = () => {
+    setSkills([]);
+    setNewSkill('');
   };
 
   const handleSubmit = async (e) => {
@@ -84,6 +148,7 @@ const Profile = () => {
     formData.append("phone", phone);
     formData.append("email", email);
     formData.append("location", location);
+    formData.append("skills", JSON.stringify(skills));
 
     if (photo) {
       formData.append("photo", photo);
@@ -97,7 +162,21 @@ const Profile = () => {
       await axios.post(`${API_SERVER}/updateprofile`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setMessage("Profile Updated");
+      setMessage(
+        <span>
+          Profile Updated.{" "}
+          <a 
+            href="#" 
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/');
+            }}
+            style={{ color: '#007bff', textDecoration: 'underline', cursor: 'pointer' }}
+          >
+            See matched jobs
+          </a>
+        </span>
+      );
       triggerProfileUpdate(); // Trigger profile update after successful submission
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -111,147 +190,206 @@ const Profile = () => {
       {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
       <h2>Profile</h2>
       <form onSubmit={handleSubmit} className="profile-form">
-        {/* Photo Upload - Only show for non-employers */}
-        {!employerFlag && (
-          <>
-            <div className="profile-image-container">
-              {profileImage ? (
-                <img className="profile-image"
-                  src={profileImage}
-                  alt=""
+        <div className="profile-header">
+          {/* Photo Upload - Only show for non-employers */}
+          {!employerFlag && (
+            <>
+              <div className="profile-image-container">
+                {profileImage ? (
+                  <img className="profile-image"
+                    src={profileImage}
+                    alt=""
+                  />
+                ) : (
+                  <img
+                    className="profile-image"
+                    src={profilePic}
+                    alt={profilePicAlt}
+                    onError={() => {
+                      setProfilePicAlt("");
+                      setProfilePic(null);
+                    }}
+                  />
+                )}
+                <div 
+                  className="profile-image-edit"
+                  onClick={() => document.getElementById('photo-upload').click()}
+                >
+                  ✎
+                </div>
+              </div>
+              <div className="profile-form-group-hidden">
+                <label className="profile-label">Profile Photo</label>
+                <label htmlFor="photo-upload" className="upload-label">Upload...</label>
+                <input
+                  id="photo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="file-input"
                 />
-              ) : (
-                <img
-                  className="profile-image"
-                  src={profilePic}
-                  alt={profilePicAlt}
-                  onError={() => {
-                    setProfilePicAlt("");
-                    setProfilePic(null);
-                  }}
+              </div>
+            </>
+          )}
+
+          <div className="profile-fields-container">
+            {/* Resume Upload - Only show for non-employers */}
+            {!employerFlag && (
+              <div className="profile-form-group">
+                <input
+                  id="resume-upload"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleResumeChange}
+                  className="file-input"
                 />
-              )}
-              <div 
-                className="profile-image-edit"
-                onClick={() => document.getElementById('photo-upload').click()}
-              >
-                ✎
+              </div>
+            )}
+
+            {/* Name Fields Row */}
+            <div className="profile-form-row">
+              <div className="profile-form-group">
+                <label className="profile-label">Full Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Enter your full name"
+                  required
+                  className="profile-input"
+                />
+              </div>
+
+              <div className="profile-form-group">
+                <label className="profile-label">First Name</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Enter your first name"
+                  required
+                  className="profile-input"
+                />
+              </div>
+
+              <div className="profile-form-group">
+                <label className="profile-label">Last Name</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Enter your last name"
+                  required
+                  className="profile-input"
+                />
               </div>
             </div>
-            <div className="profile-form-group-hidden">
-              <label className="profile-label">Profile Photo</label>
-              <label htmlFor="photo-upload" className="upload-label">Upload...</label>
-              <input
-                id="photo-upload"
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                className="file-input"
-              />
-            </div>
-          </>
-        )}
 
-        {/* Resume Upload - Only show for non-employers */}
-        {!employerFlag && (
-          <div className="profile-form-group">
-            <label className="profile-label"></label>
+            {/* Contact Information Row */}
+            <div className="profile-form-row">
+              <div className="profile-form-group">
+                <label className="profile-label">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="example@email.com"
+                  required
+                  className="profile-input"
+                />
+              </div>
+
+              <div className="profile-form-group">
+                <label className="profile-label">Phone Number</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="123-456-7890"
+                  required
+                  className="profile-input"
+                />
+              </div>
+
+              <div className="profile-form-group">
+                <label className="profile-label">Preferred Location</label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Remote, Chicago, etc."
+                  required
+                  className="profile-input"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Skills Management Section */}
+        <div className="skills-section">
+          <div className="skills-header">
+            <h3>Your Professional Skills</h3>
+            {skills?.length > 0 && !isAnalyzing && (
+              <button 
+                type="button"
+                className="clear-skills-button"
+                onClick={handleClearSkills}
+              >
+                Reset Skills
+              </button>
+            )}
+          </div>
+          
+          {/* Add New Skill Input */}
+          <div className="add-skill-form">
+            <input
+              type="text"
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+              placeholder="Add a new skill or upload your resume to analyze your skills..."
+              className="skill-input"
+              disabled={isAnalyzing}
+            />
+            <button 
+              type="button"
+              className="add-skill-button"
+              onClick={handleSkillAdd}
+              disabled={isAnalyzing}
+            >
+              Add Skill
+            </button>
+          </div>
+
+          {/* Skills List */}
+          <div className="skills-list">
+            {skills?.map((skill, index) => (
+              <div key={index} className="skill-item">
+                <span>{skill}</span>
+                <button 
+                  type="button"
+                  className="remove-skill"
+                  onClick={() => handleSkillRemove(index)}
+                  disabled={isAnalyzing}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Submit and Upload Buttons */}
+        <div className="button-container">
+          {!employerFlag && (
             <label htmlFor="resume-upload" className="upload-button">
               <span>
                 Upload Resume
               </span>
             </label>
-            (afterwards, remember to select "Save Profile" to upload)
-            <input
-              id="resume-upload"
-              type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={handleResumeChange}
-              className="file-input"
-            />
-          </div>
-        )}
-
-        {/* Name Fields Row */}
-        <div className="profile-form-row">
-          <div className="profile-form-group">
-            <label className="profile-label">Full Name</label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Enter your full name"
-              required
-              className="profile-input"
-            />
-          </div>
-
-          <div className="profile-form-group">
-            <label className="profile-label">First Name</label>
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Enter your first name"
-              required
-              className="profile-input"
-            />
-          </div>
-
-          <div className="profile-form-group">
-            <label className="profile-label">Last Name</label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Enter your last name"
-              required
-              className="profile-input"
-            />
-          </div>
+          )}
+          <button type="submit" className="profile-button" disabled={isAnalyzing}>Save Profile</button>
         </div>
-
-        {/* Contact Information Row */}
-        <div className="profile-form-row">
-          <div className="profile-form-group">
-            <label className="profile-label">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="example@email.com"
-              required
-              className="profile-input"
-            />
-          </div>
-
-          <div className="profile-form-group">
-            <label className="profile-label">Phone Number</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="123-456-7890"
-              required
-              className="profile-input"
-            />
-          </div>
-
-          <div className="profile-form-group">
-            <label className="profile-label">Location</label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Enter your location"
-              required
-              className="profile-input"
-            />
-          </div>
-        </div>
-
-        {/* Submit */}
-        <button type="submit" className="profile-button">Save Profile</button>
       </form>
     </div>
   );

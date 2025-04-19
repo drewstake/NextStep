@@ -2,7 +2,6 @@
 .employer-dashboard-container {
     padding: 20px;
     color: #fff;
-    background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
     min-height: 100vh;
     font-family: 'Poppins', sans-serif;
     display: flex;

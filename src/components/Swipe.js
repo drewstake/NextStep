@@ -7,6 +7,7 @@ import { ThumbsUp, ThumbsDown } from 'lucide-react'; // Import icons
 import NotificationBanner from './NotificationBanner';
 import { TokenContext } from './TokenContext';
 import { API_SERVER } from '../config';
+import axiosInstance from '../utils/axiosConfig';
 
 // Define swipe mode constants
 const APPLY = 1;
@@ -23,25 +24,53 @@ const Swipe = () => {
   const [currentY, setCurrentY] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState(null); // 'horizontal' or 'vertical'
   const { token, setToken, email, name } = useContext(TokenContext);
-  //  const [searchQuery, setSearchQuery] = useState('software');
   const [jobs, setJobs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    const fetchJobs = async () => {
+    const fetchProfile = async () => {
       try {
-        const response = await axios.get(`${API_SERVER}/retrieveJobsForHomepage?q=`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setJobs(response.data);
+        setIsLoading(true);
+        const response = await axiosInstance.get(`${API_SERVER}/profile`);
+        const skills = response.data.skills;
+        const location = response.data.location;
+        const fetchJobs = async () => {
+          try {
+            const response = await axiosInstance.get(`${API_SERVER}/retrieveJobsForHomepage?q=${searchQuery}`);
+            setJobs(response.data);
+          } catch (error) {
+            console.error('Error fetching jobs:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        let searchQuery = '';
+        if (skills?.length > 0 ) {
+          searchQuery = `skills: ${skills.join(',')}`;
+        } 
+        if (location) {
+          searchQuery += ` location: ${location}`;
+        }
+        if(searchQuery.length > 0) {
+          fetchJobs();
+        }else{
+          setError("Please add your skills and preferred location in your profile to get job recommendations.");
+          setJobs([]);
+          setIsLoading(false);
+        }
       } catch (error) {
-        console.error('Error fetching jobs:', error);
+        console.error('Error fetching profile:', error);
+        setIsLoading(false);
       }
     };
 
-    fetchJobs();
+    fetchProfile();
   }, [token]);
+
 
   const updateJobsTracker = async (jobId, swipeMode) => {
     if (!token) {
@@ -49,11 +78,12 @@ const Swipe = () => {
       return;
     }
     try {
-      await axios.post(`${API_SERVER}/jobsTracker`, { 
-        _id: jobId, 
+      await axios.post(`${API_SERVER}/jobsTracker`, {
+        _id: jobId,
         email,
         name,
-        swipeMode }, {
+        swipeMode
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -273,7 +303,7 @@ const Swipe = () => {
           <strong>Location(s):</strong> {Array.isArray(job.locations) ? job.locations.join(', ') : job.locations}
         </p>
         <p className="job-description-swipe">{job.jobDescription}</p>
-        
+
         {/* Benefits Section */}
         {job.benefits && job.benefits.length > 0 && (
           <div className="job-benefits-swipe">
@@ -281,7 +311,7 @@ const Swipe = () => {
             <p>{job.benefits.join(', ')}</p>
           </div>
         )}
-        
+
         {/* Required Skills Section */}
         {job.skills && job.skills.length > 0 && (
           <div className="job-skills-swipe">
@@ -289,7 +319,7 @@ const Swipe = () => {
             <p>{job.skills.join(', ')}</p>
           </div>
         )}
-        
+
         {swipeClass === 'swiping-right' && <ThumbsUp className="icon" />}
         {swipeClass === 'swiping-left' && <ThumbsDown className="icon" />}
       </div>
@@ -302,7 +332,7 @@ const Swipe = () => {
       {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
       {jobs.length > 0 && (
         <>
-          <div className="job-count-label">
+          <div className="job-count-label-for-swipe">
             Showing {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
           </div>
           <div className="swipe-direction-label left">Swipe left to reject</div>
@@ -312,13 +342,13 @@ const Swipe = () => {
       )}
       {jobs.length === 0 ? (
         <div className="empty-state">
-          No more jobs to show
+          {isLoading ? "Job matching in progress..." : "No more jobs to show"}
         </div>
       ) : (
         <>
           {getNextIndex(currentIndex) === 0 &&
             <div className="empty-state">
-              No more jobs to show
+              {isLoading ? "Job matching in progress..." : "No more jobs to show"}
             </div>}
           {getNextIndex(currentIndex) !== 0 &&
             renderCard(jobs[getNextIndex(currentIndex)], getNextIndex(currentIndex))}

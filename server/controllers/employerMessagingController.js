@@ -169,14 +169,16 @@ const employerMessagingController = {
                   else: 0
                 }
               }
-            }
+            },
+            lastMessageTimestamp: { $max: "$createdAt" }
           }
         },
         {
           $project: {
             _id: 0,
             _id: '$_id.applicantId',
-            countOfUnreadMessages: 1
+            countOfUnreadMessages: 1,
+            lastMessageTimestamp: 1
           }
         }
       ]).toArray();
@@ -187,7 +189,8 @@ const employerMessagingController = {
         .filter(app => !contactsWithApplicantIds.has(app.user_id.toString()))
         .map(app => ({
           _id: app.user_id,
-          countOfUnreadMessages: 0
+          countOfUnreadMessages: 0,
+          lastMessageTimestamp: null
         }))
         .filter((app, index, self) => 
           index === self.findIndex(a => a._id.toString() === app._id.toString())
@@ -215,10 +218,11 @@ const employerMessagingController = {
           name: fullName,
           email: applicant.email,
           phone: applicant.phone,
-          profile: applicant.profile || {}
+          
         };
       });
 
+      
       //      console.log("applicantMap", applicantMap);  
       // Update all contacts with applicant details
 
@@ -228,12 +232,19 @@ const employerMessagingController = {
         return {
           _id: contact._id,
           ...applicantDetails,
-          countOfUnreadMessages: contact.countOfUnreadMessages
+          countOfUnreadMessages: contact.countOfUnreadMessages,
+          lastMessageTimestamp: contact.lastMessageTimestamp
         };
       });
 
-      // Sort by name
-      contactsWithDetails.sort((a, b) => a.name.localeCompare(b.name));
+      // Sort by lastMessageTimestamp in descending order
+      contactsWithDetails.sort((a, b) => {
+        // Handle null timestamps by putting them at the end
+        if (!a.lastMessageTimestamp && !b.lastMessageTimestamp) return 0;
+        if (!a.lastMessageTimestamp) return 1;
+        if (!b.lastMessageTimestamp) return -1;
+        return new Date(b.lastMessageTimestamp) - new Date(a.lastMessageTimestamp);
+      });
 
       res.status(200).json(contactsWithDetails);
     } catch (error) {
@@ -379,6 +390,7 @@ const employerMessagingController = {
       };
 
       await messagesCollection.insertOne(message);
+
       res.status(201).json(message);
     } catch (error) {
       console.error("Error sending message to applicant:", error);

@@ -22,6 +22,8 @@ const { OAuth2Client } = require("google-auth-library");
 const { sendEmail } = require('./middleware/mailer');
 const path = require('path');
 const fs = require('fs');
+const analyzePDF = require('./middleware/AnalyzePdf');
+const { profileController, upload } = require("./controllers/profileController");
 
 // Import controllers
 const authController = require("./controllers/authController");
@@ -29,7 +31,6 @@ const jobsController = require("./controllers/jobsController");
 const applicationsController = require("./controllers/applicationsController");
 const messagesController = require("./controllers/messagesController");
 const employerMessagingController = require("./controllers/employerMessagingController");
-const { profileController, upload } = require("./controllers/profileController");
 const companyRoutes = require("./routes/companyRoutes");
 
 // Import middleware
@@ -192,7 +193,7 @@ client
       /* ------------------
         Jobs to show in the homepage
       ------------------ */
-      app.get("/retrieveJobsForHomepage", jobsController.getHomepageJobs);
+      app.get("/retrieveJobsForHomepage", jobsController.getHomepageJobsUsingSemanticSearch);
 
       /* ------------------
          Get Profile (for logged-in user)
@@ -203,6 +204,31 @@ client
          Update Profile (for logged-in user)
       ------------------ */
       app.post("/updateprofile", verifyToken, upload.fields([{ name: "photo" }, { name: "resume" }]), profileController.updateProfile);
+
+      /* ------------------
+         Analyze Resume
+      ------------------ */
+      app.post("/analyze-resume", verifyToken, upload.single('pdf'), async (req, res) => {
+        try {
+          if (!req.file) {
+            return res.status(400).json({ error: 'No PDF file uploaded' });
+          }
+
+          // Create a temporary file path
+          const tempFilePath = path.join(__dirname, 'public', 'uploads', `temp-${Date.now()}.pdf`);
+          fs.writeFileSync(tempFilePath, req.file.buffer);
+
+          const result = await analyzePDF(tempFilePath);
+          
+          // Clean up the temporary file
+          fs.unlinkSync(tempFilePath);
+          
+          res.json(result);
+        } catch (error) {
+          console.error('Error analyzing PDF:', error);
+          res.status(500).json({ error: 'Error analyzing PDF', details: error.message });
+        }
+      });
 
       /* ------------------
          Logout

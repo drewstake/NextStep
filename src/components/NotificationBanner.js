@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import '../styles/NotificationBanner.css';
 
-const NotificationBanner = ({ message, type = 'error', onDismiss, duration = 7000 }) => {
+const NotificationBanner = ({ message, type = 'error', onDismiss, duration = 3000 }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onDismiss();

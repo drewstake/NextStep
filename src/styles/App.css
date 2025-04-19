@@ -4,19 +4,24 @@
   font-family: 'Poppins', sans-serif;
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
-  color: #fff;
-  padding: 20px 0 0 0;
+/*   background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(197,35,200,0.95));
+ */  color: #fff;
+  padding: 0;
   position: relative;
 }
 
 .app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 20px;
-  margin-bottom: 40px;
-  padding: 0 10px;
+  padding: 1rem;
+  background:  rgb(45 8 57 / 95%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-container {
@@ -51,7 +56,7 @@
 }
 
 .app-nav__link:hover {
-  background: linear-gradient(90deg, #ff758c, #ff7eb3);
+  background: linear-gradient(90deg, #ff758c, #c9658e);
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(255, 118, 136, 0.4);
   border-color: transparent;
@@ -61,7 +66,7 @@
 }
 
 .auth__button {
-  background: linear-gradient(90deg, #ff758c, #ff7eb3);
+  background: linear-gradient(90deg, #ff758c, #c9658e);
   color: #fff;
   border: none;
   font-weight: 600;
@@ -82,6 +87,7 @@
 .app-main {
   width: 100%;
   flex-grow: 1;
+  padding-top: 100px; /* Add padding to account for fixed header */
 }
 
 .home-branding {
@@ -99,7 +105,7 @@
   text-transform: uppercase;
   letter-spacing: 3px;
   margin: 0;
-  background: linear-gradient(90deg, #fff, #ff7eb3);
+  background: linear-gradient(90deg, #fff, #c9658e);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

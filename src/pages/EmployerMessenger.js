@@ -18,7 +18,7 @@ const EmployerMessenger = () => {
   const currentUserId = decoded?.id;
   const isEmployer = decoded?.employerFlag || false;
   const messagesEndRef = useRef(null);
-  const timedDelay = 5000;
+  const timedDelay = 50000;
 
   const scrollToBottom = () => {
 //console.log('scrollToBottom');
@@ -45,6 +45,7 @@ const EmployerMessenger = () => {
       if (response.data.length > 0) {
         setMessages(response.data);
       }
+      console.log('messages', response.data);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -176,16 +177,27 @@ const EmployerMessenger = () => {
               className={`user-item ${selectedContact?._id === contact._id ? 'selected' : ''}`}
               onClick={() => handleUserSelected(contact)}
             >
-              <div className="user-item-name">
+              <div className="user-item-header">
                 <div className="contact-name">
                   {contact.name}
                   {contact.countOfUnreadMessages > 0 && (
                     <span className="unread-badge">{contact.countOfUnreadMessages}</span>
                   )}
                 </div>
-                <div className="contact-email">{contact.email}</div>
-                <div className="contact-phone">{contact.phone}</div>
+                {contact.lastMessageTimestamp && (
+                  <div className="contact-timestamp" style={{ fontSize: '0.8em', color: '#666' }}>
+                    {new Date(contact.lastMessageTimestamp).toLocaleString('en-US', {
+                      month: 'short',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </div>
+                )}
               </div>
+              <div className="contact-email">{contact.email}</div>
+              <div className="contact-phone">{contact.phone}</div>
             </div>
           ))}
         </div>

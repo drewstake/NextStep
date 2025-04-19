@@ -3,7 +3,7 @@
 /* Container is positioned relative so the details window can be absolutely placed */
 .job-card-container {
   position: relative;
-  margin: 20px auto;
+  margin-top: 20px;
   overflow: visible; /* Allows the details window to appear outside the container */
 }
 

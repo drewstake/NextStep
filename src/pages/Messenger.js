@@ -1,5 +1,5 @@
 // used only for applicant to employer messaging
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { TokenContext } from '../components/TokenContext';
 import jwt_decode from 'jwt-decode';
 import axiosInstance from '../utils/axiosConfig';
@@ -19,6 +19,7 @@ const Messenger = () => {
   const decoded = token ? jwt_decode(token) : null;
   const currentUserId = decoded?.id;
   const isEmployer = decoded?.employerFlag || false;
+  const messagesEndRef = useRef(null);
 
   // Redirect if user is an employer
   useEffect(() => {
@@ -47,6 +48,8 @@ const Messenger = () => {
         }, 2000);
       }
     }
+    scrollToBottom(); // Scroll to bottom only when there are unread messages
+
   }, [fetchMyExchanges, selectedContact, contacts]);
 
   const fetchEmployersFromApplications = async () => {
@@ -97,6 +100,8 @@ const Messenger = () => {
   const setSelectedContactForNewMessage = async (pickedEmployer) => {
     setNewContact(pickedEmployer);
     setSelectedContact(pickedEmployer);
+    scrollToBottom(); // Scroll to bottom only when there are unread messages
+
   };
 
   const handleUserSelected = (user) => {
@@ -105,9 +110,11 @@ const Messenger = () => {
     if (user.countOfUnreadMessages > 0) {
       markMessagesAsRead(user._id);
     }
-    
+
     // Refresh contacts after selection
     fetchEmployerContacts();
+    scrollToBottom(); // Scroll to bottom only when there are unread messages
+
   };
 
   const markMessagesAsRead = async (contactId) => {
@@ -146,6 +153,10 @@ const Messenger = () => {
   if (!selectedCompanyName && newContact) {
     selectedCompanyName = newContact.companyName || newContact.companyDetails?.name || '';
   }
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   if (!token) {
     navigate('/login');
@@ -245,6 +256,7 @@ const Messenger = () => {
                     </div>
                   </div>
                 ))}
+              <div ref={messagesEndRef} />
             </div>
             <form onSubmit={sendMessage} className="message-form">
               <input

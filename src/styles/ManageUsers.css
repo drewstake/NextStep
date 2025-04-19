@@ -73,7 +73,7 @@
 
 .email-input:focus, .search-input:focus {
   outline: none;
-  border-color: #ff7eb3;
+  border-color: #c9658e;
 }
 
 .email-input::placeholder, .search-input::placeholder {
@@ -82,7 +82,7 @@
 
 .search-button, .add-button {
   padding: 12px 24px;
-  background-color: #ff7eb3;
+  background-color: #c9658e;
   color: #fff;
   border: none;
   border-radius: 4px;

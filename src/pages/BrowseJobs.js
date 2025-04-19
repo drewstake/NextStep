@@ -13,6 +13,7 @@ const APPLY = 1;
 const BrowseJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const { token, name, email } = useContext(TokenContext);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -21,7 +22,7 @@ const BrowseJobs = () => {
     const fetchJobs = async () => {
       try {
         // Replace the URL with your actual API endpoint.
-        const response = await axios.get(`${API_SERVER}/jobs?keyword=`);
+        const response = await axios.get(`${API_SERVER}/jobs?q=`);
         setJobs(response.data);
       } catch (error) {
         console.error('Error fetching jobs:', error);
@@ -33,9 +34,16 @@ const BrowseJobs = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    // For now, just log the search query. Later, you could use this to filter the jobs or make a new API call.
-    const response = await axios.get(`${API_SERVER}/jobs?q=` + searchQuery);
-    setJobs(response.data);
+    setIsSearching(true);
+    try {
+      const response = await axios.get(`${API_SERVER}/jobs?q=` + searchQuery);
+      setJobs(response.data);
+    } catch (error) {
+      console.error('Error searching jobs:', error);
+      setError('Failed to search jobs. Please try again.');
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleApply = async (jobId) => {
@@ -67,21 +75,31 @@ const BrowseJobs = () => {
     <div className="browse-jobs-container">
       {error && <NotificationBanner message={error} type="error" onDismiss={() => setError(null)} />}
       {message && <NotificationBanner message={message} type="success" onDismiss={() => setMessage(null)} />}
+      {isSearching && <div className="search-overlay" />}
       <h1>Browse Jobs</h1>
 
       {/* Search Bar */}
       <form className="job-search-form" onSubmit={handleSearch}>
         <input
           type="text"
-          placeholder="Search for jobs..."
+          placeholder="Tell me in your own words... e.g. 'Any high paying job'"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="job-search-input"
         />
-        <button type="submit" className="job-search-button">
-          Search
+        <button type="submit" className="job-search-button" disabled={isSearching}>
+          {isSearching ? 'Wait...' : 'Search'}
         </button>
       </form>
+
+      {/* Job Count */}
+      <div className="job-count-label">
+        {jobs.length > 0 ? (
+          <p>Found {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}</p>
+        ) : (
+          <p>No jobs found</p>
+        )}
+      </div>
 
       {/* Job Listings */}
       <div className="jobs-list">

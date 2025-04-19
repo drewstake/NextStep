@@ -24,6 +24,11 @@ const ManageJobPostings = () => {
     companyId: ''
   });
 
+  // Add temporary state for array fields
+  const [tempBenefits, setTempBenefits] = useState('');
+  const [tempLocations, setTempLocations] = useState('');
+  const [tempSkills, setTempSkills] = useState('');
+
   const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
@@ -60,8 +65,16 @@ const ManageJobPostings = () => {
   const handleCreateJob = async (e) => {
     e.preventDefault();
     
+    // Convert string inputs to arrays
+    const jobData = {
+      ...formData,
+      benefits: tempBenefits.split(',').map(b => b.trim()).filter(b => b),
+      locations: tempLocations.split(',').map(l => l.trim()).filter(l => l),
+      skills: tempSkills.split(',').map(s => s.trim()).filter(s => s)
+    };
+    
     try {
-      await axiosInstance.post('/jobs', formData);
+      await axiosInstance.post('/jobs', jobData);
       setMessage('Job created successfully');
       setShowCreateForm(false);
       setFormData({
@@ -74,6 +87,10 @@ const ManageJobPostings = () => {
         skills: [],
         companyId: ''
       });
+      // Reset temporary fields
+      setTempBenefits('');
+      setTempLocations('');
+      setTempSkills('');
       fetchJobs();
     } catch (error) {
       console.error('Error creating job:', error);
@@ -88,9 +105,17 @@ const ManageJobPostings = () => {
 
   const handleUpdateJob = async (e) => {
     e.preventDefault();
+    
+    // Convert string inputs to arrays
+    const jobData = {
+      ...formData,
+      benefits: tempBenefits.split(',').map(b => b.trim()).filter(b => b),
+      locations: tempLocations.split(',').map(l => l.trim()).filter(l => l),
+      skills: tempSkills.split(',').map(s => s.trim()).filter(s => s)
+    };
         
     try {
-      await axiosInstance.put(`/employer/jobs/${editingJob._id}`, formData);
+      await axiosInstance.put(`/employer/jobs/${editingJob._id}`, jobData);
       setMessage('Job updated successfully');
       setEditingJob(null);
       setFormData({
@@ -103,6 +128,10 @@ const ManageJobPostings = () => {
         skills: [],
         companyId: ''
       });
+      // Reset temporary fields
+      setTempBenefits('');
+      setTempLocations('');
+      setTempSkills('');
       fetchJobs();
     } catch (error) {
       console.error('Error updating job:', error);
@@ -140,6 +169,10 @@ const ManageJobPostings = () => {
       skills: job.skills,
       companyId: job.companyId
     });
+    // Set temporary fields for editing
+    setTempBenefits(job.benefits.join(', '));
+    setTempLocations(job.locations.join(', '));
+    setTempSkills(job.skills.join(', '));
   };
 
   const handleInputChange = (e) => {
@@ -150,12 +183,22 @@ const ManageJobPostings = () => {
     }));
   };
 
-  const handleArrayInputChange = (e, field) => {
-    const { value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [field]: value.split(',').map(item => item.trim())
-    }));
+  // Add handlers for array field changes
+  const handleArrayFieldChange = (e) => {
+    const { name, value } = e.target;
+    switch (name) {
+      case 'benefits':
+        setTempBenefits(value);
+        break;
+      case 'locations':
+        setTempLocations(value);
+        break;
+      case 'skills':
+        setTempSkills(value);
+        break;
+      default:
+        break;
+    }
   };
 
   if (loading) {
@@ -219,8 +262,9 @@ const ManageJobPostings = () => {
                 <label>Benefits (comma-separated)</label>
                 <input
                   type="text"
-                  value={formData.benefits.join(', ')}
-                  onChange={(e) => handleArrayInputChange(e, 'benefits')}
+                  name="benefits"
+                  value={tempBenefits}
+                  onChange={handleArrayFieldChange}
                   required
                 />
               </div>
@@ -229,8 +273,9 @@ const ManageJobPostings = () => {
                 <label>Locations (comma-separated)</label>
                 <input
                   type="text"
-                  value={formData.locations.join(', ')}
-                  onChange={(e) => handleArrayInputChange(e, 'locations')}
+                  name="locations"
+                  value={tempLocations}
+                  onChange={handleArrayFieldChange}
                   required
                 />
               </div>
@@ -260,8 +305,9 @@ const ManageJobPostings = () => {
                 <label>Skills (comma-separated)</label>
                 <input
                   type="text"
-                  value={formData.skills.join(', ')}
-                  onChange={(e) => handleArrayInputChange(e, 'skills')}
+                  name="skills"
+                  value={tempSkills}
+                  onChange={handleArrayFieldChange}
                   required
                 />
               </div>

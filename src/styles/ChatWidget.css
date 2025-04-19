@@ -25,7 +25,7 @@
   }
   
   .chat-widget-header {
-    background: linear-gradient(90deg, #ff758c, #ff7eb3);
+    background: linear-gradient(90deg, #ff758c, #c9658e);
     color: #fff;
     padding: 12px;
     font-size: 1.2rem;
@@ -87,13 +87,13 @@
   .bot-name {
     font-weight: 600;
     margin-bottom: 4px;
-    color: #ff7eb3;
+    color: #c9658e;
   }
   
   /* User message styling */
   .message.user {
     background-color: #ffebef; /* light pink for user messages */
-    color: #ff7eb3;
+    color: #c9658e;
     align-self: flex-end;
     text-align: right;
     padding: 8px 12px;
@@ -128,7 +128,7 @@
   .chat-widget-form button {
     margin-left: 10px;
     padding: 10px 16px;
-    background: linear-gradient(90deg, #ff758c, #ff7eb3);
+    background: linear-gradient(90deg, #ff758c, #c9658e);
     border: none;
     border-radius: 20px;
     color: #fff;

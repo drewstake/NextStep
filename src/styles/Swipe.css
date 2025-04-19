@@ -90,7 +90,7 @@
   background: #f9f9f9;
 }
 
-.job-count-label {
+.job-count-label-for-swipe {
   position: absolute;
   top: -60px;
   left: 50%;
