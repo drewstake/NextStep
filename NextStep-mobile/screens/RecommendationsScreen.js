@@ -345,7 +345,7 @@ export default function RecommendationsScreen({ navigation, route }) {
   // Fetch jobs from API
   const fetchJobs = async () => {
     try {
-        console.log("Fetching jobs...");
+      console.log("Fetching jobs...");
 
       setIsLoading(true);
       setError(null);
@@ -377,11 +377,11 @@ export default function RecommendationsScreen({ navigation, route }) {
       const skills = userProfile.data.skills;
       const location = userProfile.data.location;
 
-      
+
       let searchQuery = '';
-      if (skills?.length > 0 ) {
+      if (skills?.length > 0) {
         searchQuery = `skills: ${skills.join(',')}`;
-      } 
+      }
       if (location) {
         searchQuery += ` location: ${location}`;
       }
@@ -441,22 +441,13 @@ export default function RecommendationsScreen({ navigation, route }) {
     const loadInitialData = async () => {
       try {
         await fetchJobs();
-
-        // If no jobs were loaded from the API, use mock data
-       /*  if (jobs.length === 0) {
-          const mockJobs = generateMockJobs(5);
-          setJobs(mockJobs);
-        } */
       } catch (error) {
         console.error("Error in initial data load:", error);
-        // Fallback to mock data on error
-        //const mockJobs = generateMockJobs(5);
         setJobs([]);
-        setIsLoading(false);
       }
     };
 
-    //loadInitialData();
+    loadInitialData();
   }, []);
 
   // Refresh view when screen comes into focus
