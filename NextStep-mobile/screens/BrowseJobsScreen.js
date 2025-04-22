@@ -47,8 +47,6 @@ export default function BrowseJobsScreen({ navigation, route }) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       // Make the API call with search query if provided
-      const response = await api.get(`/retrieveJobsForHomepage${searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : ''}`);
-      
       // Check if user is an employer
       const userProfile = await api.get('/profile');
       
@@ -58,10 +56,27 @@ export default function BrowseJobsScreen({ navigation, route }) {
         navigation.replace('EmployerDashboard');
         return;
       }
+
+      const skills = userProfile.data.skills;
+      const location = userProfile.data.location;
+
       
+      let searchQuery = '';
+      if (skills?.length > 0 ) {
+        searchQuery = `skills: ${skills.join(',')}`;
+      } 
+      if (location) {
+        searchQuery += ` location: ${location}`;
+      }
+
+      const response = await api.get(`/retrieveJobsForHomepage${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : 'Any job'}`);
+
       setJobs(response.data);
       setFilteredJobs(response.data);
+      setIsLoading(false);
+
     } catch (error) {
+      setIsLoading(false);
       console.error('Error fetching jobs:', error);
       
       if (error.response) {
@@ -98,9 +113,11 @@ export default function BrowseJobsScreen({ navigation, route }) {
 
   // Refresh view when screen comes into focus
   useFocusEffect(
+
     React.useCallback(() => {
+      fetchJobs();
       // Just refresh the current filtered jobs without API call
-      setFilteredJobs(prevJobs => [...prevJobs]);
+//      setFilteredJobs(prevJobs => [...prevJobs]);
     }, [])
   );
 

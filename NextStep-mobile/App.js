@@ -12,6 +12,7 @@ import BrowseJobsScreen from './screens/BrowseJobsScreen';
 import JobDetailsScreen from './screens/JobDetailsScreen';
 import MyJobsScreen from './screens/MyJobsScreen';
 import MessagesScreen from './screens/MessagesScreen';
+import RecommendationsScreen from './screens/RecommendationsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -33,6 +34,9 @@ function TabNavigator() {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'About') {
             iconName = focused ? 'information-circle' : 'information-circle-outline';
+          }
+          else if (route.name === 'Matches') {
+            iconName = focused ? 'ribbon' : 'ribbon-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -78,10 +82,10 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen 
-        name="About" 
-        component={AboutScreen}
+        name="Matches" 
+        component={RecommendationsScreen}
         options={{
-          title: 'About',
+          title: 'Matches',
         }}
       />
     </Tab.Navigator>

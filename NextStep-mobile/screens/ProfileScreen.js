@@ -117,13 +117,6 @@ export default function ProfileScreen({ navigation }) {
             placeholder="Full Name"
             placeholderTextColor="rgba(255, 255, 255, 0.6)"
           />
-          <TextInput
-            style={styles.titleInput}
-            value={profile.title}
-            onChangeText={(text) => setProfile({ ...profile, title: text })}
-            placeholder="Job Title"
-            placeholderTextColor="rgba(255, 255, 255, 0.6)"
-          />
         </View>
         
         <View style={styles.section}>
