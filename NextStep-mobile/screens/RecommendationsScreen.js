@@ -94,15 +94,7 @@ export default function RecommendationsScreen({ navigation, route }) {
       // Create a new jobs array without the current job
       const updatedJobs = jobs.slice(1);
 
-      // Check if updatedJobs is empty or has fewer than 3 jobs, if so, add some mock data
-      if (updatedJobs.length < 3) {
-        // Generate unique mock jobs with random IDs to ensure they're different
-        const mockJobs = generateMockJobs(5);
-        setJobs([...updatedJobs, ...mockJobs]);
-      } else {
-        // Update the state with the new jobs array
-        setJobs(updatedJobs);
-      }
+      setJobs(updatedJobs);
 
       // Reset position for the next card
       position.setValue({ x: 0, y: 0 });
@@ -120,66 +112,6 @@ export default function RecommendationsScreen({ navigation, route }) {
     });
   };
 
-  // Function to generate mock jobs with random details
-  const generateMockJobs = (count) => {
-    const jobTitles = [
-      "Full Stack Developer",
-      "Data Scientist",
-      "UX/UI Designer",
-      "DevOps Engineer",
-      "Product Manager",
-      "Machine Learning Engineer",
-      "Software Architect",
-      "Mobile Developer",
-      "Frontend Engineer",
-      "Backend Engineer",
-    ];
-
-    const companies = [
-      "Tech Innovations Inc.",
-      "AnalyticsPro",
-      "DesignHub",
-      "Cloud Solutions",
-      "Product Vision",
-      "AI Labs",
-      "Software Architects Co",
-      "Mobile Masters",
-      "Frontend Wizards",
-      "Backend Systems",
-    ];
-
-    const locations = [
-      "Remote",
-      "New York, NY",
-      "San Francisco, CA",
-      "Austin, TX (Hybrid)",
-      "Seattle, WA",
-      "Boston, MA (Remote)",
-      "Chicago, IL",
-      "Los Angeles, CA",
-      "Denver, CO (Hybrid)",
-      "Washington, DC",
-    ];
-
-    const descriptions = [
-      "We are seeking an experienced professional with expertise in modern technologies. The ideal candidate will have strong problem-solving skills and be able to work in a fast-paced environment.",
-      "Looking for a talented individual to join our growing team. Must have excellent communication skills and the ability to collaborate effectively.",
-      "Join our innovative company on the cutting edge of technology. We offer competitive salary and benefits in a dynamic workplace.",
-      "Our client is searching for a skilled professional to work on exciting projects. This role offers growth opportunities and challenging work.",
-      "Opportunity to work with the latest technologies in a supportive environment. We value creativity and initiative.",
-    ];
-
-    return Array.from({ length: count }, (_, i) => ({
-      _id: `mock${Date.now()}-${i}-${Math.random()
-        .toString(36)
-        .substring(2, 9)}`,
-      title: jobTitles[Math.floor(Math.random() * jobTitles.length)],
-      companyName: companies[Math.floor(Math.random() * companies.length)],
-      locations: [locations[Math.floor(Math.random() * locations.length)]],
-      description:
-        descriptions[Math.floor(Math.random() * descriptions.length)],
-    }));
-  };
 
   // PanResponder for swipe gestures
   const panResponder = useRef(
@@ -436,7 +368,7 @@ export default function RecommendationsScreen({ navigation, route }) {
     }
   };
 
-  // Initial load with mock data if API fails
+  // Initial load 
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -545,16 +477,12 @@ export default function RecommendationsScreen({ navigation, route }) {
           <Text style={styles.jobTitle}>{currentJob.title}</Text>
           <Text style={styles.companyName}>{currentJob.companyName}</Text>
           <Text style={styles.location}>
-            {currentJob.locations?.[0] || "New York, NY (Remote)"}
+            {currentJob.locations?.[0]}
           </Text>
 
           <View style={styles.jobDescription}>
             <Text style={styles.descriptionText}>
-              {currentJob.description ||
-                `We are seeking a ${currentJob.title.toLowerCase()}
-                with knowledge of statistics, Gen AI, LLM, Python, and computer
-                vision. The ideal candidate will have solid data visualization
-                skills.`}
+              {currentJob.jobDescription}
             </Text>
           </View>
         </Animated.View>
@@ -608,13 +536,10 @@ export default function RecommendationsScreen({ navigation, route }) {
                   if (filtered.length > 0) {
                     setJobs(filtered);
                   } else {
-                    // If no matches, show a message and add mock data
                     showAlert(
                       "No matches",
                       "No jobs matching your search criteria"
                     );
-                    const mockJobs = generateMockJobs(5);
-                    setJobs(mockJobs);
                   }
                 } else {
                   // If empty search, refresh jobs
