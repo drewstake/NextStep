@@ -86,29 +86,37 @@ export default function RecommendationsScreen({ navigation, route }) {
       duration: 300,
       useNativeDriver: false,
     }).start(() => {
-      let currentJobId = null;
-      if (jobs.length > 0) {
-        currentJobId = jobs[0]._id;
-      }
 
-      // Create a new jobs array without the current job
-      const updatedJobs = jobs.slice(1);
-
-      setJobs(updatedJobs);
-
-      // Reset position for the next card
       position.setValue({ x: 0, y: 0 });
 
+      /* 
+      // Reset position for the next card
+       */
+      setTimeout(() => {
+        console.log("jobs.length ", jobs.length);
+
+        setJobs((prevJobs) => {
+          console.log("swipeCard direction " + prevJobs[0]._id, direction);
+          // Remove the current job from the array
+          let currentJobId = null;
+          currentJobId = prevJobs[0]._id;
+          if (currentJobId) {
+            if (direction === "right") {
+              handleApply(currentJobId);
+            } else if (direction === "left") {
+              handleSkip(currentJobId);
+            } else if (direction === "up") {
+              handleSaveForLater(currentJobId);
+            }
+          }
+          const updatedJobs = prevJobs.filter((_, index) => index !== 0);
+          return updatedJobs;
+        });
+
+        // Create a new jobs array without the current job
+      }, 100);
+
       // Process the action for the swiped job
-      if (currentJobId) {
-        if (direction === "right") {
-          handleApply(currentJobId);
-        } else if (direction === "left") {
-          handleSkip(currentJobId);
-        } else if (direction === "up") {
-          handleSaveForLater(currentJobId);
-        }
-      }
     });
   };
 
@@ -134,8 +142,12 @@ export default function RecommendationsScreen({ navigation, route }) {
     })
   ).current;
 
+  useEffect(() => {
+    console.log("Initial loadjobs.length ", jobs.length);
+  }, []);
   // Reset position when jobs change
   useEffect(() => {
+    console.log("jobs.length ", jobs.length);
     position.setValue({ x: 0, y: 0 });
   }, [jobs.length]);
 
@@ -182,6 +194,7 @@ export default function RecommendationsScreen({ navigation, route }) {
 
         if (status === 401) {
           showAlert("Session Expired", "Please log in again");
+          AsyncStorage.removeItem("userToken");
           navigation.replace("Login");
         } else {
           showAlert(
@@ -208,15 +221,17 @@ export default function RecommendationsScreen({ navigation, route }) {
         return;
       }
 
+      console.log("handleSkip jobId ", jobId);
+
       // Set the authorization header
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       // Track job skip (mode 0 for skip)
-      await api.post("/jobsTracker", {
-        _id: jobId,
-        swipeMode: 0,
-      });
-
+             await api.post("/jobsTracker", {
+              _id: jobId,
+              swipeMode: 0,
+            });
+       
       // Job is already removed by the swipeCard function
     } catch (error) {
       console.error("Error skipping job:", error);
@@ -226,6 +241,7 @@ export default function RecommendationsScreen({ navigation, route }) {
 
         if (status === 401) {
           showAlert("Session Expired", "Please log in again");
+          AsyncStorage.removeItem("userToken");
           navigation.replace("Login");
         }
       }
@@ -268,6 +284,7 @@ export default function RecommendationsScreen({ navigation, route }) {
 
         if (status === 401) {
           showAlert("Session Expired", "Please log in again");
+          AsyncStorage.removeItem("userToken");
           navigation.replace("Login");
         }
       }
@@ -334,7 +351,6 @@ export default function RecommendationsScreen({ navigation, route }) {
       console.log("Jobs data:", jobsData);
 
       setJobs(jobsData);
-      console.log("Jobs set:", jobs);
 
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -346,6 +362,7 @@ export default function RecommendationsScreen({ navigation, route }) {
         if (status === 401) {
           // Unauthorized - token expired or invalid
           showAlert("Session Expired", "Please log in again");
+          AsyncStorage.removeItem("userToken");
           navigation.replace("Login");
         } else if (status === 403) {
           // Forbidden - user doesn't have permission
@@ -383,12 +400,12 @@ export default function RecommendationsScreen({ navigation, route }) {
   }, []);
 
   // Refresh view when screen comes into focus
-  useFocusEffect(
+  /* useFocusEffect(
     React.useCallback(() => {
       // Just refresh the current jobs without API call
       setJobs((prevJobs) => [...prevJobs]);
     }, [])
-  );
+  ); */
 
   // Handle job removal when returning from job details
   useEffect(() => {
@@ -416,7 +433,7 @@ export default function RecommendationsScreen({ navigation, route }) {
       return renderEmptyState();
     }
 
-    const currentJob = jobs[0];
+    const currentJob = jobs[currentJobIndex];
 
     // Calculate rotation based on X position
     const rotate = position.x.interpolate({
@@ -534,7 +551,7 @@ export default function RecommendationsScreen({ navigation, route }) {
                           .includes(searchQuery.toLowerCase()))
                   );
                   if (filtered.length > 0) {
-                    setJobs(filtered);
+                    //setJobs(filtered);
                   } else {
                     showAlert(
                       "No matches",

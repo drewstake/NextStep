@@ -99,6 +99,7 @@ export default function MessagesScreen({ navigation }) {
         if (status === 401) {
           // Unauthorized - token expired or invalid
           showAlert('Session Expired', 'Please log in again');
+          AsyncStorage.removeItem("userToken");
           navigation.replace('Login');
         } else if (status === 403) {
           // Forbidden - user doesn't have permission
@@ -158,6 +159,7 @@ export default function MessagesScreen({ navigation }) {
 
         if (status === 401) {
           showAlert('Session Expired', 'Please log in again');
+          AsyncStorage.removeItem("userToken");
           navigation.replace('Login');
         } else {
           setError(data.error || 'Failed to load messages. Please try again later.');
@@ -284,6 +286,7 @@ export default function MessagesScreen({ navigation }) {
 
           if (status === 401) {
             showAlert('Session Expired', 'Please log in again');
+            AsyncStorage.removeItem("userToken");
             navigation.replace('Login');
           } else {
             showAlert('Error', data.error || 'Failed to send message. Please try again.');

@@ -54,6 +54,13 @@ function TabNavigator() {
       })}
     >
       <Tab.Screen 
+        name="Matches" 
+        component={RecommendationsScreen}
+        options={{
+          title: 'Matches',
+        }}
+      />
+      <Tab.Screen 
         name="BrowseJobs" 
         component={BrowseJobsScreen}
         options={{
@@ -79,13 +86,6 @@ function TabNavigator() {
         component={ProfileScreen}
         options={{
           title: 'Profile',
-        }}
-      />
-      <Tab.Screen 
-        name="Matches" 
-        component={RecommendationsScreen}
-        options={{
-          title: 'Matches',
         }}
       />
     </Tab.Navigator>

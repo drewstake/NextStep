@@ -170,6 +170,7 @@ export default function JobDetailsScreen({ route, navigation }) {
         
         if (status === 401) {
           showAlert('Session Expired', 'Please log in again');
+          AsyncStorage.removeItem("userToken");
           navigation.replace('Login');
         } else {
           const errorMessage = data.error || 'Failed to submit application. Please try again.';

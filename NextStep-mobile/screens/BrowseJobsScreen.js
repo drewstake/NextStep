@@ -86,6 +86,7 @@ export default function BrowseJobsScreen({ navigation, route }) {
         if (status === 401) {
           // Unauthorized - token expired or invalid
           showAlert('Session Expired', 'Please log in again');
+          AsyncStorage.removeItem("userToken");
           navigation.replace('Login');
         } else if (status === 403) {
           // Forbidden - user doesn't have permission
@@ -167,6 +168,7 @@ export default function BrowseJobsScreen({ navigation, route }) {
         
         if (status === 401) {
           showAlert('Session Expired', 'Please log in again');
+          AsyncStorage.removeItem("userToken");
           navigation.replace('Login');
         } else {
           showAlert('Error', data.error || 'Failed to submit application. Please try again.');
