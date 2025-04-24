@@ -51,6 +51,15 @@ export default function ProfileScreen({ navigation }) {
       setProfile(response.data);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      if (error.response) {
+        const { status } = error.response;
+        if (status === 401) {
+          showAlert('Session Expired', 'Please log in again');
+          AsyncStorage.removeItem("userToken");
+          navigation.replace('Login');
+          return;
+        }
+      }
       showAlert('Error', 'Failed to load profile data');
     } finally {
       setIsLoading(false);
@@ -126,6 +135,13 @@ export default function ProfileScreen({ navigation }) {
     } catch (error) {
       console.error('Error analyzing resume:', error);
       if (error.response) {
+        const { status } = error.response;
+        if (status === 401) {
+          showAlert('Session Expired', 'Please log in again');
+          AsyncStorage.removeItem("userToken");
+          navigation.replace('Login');
+          return;
+        }
         console.error('Server response:', error.response.data);
       }
       showAlert('Error', 'Failed to analyze resume. Please try again.');
@@ -183,6 +199,15 @@ export default function ProfileScreen({ navigation }) {
       showAlert('Success', 'Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
+      if (error.response) {
+        const { status } = error.response;
+        if (status === 401) {
+          showAlert('Session Expired', 'Please log in again');
+          AsyncStorage.removeItem("userToken");
+          navigation.replace('Login');
+          return;
+        }
+      }
       showAlert('Error', 'Failed to update profile');
     } finally {
       setIsSaving(false);
