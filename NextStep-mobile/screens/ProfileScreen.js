@@ -155,11 +155,23 @@ export default function ProfileScreen({ navigation }) {
       formData.append('skills', JSON.stringify(profile.skills));
       
       if (profile.resume) {
-        formData.append('resume', {
-          uri: profile.resume.uri,
-          type: profile.resume.mimeType,
-          name: profile.resume.name
-        });
+        if (Platform.OS === 'web') {
+          // For web, we need to fetch the file and create a Blob
+          const response = await fetch(profile.resume.uri);
+          const blob = await response.blob();
+          formData.append('resume', blob, profile.resume.name);
+        } else {
+          // For mobile platforms
+          const fileUri = Platform.OS === 'ios' 
+            ? profile.resume.uri.replace('file://', '') 
+            : profile.resume.uri;
+
+          formData.append('resume', {
+            uri: fileUri,
+            type: profile.resume.mimeType || 'application/pdf',
+            name: profile.resume.name || 'resume.pdf'
+          });
+        }
       }
 
       await api.post('/updateprofile', formData, {
@@ -192,6 +204,31 @@ export default function ProfileScreen({ navigation }) {
       ...profile,
       skills: profile.skills.filter(skill => skill !== skillToRemove)
     });
+  };
+
+  const handleViewResume = () => {
+    try {
+      if (!profile.resumeFile || !profile.resumeFile.buffer) {
+        showAlert('Error', 'No resume data available');
+        return;
+      }
+
+      // Create a blob from the base64 data
+      const byteCharacters = atob(profile.resumeFile.buffer);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: profile.resumeFile.mimetype });
+      
+      // Create URL and open in new window
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error viewing resume:', error);
+      showAlert('Error', 'Failed to view resume. Please try again.');
+    }
   };
 
   React.useLayoutEffect(() => {
@@ -332,13 +369,29 @@ export default function ProfileScreen({ navigation }) {
                 </>
               )}
             </TouchableOpacity>
-            {profile.resume && (
-              <Text style={styles.resumeName}>
-                Current Resume: {profile.resume.name}
-              </Text>
-            )}
           </View>
         </View>
+
+        {profile.resumeFile && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Current Resume</Text>
+            <View style={styles.infoCard}>
+              <View style={styles.resumeContainer}>
+                <View style={styles.resumeInfo}>
+                  <Ionicons name="document-text-outline" size={24} color="#FF69B4" />
+                  <Text style={styles.resumeName}>{profile.resumeFile.originalname}</Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.viewResumeButton}
+                  onPress={handleViewResume}
+                >
+                  <Ionicons name="eye-outline" size={20} color="#FF69B4" />
+                  <Text style={styles.viewResumeText}>View</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
 
         <TouchableOpacity 
           style={styles.saveButton}
@@ -534,10 +587,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  resumeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+  },
+  resumeInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
   resumeName: {
-    marginTop: 10,
-    color: '#666',
+    color: '#333',
+    fontSize: 16,
+    marginLeft: 10,
+    flex: 1,
+  },
+  viewResumeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FF69B4',
+    marginLeft: 10,
+  },
+  viewResumeText: {
+    color: '#FF69B4',
     fontSize: 14,
-    textAlign: 'center',
+    marginLeft: 5,
+    fontWeight: '600',
   },
 }); 
