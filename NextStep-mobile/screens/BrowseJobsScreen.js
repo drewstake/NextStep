@@ -48,28 +48,27 @@ export default function BrowseJobsScreen({ navigation, route }) {
       
       // Make the API call with search query if provided
       // Check if user is an employer
-      const userProfile = await api.get('/profile');
+      //const userProfile = await api.get('/profile');
       
-      if (userProfile.data.isEmployer) {
-        setIsEmployer(true);
-        showAlert('Access Denied', 'Employer accounts cannot browse jobs. Please use the employer dashboard instead.');
-        navigation.replace('EmployerDashboard');
-        return;
-      }
+      //if (userProfile.data.isEmployer) {
+      //  setIsEmployer(true);
+      //  showAlert('Access Denied', 'Employer accounts cannot browse jobs. Please use the employer dashboard instead.');
+      //  navigation.replace('EmployerDashboard');
+      //  return;
+      //}
 
-      const skills = userProfile.data.skills;
-      const location = userProfile.data.location;
+      //const skills = userProfile.data.skills;
+      //const location = userProfile.data.location;
 
       
-      let searchQuery = '';
-      if (skills?.length > 0 ) {
+/*       if (skills?.length > 0 ) {
         searchQuery = `skills: ${skills.join(',')}`;
       } 
       if (location) {
         searchQuery += ` location: ${location}`;
       }
-
-      const response = await api.get(`/retrieveJobsForHomepage${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : 'Any job'}`);
+ */
+      const response = await api.get(`/jobs?q=${encodeURIComponent(searchQuery)}`);
 
       setJobs(response.data);
       setFilteredJobs(response.data);

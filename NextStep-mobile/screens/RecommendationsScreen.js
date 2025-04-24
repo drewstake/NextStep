@@ -224,14 +224,14 @@ export default function RecommendationsScreen({ navigation, route }) {
       console.log("handleSkip jobId ", jobId);
 
       // Set the authorization header
-            api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       // Track job skip (mode 0 for skip)
-             await api.post("/jobsTracker", {
-              _id: jobId,
-              swipeMode: 0,
-            });
-       
+      await api.post("/jobsTracker", {
+        _id: jobId,
+        swipeMode: 0,
+      });
+
       // Job is already removed by the swipeCard function
     } catch (error) {
       console.error("Error skipping job:", error);
@@ -521,52 +521,7 @@ export default function RecommendationsScreen({ navigation, route }) {
     <View style={{ flex: 1 }}>
       <LinearGradient colors={["#2A0845", "#6441A5"]} style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Browse Jobs</Text>
-          <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search for jobs..."
-              placeholderTextColor="#888"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            <TouchableOpacity
-              style={styles.searchButton}
-              onPress={() => {
-                // Implement search functionality
-                console.log("Searching for:", searchQuery);
-                // For now, just filter the existing jobs
-                if (searchQuery.trim() !== "") {
-                  const filtered = jobs.filter(
-                    (job) =>
-                      job.title
-                        .toLowerCase()
-                        .includes(searchQuery.toLowerCase()) ||
-                      job.companyName
-                        .toLowerCase()
-                        .includes(searchQuery.toLowerCase()) ||
-                      (job.description &&
-                        job.description
-                          .toLowerCase()
-                          .includes(searchQuery.toLowerCase()))
-                  );
-                  if (filtered.length > 0) {
-                    //setJobs(filtered);
-                  } else {
-                    showAlert(
-                      "No matches",
-                      "No jobs matching your search criteria"
-                    );
-                  }
-                } else {
-                  // If empty search, refresh jobs
-                  fetchJobs();
-                }
-              }}
-            >
-              <Text style={styles.searchButtonText}>Search</Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.headerTitle}>Matched Jobs</Text>
         </View>
 
         {isLoading ? (
