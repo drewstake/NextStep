@@ -386,18 +386,20 @@ export default function RecommendationsScreen({ navigation, route }) {
   };
 
   // Initial load 
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        await fetchJobs();
-      } catch (error) {
-        console.error("Error in initial data load:", error);
-        setJobs([]);
-      }
-    };
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadInitialData = async () => {
+        try {
+          await fetchJobs();
+        } catch (error) {
+          console.error("Error in initial data load:", error);
+          setJobs([]);
+        }
+      };
 
-    loadInitialData();
-  }, []);
+      loadInitialData();
+    }, [])
+  );
 
   // Refresh view when screen comes into focus
   /* useFocusEffect(

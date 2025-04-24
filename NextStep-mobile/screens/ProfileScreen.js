@@ -20,8 +20,10 @@ export default function ProfileScreen({ navigation }) {
     email: '',
     phone: '',
     location: '',
-    title: ''
+    title: '',
+    skills: []
   });
+  const [newSkill, setNewSkill] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -64,7 +66,22 @@ export default function ProfileScreen({ navigation }) {
       }
 
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await api.post('/updateprofile', profile);
+      
+      // Create FormData object for multipart/form-data
+      const formData = new FormData();
+      formData.append('full_name', profile.full_name);
+      formData.append('email', profile.email);
+      formData.append('phone', profile.phone);
+      formData.append('location', profile.location);
+      formData.append('title', profile.title);
+      formData.append('skills', JSON.stringify(profile.skills));
+
+      await api.post('/updateprofile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
       showAlert('Success', 'Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -72,6 +89,23 @@ export default function ProfileScreen({ navigation }) {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleAddSkill = () => {
+    if (newSkill.trim() && !profile.skills.includes(newSkill.trim())) {
+      setProfile({
+        ...profile,
+        skills: [...profile.skills, newSkill.trim()]
+      });
+      setNewSkill('');
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove) => {
+    setProfile({
+      ...profile,
+      skills: profile.skills.filter(skill => skill !== skillToRemove)
+    });
   };
 
   React.useLayoutEffect(() => {
@@ -158,6 +192,41 @@ export default function ProfileScreen({ navigation }) {
           </View>
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Skills</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.skillsInputContainer}>
+              <TextInput
+                style={[styles.input, styles.skillInput]}
+                value={newSkill}
+                onChangeText={setNewSkill}
+                placeholder="Add a new skill"
+                placeholderTextColor="#666"
+                onSubmitEditing={handleAddSkill}
+              />
+              <TouchableOpacity 
+                style={styles.addSkillButton}
+                onPress={handleAddSkill}
+              >
+                <Ionicons name="add-circle-outline" size={24} color="#FF69B4" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.skillsList}>
+              {profile.skills.map((skill, index) => (
+                <View key={index} style={styles.skillItem}>
+                  <Text style={styles.skillText}>{skill}</Text>
+                  <TouchableOpacity 
+                    onPress={() => handleRemoveSkill(skill)}
+                    style={styles.removeSkillButton}
+                  >
+                    <Ionicons name="close-circle-outline" size={20} color="#FF69B4" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+
         <TouchableOpacity 
           style={styles.saveButton}
           onPress={handleSave}
@@ -183,7 +252,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40, // Add extra padding at the bottom for better scrolling
+    paddingBottom: 40,
   },
   centerContent: {
     justifyContent: 'center',
@@ -299,5 +368,38 @@ const styles = StyleSheet.create({
   },
   saveIcon: {
     marginRight: 10,
+  },
+  skillsInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  skillInput: {
+    flex: 1,
+    marginRight: 10,
+  },
+  addSkillButton: {
+    padding: 10,
+  },
+  skillsList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  skillItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  skillText: {
+    fontSize: 14,
+    color: '#333',
+    marginRight: 5,
+  },
+  removeSkillButton: {
+    padding: 2,
   },
 }); 
