@@ -499,11 +499,39 @@ export default function RecommendationsScreen({ navigation, route }) {
             {currentJob.locations?.[0]}
           </Text>
 
+          <View style={styles.salaryContainer}>
+            <Text style={styles.salaryLabel}>Salary Range</Text>
+            <Text style={styles.salaryAmount}>{currentJob.salaryRange || 'Not specified'}</Text>
+          </View>
+
+          <View style={styles.scheduleContainer}>
+            <Text style={styles.scheduleLabel}>Schedule</Text>
+            <Text style={styles.scheduleType}>{currentJob.schedule || 'Not specified'}</Text>
+          </View>
+
+          {currentJob.benefits && currentJob.benefits.length > 0 && (
+            <View style={styles.benefitsContainer}>
+              <Text style={styles.benefitsLabel}>Benefits</Text>
+              <Text style={styles.benefitsList}>
+                {currentJob.benefits.join(', ')}
+              </Text>
+            </View>
+          )}
+
           <View style={styles.jobDescription}>
             <Text style={styles.descriptionText}>
               {currentJob.jobDescription}
             </Text>
           </View>
+
+          {currentJob.skills && currentJob.skills.length > 0 && (
+            <View style={styles.skillsContainer}>
+              <Text style={styles.skillsLabel}>Required Skills</Text>
+              <Text style={styles.skillsList}>
+                {currentJob.skills.join(', ')}
+              </Text>
+            </View>
+          )}
         </Animated.View>
 
         <View style={styles.actionButtons}>
@@ -522,9 +550,6 @@ export default function RecommendationsScreen({ navigation, route }) {
   return (
     <View style={{ flex: 1 }}>
       <LinearGradient colors={["#2A0845", "#6441A5"]} style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Matched Jobs</Text>
-        </View>
 
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -726,5 +751,59 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginTop: 10,
     fontSize: 16,
+  },
+  salaryContainer: {
+    marginBottom: 15,
+  },
+  salaryLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 5,
+  },
+  salaryAmount: {
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '600',
+  },
+  scheduleContainer: {
+    marginBottom: 15,
+  },
+  scheduleLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 5,
+  },
+  scheduleType: {
+    fontSize: 16,
+    color: '#000',
+  },
+  benefitsContainer: {
+    marginBottom: 15,
+    backgroundColor: '#f5f5f5',
+    padding: 10,
+    borderRadius: 10,
+  },
+  benefitsLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 5,
+  },
+  benefitsList: {
+    fontSize: 14,
+    color: '#000',
+    lineHeight: 20,
+  },
+  skillsContainer: {
+    marginBottom: 15,
+  },
+  skillsLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 5,
+  },
+  skillsList: {
+    fontSize: 14,
+    color: '#000',
+    lineHeight: 20,
   },
 });
