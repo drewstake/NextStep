@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Platform, ActivityIndicator, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as DocumentPicker from 'expo-document-picker';
 import api from '../api/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { API_BASE_URL } from '../config';
+
 
 // Create a cross-platform alert function
 const showAlert = (title, message) => {
@@ -21,11 +25,13 @@ export default function ProfileScreen({ navigation }) {
     phone: '',
     location: '',
     title: '',
-    skills: []
+    skills: [],
+    resume: null
   });
   const [newSkill, setNewSkill] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   useEffect(() => {
     fetchProfile();
@@ -55,6 +61,79 @@ export default function ProfileScreen({ navigation }) {
     navigation.replace('Login');
   };
 
+  const handleResumeUpload = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+      });
+
+      if (!result.canceled) {
+        setIsAnalyzing(true);
+        const token = await AsyncStorage.getItem('userToken');
+        if (!token) {
+          showAlert('Authentication Error', 'Please log in again');
+          navigation.replace('Login');
+          return;
+        }
+
+        const formData = new FormData();
+        
+        if (Platform.OS === 'web') {
+          // For web, we need to fetch the file and create a Blob
+          const response = await fetch(result.assets[0].uri);
+          const blob = await response.blob();
+          formData.append('pdf', blob, result.assets[0].name);
+        } else {
+          // For mobile platforms
+          const fileUri = Platform.OS === 'ios' 
+            ? result.assets[0].uri.replace('file://', '') 
+            : result.assets[0].uri;
+
+          formData.append('pdf', {
+            uri: fileUri,
+            type: result.assets[0].mimeType || 'application/pdf',
+            name: result.assets[0].name || 'resume.pdf'
+          });
+        }
+
+        console.log('FormData entries:');
+        for (let [key, value] of formData.entries()) {
+          console.log(key, value);
+        }
+
+        const response = await axios({
+          url: `${API_BASE_URL}/analyze-resume`,
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+          data: formData,
+        });
+
+        if (response.data) {
+          const { skills: analyzedSkills } = response.data;
+          setProfile(prev => ({
+            ...prev,
+            resume: result.assets[0],
+            skills: analyzedSkills || prev.skills
+          }));
+          showAlert('Success', 'Resume analyzed successfully! Skills have been updated.');
+        }
+      } else {
+        console.log('Document picker was canceled');
+      }
+    } catch (error) {
+      console.error('Error analyzing resume:', error);
+      if (error.response) {
+        console.error('Server response:', error.response.data);
+      }
+      showAlert('Error', 'Failed to analyze resume. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleSave = async () => {
     try {
       setIsSaving(true);
@@ -67,7 +146,6 @@ export default function ProfileScreen({ navigation }) {
 
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
-      // Create FormData object for multipart/form-data
       const formData = new FormData();
       formData.append('full_name', profile.full_name);
       formData.append('email', profile.email);
@@ -75,6 +153,14 @@ export default function ProfileScreen({ navigation }) {
       formData.append('location', profile.location);
       formData.append('title', profile.title);
       formData.append('skills', JSON.stringify(profile.skills));
+      
+      if (profile.resume) {
+        formData.append('resume', {
+          uri: profile.resume.uri,
+          type: profile.resume.mimeType,
+          name: profile.resume.name
+        });
+      }
 
       await api.post('/updateprofile', formData, {
         headers: {
@@ -224,6 +310,33 @@ export default function ProfileScreen({ navigation }) {
                 </View>
               ))}
             </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Resume</Text>
+          <View style={styles.infoCard}>
+            <TouchableOpacity 
+              style={styles.uploadButton}
+              onPress={handleResumeUpload}
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? (
+                <ActivityIndicator color="#FF69B4" />
+              ) : (
+                <>
+                  <Ionicons name="document-attach-outline" size={24} color="#FF69B4" style={styles.uploadIcon} />
+                  <Text style={styles.uploadButtonText}>
+                    {profile.resume ? 'Update Resume' : 'Upload Resume'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+            {profile.resume && (
+              <Text style={styles.resumeName}>
+                Current Resume: {profile.resume.name}
+              </Text>
+            )}
           </View>
         </View>
 
@@ -401,5 +514,30 @@ const styles = StyleSheet.create({
   },
   removeSkillButton: {
     padding: 2,
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    padding: 15,
+    borderWidth: 2,
+    borderColor: '#FF69B4',
+    borderStyle: 'dashed',
+  },
+  uploadIcon: {
+    marginRight: 10,
+  },
+  uploadButtonText: {
+    color: '#FF69B4',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  resumeName: {
+    marginTop: 10,
+    color: '#666',
+    fontSize: 14,
+    textAlign: 'center',
   },
 }); 
