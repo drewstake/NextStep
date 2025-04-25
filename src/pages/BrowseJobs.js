@@ -22,7 +22,11 @@ const BrowseJobs = () => {
     const fetchJobs = async () => {
       try {
         // Replace the URL with your actual API endpoint.
-        const response = await axios.get(`${API_SERVER}/jobs?q=`);
+        const response = await axios.get(`${API_SERVER}/jobs?q=` + searchQuery, 
+          token ? {
+            headers: { Authorization: `Bearer ${token}` }
+          } : undefined
+        );
         setJobs(response.data);
       } catch (error) {
         console.error('Error fetching jobs:', error);
@@ -30,13 +34,17 @@ const BrowseJobs = () => {
     };
 
     fetchJobs();
-  }, []);
+  }, [searchQuery, token]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setIsSearching(true);
     try {
-      const response = await axios.get(`${API_SERVER}/jobs?q=` + searchQuery);
+      const response = await axios.get(`${API_SERVER}/jobs?q=` + searchQuery, 
+        token ? {
+          headers: { Authorization: `Bearer ${token}` }
+        } : undefined
+      );
       setJobs(response.data);
     } catch (error) {
       console.error('Error searching jobs:', error);
@@ -61,6 +69,13 @@ const BrowseJobs = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessage("Applied successfully!");
+      // Refresh the jobs list after successful application
+      const response = await axios.get(`${API_SERVER}/jobs?q=` + searchQuery, 
+        token ? {
+          headers: { Authorization: `Bearer ${token}` }
+        } : undefined
+      );
+      setJobs(response.data);
     } catch (error) {
       if (error.response && error.response.status === 409) {
         console.log(error.response.data.error + jobId);

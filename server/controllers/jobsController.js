@@ -6,7 +6,7 @@ const { parseSearchCriteria, generateEmbeddings, refineFoundPositions } = requir
  * @namespace jobsController
  */
 const jobsController = {
-  
+
   /**
    * Retrieves all jobs with optional search functionality
    * @async
@@ -20,13 +20,38 @@ const jobsController = {
   getAllJobs: async (req, res) => {
     try {
       const queryText = req.query.q || "";
+      let jobs = []
       if (!queryText) {
-        const jobs = await jobsDirectSearch(req);
-        res.status(200).json(jobs);
+        jobs = await jobsDirectSearch(req);
       } else {
-        const jobs = await jobsSemanticSearch(req);
-        res.status(200).json(jobs);
+        jobs = await jobsSemanticSearch(req);
       }
+
+      //-------------------------------------
+      const token = req.headers.authorization?.split(" ")[1];
+
+      // Get user ID from token if available
+      let userId = null;
+      if (token) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      }
+      const applicationsCollection = req.app.locals.db.collection("applications");
+
+      // If user is logged in, get their applied jobs and filter results
+      let finalResults = jobs;
+      if (userId) {
+        const appliedJobs = await applicationsCollection
+          .find({ user_id: ObjectId.createFromHexString(userId) })
+          .project({ job_id: 1, _id: 0 })
+          .toArray();
+
+        const appliedJobIds = appliedJobs.map(app => app.job_id.toString());
+        finalResults = jobs.filter(job => !appliedJobIds.includes(job._id.toString()));
+      }
+
+      res.status(200).json(finalResults);
+
 
     } catch (error) {
       res.status(500).json({ error: `Error searching jobs. ${error}` });
@@ -181,10 +206,10 @@ const jobsController = {
         companyId: companyId
       };
 
-      const textToEmbed = `${newJob.title} ${newJob.jobDescription} ${newJob.skills.join(' ')} ${newJob.companyName? newJob.companyName : ''} ${newJob.locations.join(' ')} ${newJob.salaryRange? newJob.salaryRange : ''} ${newJob.benefits.join(' ')} ${newJob.schedule? newJob.schedule : ''}`;
+      const textToEmbed = `${newJob.title} ${newJob.jobDescription} ${newJob.skills.join(' ')} ${newJob.companyName ? newJob.companyName : ''} ${newJob.locations.join(' ')} ${newJob.salaryRange ? newJob.salaryRange : ''} ${newJob.benefits.join(' ')} ${newJob.schedule ? newJob.schedule : ''}`;
       const embedding = await generateEmbeddings(textToEmbed);
 
-      const result = await collection.insertOne({...newJob, embedding});
+      const result = await collection.insertOne({ ...newJob, embedding });
       res.status(201).json({
         message: "Job posting created successfully",
         jobId: result.insertedId
@@ -256,7 +281,7 @@ const jobsController = {
         return res.status(404).json({ error: "Job not found or unauthorized" });
       }
 
-      const textToEmbed = `${job.title} ${job.jobDescription} ${job.skills.join(' ')} ${job.companyName? job.companyName : ''} ${job.locations.join(' ')} ${job.salaryRange? job.salaryRange : ''} ${job.benefits.join(' ')} ${job.schedule? job.schedule : ''}`;
+      const textToEmbed = `${job.title} ${job.jobDescription} ${job.skills.join(' ')} ${job.companyName ? job.companyName : ''} ${job.locations.join(' ')} ${job.salaryRange ? job.salaryRange : ''} ${job.benefits.join(' ')} ${job.schedule ? job.schedule : ''}`;
       const embedding = await generateEmbeddings(textToEmbed);
 
       const result = await collection.updateOne(
@@ -511,14 +536,37 @@ const jobsController = {
       // Filter results to only include those with a score greater than 0.62
       const filteredResults = results.filter(result => result.score > 0.62);
 
-      console.log("MongoDB returned : ", filteredResults.length);
+      //-------------------------------------
+      const token = req.headers.authorization?.split(" ")[1];
+
+      // Get user ID from token if available
+      let userId = null;
+      if (token) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      }
+      const applicationsCollection = req.app.locals.db.collection("applications");
+
+      // If user is logged in, get their applied jobs and filter results
+      let finalResults = filteredResults;
+      if (userId) {
+        const appliedJobs = await applicationsCollection
+          .find({ user_id: ObjectId.createFromHexString(userId) })
+          .project({ job_id: 1, _id: 0 })
+          .toArray();
+
+        const appliedJobIds = appliedJobs.map(app => app.job_id.toString());
+        finalResults = filteredResults.filter(job => !appliedJobIds.includes(job._id.toString()));
+      }
+      //-------------------------------------
+      console.log("MongoDB returned : ", finalResults.length);
       if (jobDetails.skills?.length > 0) {
         searchCriteria += `\nMatch one or more of these skills: (${jobDetails.skills?.join(', ')})`;
-      } 
+      }
 
       console.log("Refining results with the following criteria: ", searchCriteria);
       // use the criteria as specified by the user to refine the results
-      const enhancedJobs = await refineFoundPositions(filteredResults, searchCriteria);
+      const enhancedJobs = await refineFoundPositions(finalResults, searchCriteria);
 
       console.log("Enhanced jobs: ", enhancedJobs.length);
 
@@ -766,7 +814,7 @@ async function jobsDirectSearch(req) {
   return jobs;
 };
 
-async function jobsSemanticSearch(req)  {
+async function jobsSemanticSearch(req) {
   try {
     const searchCriteria = req.query.q || "";
     const jobDetails = await parseSearchCriteria(searchCriteria);
@@ -845,7 +893,7 @@ async function jobsSemanticSearch(req)  {
 
     console.log("MongoDB returned : ", filteredResults.length);
     console.log("Refining results with the following criteria: ", searchCriteria);
-    
+
     // use the criteria as specified by the user to refine the results
     const enhancedJobs = await refineFoundPositions(filteredResults, searchCriteria);
 
