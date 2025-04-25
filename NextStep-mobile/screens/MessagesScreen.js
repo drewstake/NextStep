@@ -385,7 +385,7 @@ export default function MessagesScreen({ navigation }) {
       <FlatList
         data={contacts}
         renderItem={renderContactItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContainer}
       />
     </LinearGradient>
