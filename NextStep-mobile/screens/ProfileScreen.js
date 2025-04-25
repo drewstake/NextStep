@@ -67,6 +67,7 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const handleSignOut = () => {
+    AsyncStorage.removeItem('userToken');
     navigation.replace('Login');
   };
 
@@ -584,11 +585,13 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingHorizontal: 12,
     paddingVertical: 6,
+    maxWidth: '-webkit-fill-available',
   },
   skillText: {
     fontSize: 14,
     color: '#333',
     marginRight: 5,
+    maxWidth: '-webkit-fill-available',
   },
   removeSkillButton: {
     padding: 2,
