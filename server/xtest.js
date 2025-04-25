@@ -178,21 +178,7 @@ async function testSignin(email='') {
         token = response.data.token; // we now have the secure token
         console.log(token);
     } catch (error) {
-        console.error('Signin error details:');
-        console.error('Error message:', error.message);
-        if (error.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
-            console.error('Status:', error.response.status);
-            console.error('Status text:', error.response.statusText);
-            console.error('Response data:', error.response.data);
-        } else if (error.request) {
-            // The request was made but no response was received
-            console.error('No response received. Request details:', error.request);
-        } else {
-            // Something happened in setting up the request that triggered an Error
-            console.error('Error setting up request:', error.message);
-        }
+        console.error('Signin error:', error.response.data);
     }
 }
 
@@ -769,47 +755,6 @@ async function testGetAllApplications() {
     }
 }
 
-async function testCreateJobsFromFile() {
-    try {
-        console.log("Reading and creating jobs from file...");
-        
-        // Read the JSON file
-        const fs = require('fs');
-        const jobsData = JSON.parse(fs.readFileSync('./non_it_jobs.json', 'utf8'));
-        
-        // Get the jobs array
-        const jobs = jobsData.jobs;
-        
-        console.log(`Found ${jobs.length} jobs to create`);
-        
-        // Create each job
-        for (let i = 0; i < jobs.length; i++) {
-            const job = jobs[i];
-            
-            // Make the POST request to create a job posting
-            const response = await axios.post(`${BASE_URL}/jobs`, job, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            console.log(`\nCreated job posting ${i + 1}/${jobs.length}:`);
-            console.log(`Title: ${job.title}`);
-            console.log(`Status: ${response.status} ${response.statusText}`);
-            console.log(`Job ID: ${response.data.jobId}`);
-            
-            // Add a small delay between requests to avoid overwhelming the server
-            await delay(1000);
-        }
-
-        console.log("\nAll job postings from file created successfully!");
-
-    } catch (error) {
-        console.error('Error creating jobs from file:', error.response ? error.response.data : error.message);
-    }
-}
-
 // Run tests
 (async function () {
     const asEmployer = true; // set this to false to register as an applicant/job seeker
@@ -820,7 +765,7 @@ async function testCreateJobsFromFile() {
     // await testApplyForJob();
     //await testGetApplications();
    //await testCreateJobPosting();
-    //await testCreateMultipleJobPostings();
+    await testCreateMultipleJobPostings();
     //await testGetMessages();
     //await testSendMessage();
    // await testSendMessageToCompany();
@@ -832,7 +777,6 @@ async function testCreateJobsFromFile() {
     //await testGetMessages();
     //await testSearchJobs();
     //await testGetAllApplications();
-    await testCreateJobsFromFile();
 })();
 
 
