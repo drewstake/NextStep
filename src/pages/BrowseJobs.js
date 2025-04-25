@@ -12,6 +12,7 @@ const APPLY = 1;
 
 const BrowseJobs = () => {
   const [jobs, setJobs] = useState([]);
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const { token, name, email } = useContext(TokenContext);
@@ -21,8 +22,8 @@ const BrowseJobs = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        // Replace the URL with your actual API endpoint.
-        const response = await axios.get(`${API_SERVER}/jobs?q=` + searchQuery, 
+        // Initial fetch without search query
+        const response = await axios.get(`${API_SERVER}/jobs`, 
           token ? {
             headers: { Authorization: `Bearer ${token}` }
           } : undefined
@@ -34,13 +35,14 @@ const BrowseJobs = () => {
     };
 
     fetchJobs();
-  }, [searchQuery, token]);
+  }, [token]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setIsSearching(true);
+    setSearchQuery(searchInput); // Update the actual search query when button is clicked
     try {
-      const response = await axios.get(`${API_SERVER}/jobs?q=` + searchQuery, 
+      const response = await axios.get(`${API_SERVER}/jobs?q=` + searchInput, 
         token ? {
           headers: { Authorization: `Bearer ${token}` }
         } : undefined
@@ -98,8 +100,8 @@ const BrowseJobs = () => {
         <input
           type="text"
           placeholder="Tell me in your own words... e.g. 'Any high paying job'"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           className="job-search-input"
         />
         <button type="submit" className="job-search-button" disabled={isSearching}>
