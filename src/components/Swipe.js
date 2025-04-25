@@ -64,6 +64,8 @@ const Swipe = () => {
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
+        if(error?.message) {setError(error.message);}
+        else{setError("An unexpected error occurred. Please try again later.");}
         setIsLoading(false);
       }
     };

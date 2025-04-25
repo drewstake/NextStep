@@ -60,6 +60,8 @@ console.log("Environment check:", {
    server_domain: process.env.SERVER_DOMAIN,
 });
 
+console.log('Last updated: 4/25/2025');
+
 // Initialize Google OAuth client
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -215,13 +217,14 @@ client
           }
 
           // Create a temporary file path
-          const tempFilePath = path.join(__dirname, 'public', 'uploads', `temp-${Date.now()}.pdf`);
+         /*  const tempFilePath = path.join(__dirname, 'public', 'uploads', `temp-${Date.now()}.pdf`);
           fs.writeFileSync(tempFilePath, req.file.buffer);
 
-          const result = await analyzePDF(tempFilePath);
+          const result = await analyzePDF(tempFilePath); */
+          const result = await analyzePDF(req.file.buffer.toString("base64"));
           
           // Clean up the temporary file
-          fs.unlinkSync(tempFilePath);
+          //fs.unlinkSync(tempFilePath);
           
           res.json(result);
         } catch (error) {

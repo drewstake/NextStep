@@ -6,13 +6,19 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function analyzePDF(pdfPath = 'Software Project Manager Resume.pdf') {
+async function analyzePDF(file_buffer) {
     try {
         // Read the PDF file
-        const pdfFile = fs.readFileSync(pdfPath);
+        //const pdfFile = fs.readFileSync(pdfPath);
 
         // Encode PDF content to base64
-        const encodedPdf = Buffer.from(pdfFile).toString('base64');
+                // Validate that it's a Base64 string (basic check)
+        const base64Regex = /^([A-Za-z0-9+/=]){2,}$/;
+        if (!base64Regex.test(file_buffer)) {
+            return res.status(400).send('Invalid Base64 string');
+        }
+        
+        const encodedPdf = file_buffer;
         const pdfContent = `data:application/pdf;base64,${encodedPdf}`
 
         const extractionPrompt = `what job skills and experiences does this resume have. 
@@ -32,7 +38,7 @@ and a potential job title suitable for this candidate, regardless of any of thei
                         },
                         {
                             "type": "input_file",
-                            "filename": pdfPath,
+                            "filename": 'resume.pdf',
                             "file_data": pdfContent
                         }
                     ]

@@ -135,7 +135,7 @@
   transition: all 0.2s ease;
   border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 200px;
+  width: 215px;
   text-align: center;
 }
 
@@ -170,6 +170,7 @@
   font-size: 1rem;
   width: 200px;
   transition: background-color 0.3s ease;
+  height: fit-content;
 }
 
 .profile-button:hover {
