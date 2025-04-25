@@ -121,7 +121,7 @@ export default function LoginScreen({ navigation }) {
     } catch (error) {
       console.log("Login Error", error);
       let errorMessage = 'An error occurred. Make sure the API server is up, and try again.';
-      
+      debugger;      
       if (error.response) {
         // Server responded with an error
         const { status, data } = error.response;
@@ -131,21 +131,23 @@ export default function LoginScreen({ navigation }) {
           if (data.emailNotVerified) {
             // Special case for unverified email
             showAlert('Email Not Verified', data.message, true);
-            // Optionally, you could add a button to resend verification email
-            // or navigate to a verification screen
             return;
           }
           // Handle other 401 errors (invalid credentials)
-          errorMessage = data.message || 'Invalid email or password';
+          errorMessage = data.error || 'Invalid email or password';
         } else if (status === 400) {
           // Handle bad request errors
-          errorMessage = data.message || 'Please check your input and try again';
+          errorMessage = data.error || 'Please check your input and try again';
         } else if (status === 429) {
           // Handle rate limiting
-          errorMessage = data.message || 'Too many attempts. Please try again later';
+          errorMessage = data.error || 'Too many attempts. Please try again later';
         } else if (status >= 500) {
           // Handle server errors
           errorMessage = 'Server error. Check server logs for more details. Please try again later';
+        }else if(status === 409 ) {
+          // Handle unauthorized errors
+          errorMessage = data.error;
+          
         } else {
           // Handle other status codes
           errorMessage = data.message || errorMessage;
