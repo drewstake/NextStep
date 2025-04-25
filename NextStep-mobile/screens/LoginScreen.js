@@ -325,14 +325,14 @@ export default function LoginScreen({ navigation }) {
           {renderButtonContent()}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
+{/*         <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
           <Image 
             source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg' }}
             style={styles.googleIcon}
           />
           <Text style={styles.googleButtonText}>Sign in with Google</Text>
         </TouchableOpacity>
-
+ */}
         {isEmailLogin && (
           <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword}>
             <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
