@@ -89,6 +89,7 @@ const Login = () => {
       setEmployerFlag(response.data.employerFlag);
       setName(response.data.full_name);
       setEmail(response.data.email);
+      debugger;
       if (response.data.companyId) {
         setCompanyId(response.data.companyId);
       }

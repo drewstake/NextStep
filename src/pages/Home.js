@@ -1,14 +1,24 @@
 // File: /src/pages/Home.js
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import { useNavigate } from "react-router-dom";
 import Swipe from '../components/Swipe';
 import '../styles/Home.css';
 import { TokenContext } from "../components/TokenContext";
+import jwt_decode from 'jwt-decode';
 
 
 const Home = () => {
-  const { token } = useContext(TokenContext);
+  const { token, employerFlag } = useContext(TokenContext);
   const navigate = useNavigate();
+  const decoded = token ? jwt_decode(token) : null;
+  const isEmployer = decoded?.employerFlag || false;
+
+  useEffect(() => {
+    if (isEmployer) {
+      navigate('/employer-dashboard');
+    }
+  }, [isEmployer, navigate]);
+
 
   const handleSignInClick = () => {
     // Redirect to /login

@@ -18,7 +18,7 @@ const EmployerMessenger = () => {
   const currentUserId = decoded?.id;
   const isEmployer = decoded?.employerFlag || false;
   const messagesEndRef = useRef(null);
-  const timedDelay = 50000;
+  const timedDelay = 5000;
 
   const scrollToBottom = () => {
 //console.log('scrollToBottom');
@@ -144,7 +144,8 @@ const EmployerMessenger = () => {
       });
 
       setNewMessage('');
-      refreshMessages();
+      //refreshMessages();
+      markMessagesAsRead(selectedContact._id);
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -188,10 +189,7 @@ const EmployerMessenger = () => {
                   <div className="contact-timestamp" style={{ fontSize: '0.8em', color: '#666' }}>
                     {new Date(contact.lastMessageTimestamp).toLocaleString('en-US', {
                       month: 'short',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true
+                      day: '2-digit'
                     })}
                   </div>
                 )}
@@ -253,7 +251,7 @@ const EmployerMessenger = () => {
                   >
                     <div className="message-content">{message.content}</div>
                     <div className="message-time">
-                      {new Date(message.createdAt).toLocaleTimeString()}
+                      {new Date(message.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </div>
                   </div>
                 ))}

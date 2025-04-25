@@ -22,6 +22,7 @@ const Profile = () => {
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showResumeOverlay, setShowResumeOverlay] = useState(false);
 
   const navigate = useNavigate(1);
   //const location = useLocation();
@@ -37,7 +38,7 @@ const Profile = () => {
           const response = await axios.get(`${API_SERVER}/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          setResume(response.data.resume);
+          setResume(response.data.resumeFile);
           setFullName(response.data.full_name);
           if (!response.data.firstName || !response.data.lastName) {
             const nameParts = (response.data.full_name || '').split(' ');
@@ -57,7 +58,7 @@ const Profile = () => {
         } catch (error) {
           console.error('Profile error:', error.response.data);
         }
-      } else{
+      } else {
         navigate('/login');
       }
     };
@@ -87,18 +88,18 @@ const Profile = () => {
       setResume(file);
       setIsAnalyzing(true);
       setMessage('Analyzing your resume...');
-      
+
       try {
         const formData = new FormData();
         formData.append('pdf', file);
-        
+
         const response = await axios.post(`${API_SERVER}/analyze-resume`, formData, {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
           }
         });
-        
+
         if (response.data) {
           const { skills: analyzedSkills } = response.data;
           setMessage(`Resume analysis complete! Please review the skills and update your profile.`);
@@ -116,16 +117,16 @@ const Profile = () => {
   const handleSkillAdd = (e) => {
     e.preventDefault();
     const trimmedSkill = newSkill.trim();
-    
+
     if (!trimmedSkill) {
       return;
     }
-    
+
     if (skills.includes(trimmedSkill)) {
       setError(`Skill "${trimmedSkill}" already exists in your list`);
       return;
     }
-    
+
     setSkills(prevSkills => [...prevSkills, trimmedSkill]);
     setNewSkill('');
   };
@@ -165,8 +166,8 @@ const Profile = () => {
       setMessage(
         <span>
           Profile Updated.{" "}
-          <a 
-            href="#" 
+          <a
+            href="#"
             onClick={(e) => {
               e.preventDefault();
               navigate('/');
@@ -182,6 +183,14 @@ const Profile = () => {
       console.error('Error updating profile:', error);
       setError('Failed to update profile. Please try again.');
     }
+  };
+
+  const handleViewResume = () => {
+    if (!resume) {
+      setError('No resume available');
+      return;
+    }
+    setShowResumeOverlay(true);
   };
 
   return (
@@ -211,13 +220,32 @@ const Profile = () => {
                     }}
                   />
                 )}
-                <div 
+                <div
                   className="profile-image-edit"
                   onClick={() => document.getElementById('photo-upload').click()}
                 >
                   ✎
                 </div>
               </div>
+              {showResumeOverlay && (
+                <div className="resume-overlay">
+                  <div className="resume-overlay-content">
+                    <button
+                      className="close-overlay-button"
+                      onClick={() => setShowResumeOverlay(false)}
+                    >
+                      ×
+                    </button>
+                    <iframe
+                      src={`data:${resume.mimetype};base64,${resume.buffer}`}
+                      title="Your resume"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 'none' }}
+                    />
+                  </div>
+                </div>
+              )}
               <div className="profile-form-group-hidden">
                 <label className="profile-label">Profile Photo</label>
                 <label htmlFor="photo-upload" className="upload-label">Upload...</label>
@@ -327,66 +355,82 @@ const Profile = () => {
         </div>
 
         {/* Skills Management Section */}
-        <div className="skills-section">
-          <div className="skills-header">
-            <h3>Your Professional Skills</h3>
-            {skills?.length > 0 && !isAnalyzing && (
-              <button 
-                type="button"
-                className="clear-skills-button"
-                onClick={handleClearSkills}
-              >
-                Reset Skills
-              </button>
-            )}
-          </div>
-          
-          {/* Add New Skill Input */}
-          <div className="add-skill-form">
-            <input
-              type="text"
-              value={newSkill}
-              onChange={(e) => setNewSkill(e.target.value)}
-              placeholder="Add a new skill or upload your resume to analyze your skills..."
-              className="skill-input"
-              disabled={isAnalyzing}
-            />
-            <button 
-              type="button"
-              className="add-skill-button"
-              onClick={handleSkillAdd}
-              disabled={isAnalyzing}
-            >
-              Add Skill
-            </button>
-          </div>
-
-          {/* Skills List */}
-          <div className="skills-list">
-            {skills?.map((skill, index) => (
-              <div key={index} className="skill-item">
-                <span>{skill}</span>
-                <button 
+        {!employerFlag && (
+          <div className="skills-section">
+            <div className="skills-header">
+              <h3>Your Professional Skills</h3>
+              {skills?.length > 0 && !isAnalyzing && (
+                <button
                   type="button"
-                  className="remove-skill"
-                  onClick={() => handleSkillRemove(index)}
-                  disabled={isAnalyzing}
+                  className="clear-skills-button"
+                  onClick={handleClearSkills}
                 >
-                  ×
+                  Reset Skills
                 </button>
-              </div>
-            ))}
+              )}
+            </div>
+
+            {/* Add New Skill Input */}
+            <div className="add-skill-form">
+              <input
+                type="text"
+                value={newSkill}
+                onChange={(e) => setNewSkill(e.target.value)}
+                placeholder="Add a new skill or upload your resume to analyze your skills..."
+                className="skill-input"
+                disabled={isAnalyzing}
+              />
+              <button
+                type="button"
+                className="add-skill-button"
+                onClick={handleSkillAdd}
+                disabled={isAnalyzing}
+              >
+                Add Skill
+              </button>
+            </div>
+
+            {/* Skills List */}
+            <div className="skills-list">
+              {skills?.map((skill, index) => (
+                <div key={index} className="skill-item">
+                  <span>{skill}</span>
+                  <button
+                    type="button"
+                    className="remove-skill"
+                    onClick={() => handleSkillRemove(index)}
+                    disabled={isAnalyzing}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Submit and Upload Buttons */}
         <div className="button-container">
           {!employerFlag && (
-            <label htmlFor="resume-upload" className="upload-button">
-              <span>
-                Upload Resume
-              </span>
-            </label>
+            <>
+              <label htmlFor="resume-upload" className="upload-button">
+                <span>
+                  Upload Resume
+                </span>
+              </label>
+              {resume && (
+
+                <label htmlFor="resume-upload" className="upload-button" onClick={(e) => {
+                  e.preventDefault();
+                  handleViewResume();
+                }}>
+                  <span>
+                    View Current Resume
+                  </span>
+                </label>
+
+              )}
+            </>
           )}
           <button type="submit" className="profile-button" disabled={isAnalyzing}>Save Profile</button>
         </div>

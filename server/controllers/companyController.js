@@ -44,8 +44,14 @@ const upload = multer({
 const getCompanyProfile = async (req, res) => {
   try {
     const companiesCollection = req.app.locals.db.collection("companies");
-    
-    const company = await companiesCollection.findOne({ userId: req.user.id });
+    // First check if user has a companyId in users collection
+    const usersCollection = req.app.locals.db.collection("users");
+    const user = await usersCollection.findOne(
+      { _id: new ObjectId(req.user.id) },
+      { projection: { companyId: 1 } }
+    );
+      
+    const company = await companiesCollection.findOne({ _id: user.companyId });
     
     if (!company) {
       return res.status(404).json({ message: 'Company profile not found' });

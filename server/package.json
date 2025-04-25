@@ -27,6 +27,7 @@
     "mongoose": "^8.10.0",
     "multer": "^1.4.4",
     "node-mailjet": "^6.0.8",
+    "openai": "^4.95.0",
     "passport": "^0.7.0",
     "twilio": "^5.4.5"
   },
